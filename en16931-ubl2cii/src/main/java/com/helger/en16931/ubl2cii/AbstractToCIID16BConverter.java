@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 
 import com.helger.commons.collection.impl.ICommonsList;
 import com.helger.commons.datetime.PDTFactory;
+import com.helger.commons.datetime.XMLOffsetDate;
 import com.helger.commons.math.MathHelper;
 import com.helger.commons.string.StringHelper;
 
@@ -434,14 +435,22 @@ public abstract class AbstractToCIID16BConverter
 
   @Nonnull
   protected static TradePaymentTermsType convertSpecifiedTradePaymentTerms (@Nonnull final PaymentTermsType aUBLPaymenTerms,
-                                                                            @Nullable final PaymentMeansType aUBLPaymentMeans)
+                                                                            @Nullable final PaymentMeansType aUBLPaymentMeans,
+                                                                            @Nullable final XMLOffsetDate aInvoiceDueDate)
   {
     final TradePaymentTermsType ret = new TradePaymentTermsType ();
     for (final var aNote : aUBLPaymenTerms.getNote ())
       ret.addDescription (convertText (aNote.getValue ()));
 
-    if (aUBLPaymentMeans != null && aUBLPaymentMeans.getPaymentDueDate () != null)
-      ret.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+    // Invoice - Payment due date BT-9
+    if (aInvoiceDueDate != null)
+      ret.setDueDateDateTime (convertDateTime (aInvoiceDueDate.toLocalDate ()));
+    else
+    {
+      // Credit Note - Payment due date BT-9
+      if (aUBLPaymentMeans != null && aUBLPaymentMeans.getPaymentDueDate () != null)
+        ret.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+    }
     return ret;
   }
 

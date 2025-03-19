@@ -179,6 +179,9 @@
       </ram:SpecifiedTradeAllowanceCharge>
       <ram:SpecifiedTradePaymentTerms>
         <ram:Description>Payment within 10 days, 2% discount</ram:Description>
+        <ram:DueDateDateTime>
+          <udt:DateTimeString format="102">20171201</udt:DateTimeString>
+        </ram:DueDateDateTime>
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>1300</ram:LineTotalAmount>

@@ -17,6 +17,8 @@
  */
 package com.helger.en16931.ubl2cii;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -170,7 +172,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     final PaymentMeansType aUBLPaymentMeans = aUBLDoc.hasPaymentMeansEntries () ? aUBLDoc.getPaymentMeansAtIndex (0) : null;
 
     if (aUBLPaymentMeans != null && aUBLPaymentMeans.hasPaymentIDEntries ())
-      ret.addPaymentReference (convertText (aUBLPaymentMeans.getPaymentIDAtIndex (0).getValue ()));
+      ifNotEmpty (aUBLPaymentMeans.getPaymentIDAtIndex (0).getValue (), x -> ret.addPaymentReference (convertText (x)));
 
     // Invoice currency code BT-5
     ifNotEmpty (aUBLDoc.getDocumentCurrencyCodeValue (), ret::setInvoiceCurrencyCode);
@@ -182,35 +184,38 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
 
     if (aUBLPaymentMeans != null)
     {
-      final TradeSettlementPaymentMeansType aTSPMT = new TradeSettlementPaymentMeansType ();
-      ifNotEmpty (aUBLPaymentMeans.getPaymentMeansCodeValue (), aTSPMT::setTypeCode);
+      final TradeSettlementPaymentMeansType aPaymentMeans = new TradeSettlementPaymentMeansType ();
+      ifNotEmpty (aUBLPaymentMeans.getPaymentMeansCodeValue (), aPaymentMeans::setTypeCode);
 
       final CreditorFinancialAccountType aCFAT = new CreditorFinancialAccountType ();
       if (aUBLPaymentMeans.getPayeeFinancialAccount () != null)
         ifNotEmpty (aUBLPaymentMeans.getPayeeFinancialAccount ().getIDValue (), aCFAT::setIBANID);
-      aTSPMT.setPayeePartyCreditorFinancialAccount (aCFAT);
-      ret.addSpecifiedTradeSettlementPaymentMeans (aTSPMT);
+      aPaymentMeans.setPayeePartyCreditorFinancialAccount (aCFAT);
+      ret.addSpecifiedTradeSettlementPaymentMeans (aPaymentMeans);
     }
 
     for (final TaxTotalType aUBLTaxTotal : aUBLDoc.getTaxTotal ())
       for (final TaxSubtotalType aUBLTaxSubtotal : aUBLTaxTotal.getTaxSubtotal ())
         ret.addApplicableTradeTax (convertApplicableTradeTax (aUBLTaxSubtotal));
 
-    // Value added tax point date BT-7
-    ifNotNull (aUBLDoc.getTaxPointDateValue (), x -> {
+    final Supplier <TradeTaxType> fGetOrCreateTradeTax = () -> {
       if (ret.hasApplicableTradeTaxEntries ())
-        ret.getApplicableTradeTaxAtIndex (0).setTaxPointDate (convertDate (x.toLocalDate ()));
-      else
-      {
-        TradeTaxType aTradeTax = new TradeTaxType ();
-        aTradeTax.setTaxPointDate (convertDate (x.toLocalDate ()));
-        ret.addApplicableTradeTax (aTradeTax);
-      }
-    });
+        return ret.getApplicableTradeTaxAtIndex (0);
+      final TradeTaxType aTradeTax = new TradeTaxType ();
+      ret.addApplicableTradeTax (aTradeTax);
+      return aTradeTax;
+    };
+
+    // Value added tax point date BT-7
+    ifNotNull (aUBLDoc.getTaxPointDateValue (), x -> fGetOrCreateTradeTax.get ().setTaxPointDate (convertDate (x.toLocalDate ())));
 
     if (aUBLDoc.hasInvoicePeriodEntries ())
     {
       final PeriodType aUBLPeriod = aUBLDoc.getInvoicePeriodAtIndex (0);
+
+      // Value added tax point date code BT-8
+      if (aUBLPeriod.hasDescriptionCodeEntries ())
+        ifNotEmpty (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue (), x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
       final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
       if (aUBLPeriod.getStartDate () != null)
@@ -224,7 +229,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
     for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
-      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans));
+      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans, null));
 
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (), TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
@@ -302,7 +307,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         if (aCustomerParty != null)
           aHTAT.setBuyerTradeParty (convertParty (aCustomerParty.getParty ()));
 
-        // BuyerOrderReferencedDocument
+        // Project reference BT-11
+        // Not available in CreditNote
+
+        // Purchase order reference BT-13
         if (aUBLDoc.getOrderReference () != null && aUBLDoc.getOrderReference ().getID () != null)
         {
           final ReferencedDocumentType aRDT = new ReferencedDocumentType ();
