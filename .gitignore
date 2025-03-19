@@ -3,9 +3,9 @@
 zz
 
 .settings/
-generated/
+# generated/
 target/
 
-*-cii.xml
+# *-cii.xml
 pom.xml.releaseBackup
 release.properties

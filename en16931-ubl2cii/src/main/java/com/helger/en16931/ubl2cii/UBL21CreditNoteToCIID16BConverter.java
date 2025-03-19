@@ -21,6 +21,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.helger.commons.ValueEnforcer;
+import com.helger.commons.collection.impl.CommonsArrayList;
+import com.helger.commons.collection.impl.ICommonsList;
 import com.helger.commons.error.list.ErrorList;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
@@ -37,6 +39,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.Tax
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSchemeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSubtotalType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxTotalType;
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.TaxAmountType;
 import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.*;
@@ -84,8 +87,8 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     for (final ItemPropertyType aUBLAddItemProp : aUBLLine.getItem ().getAdditionalItemProperty ())
     {
       final ProductCharacteristicType aPCT = new ProductCharacteristicType ();
-      ifNotNull (aPCT::addDescription, convertText (aUBLAddItemProp.getNameValue ()));
-      ifNotNull (aPCT::addValue, convertText (aUBLAddItemProp.getValueValue ()));
+      ifNotNull (convertText (aUBLAddItemProp.getNameValue ()), aPCT::addDescription);
+      ifNotNull (convertText (aUBLAddItemProp.getValueValue ()), aPCT::addValue);
       aTPT.addApplicableProductCharacteristic (aPCT);
     }
 
@@ -94,8 +97,8 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     {
       final ProductClassificationType aPCT = new ProductClassificationType ();
       final CodeType aCT = new CodeType ();
-      ifNotEmpty (aCT::setListID, aUBLCC.getItemClassificationCode ().getListID ());
-      ifNotEmpty (aCT::setValue, aUBLCC.getItemClassificationCode ().getValue ());
+      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListID (), aCT::setListID);
+      ifNotEmpty (aUBLCC.getItemClassificationCode ().getValue (), aCT::setValue);
       aPCT.setClassCode (aCT);
       aTPT.addDesignatedProductClassification (aPCT);
     }
@@ -130,128 +133,146 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     ret.setSpecifiedLineTradeDelivery (aLTDT);
 
     // SpecifiedLineTradeSettlement
-    final LineTradeSettlementType aSLTS = new LineTradeSettlementType ();
+    final LineTradeSettlementType aLineTradeSettlement = new LineTradeSettlementType ();
     for (final TaxCategoryType aUBLTaxCategory : aUBLLine.getItem ().getClassifiedTaxCategory ())
     {
       final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
 
       final TradeTaxType aTradeTax = new TradeTaxType ();
       if (aUBLTaxScheme != null)
-        ifNotEmpty (aTradeTax::setTypeCode, aUBLTaxCategory.getTaxScheme ().getIDValue ());
-      ifNotEmpty (aTradeTax::setCategoryCode, aUBLTaxCategory.getIDValue ());
-      ifNotNull (aTradeTax::setRateApplicablePercent, aUBLTaxCategory.getPercentValue ());
-      aSLTS.addApplicableTradeTax (aTradeTax);
+        ifNotEmpty (aUBLTaxCategory.getTaxScheme ().getIDValue (), aTradeTax::setTypeCode);
+      ifNotEmpty (aUBLTaxCategory.getIDValue (), aTradeTax::setCategoryCode);
+      ifNotNull (aUBLTaxCategory.getPercentValue (), aTradeTax::setRateApplicablePercent);
+      aLineTradeSettlement.addApplicableTradeTax (aTradeTax);
     }
 
-    final TradeSettlementLineMonetarySummationType aTSLMST = new TradeSettlementLineMonetarySummationType ();
-    ifNotNull (aTSLMST::addLineTotalAmount, convertAmount (aUBLLine.getLineExtensionAmount ()));
+    final TradeSettlementLineMonetarySummationType aLineMonetarySum = new TradeSettlementLineMonetarySummationType ();
+    ifNotNull (convertAmount (aUBLLine.getLineExtensionAmount ()), aLineMonetarySum::addLineTotalAmount);
 
     if (aUBLLine.getAccountingCostValue () != null)
     {
       final TradeAccountingAccountType aTAATL = new TradeAccountingAccountType ();
       aTAATL.setID (aUBLLine.getAccountingCostValue ());
-      aSLTS.addReceivableSpecifiedTradeAccountingAccount (aTAATL);
+      aLineTradeSettlement.addReceivableSpecifiedTradeAccountingAccount (aTAATL);
     }
 
-    aSLTS.setSpecifiedTradeSettlementLineMonetarySummation (aTSLMST);
-    ret.setSpecifiedLineTradeSettlement (aSLTS);
+    aLineTradeSettlement.setSpecifiedTradeSettlementLineMonetarySummation (aLineMonetarySum);
+    ret.setSpecifiedLineTradeSettlement (aLineTradeSettlement);
 
     return ret;
   }
 
   @Nonnull
-  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@Nonnull final CreditNoteType aUBLCreditNote)
+  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@Nonnull final CreditNoteType aUBLDoc)
   {
     final HeaderTradeSettlementType ret = new HeaderTradeSettlementType ();
 
-    final PaymentMeansType aUBLPaymentMeans = aUBLCreditNote.hasPaymentMeansEntries () ? aUBLCreditNote.getPaymentMeansAtIndex (0)
-                                                                                    : null;
+    final PaymentMeansType aUBLPaymentMeans = aUBLDoc.hasPaymentMeansEntries () ? aUBLDoc.getPaymentMeansAtIndex (0) : null;
 
     if (aUBLPaymentMeans != null && aUBLPaymentMeans.hasPaymentIDEntries ())
       ret.addPaymentReference (convertText (aUBLPaymentMeans.getPaymentIDAtIndex (0).getValue ()));
 
-    ifNotEmpty (ret::setInvoiceCurrencyCode, aUBLCreditNote.getDocumentCurrencyCodeValue ());
-    ifNotNull (ret::setPayeeTradeParty, convertParty (aUBLCreditNote.getPayeeParty ()));
+    // Invoice currency code BT-5
+    ifNotEmpty (aUBLDoc.getDocumentCurrencyCodeValue (), ret::setInvoiceCurrencyCode);
+
+    // Tax currency code BT-6
+    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
+
+    ifNotNull (convertParty (aUBLDoc.getPayeeParty ()), ret::setPayeeTradeParty);
 
     if (aUBLPaymentMeans != null)
     {
       final TradeSettlementPaymentMeansType aTSPMT = new TradeSettlementPaymentMeansType ();
-      ifNotEmpty (aTSPMT::setTypeCode, aUBLPaymentMeans.getPaymentMeansCodeValue ());
+      ifNotEmpty (aUBLPaymentMeans.getPaymentMeansCodeValue (), aTSPMT::setTypeCode);
 
       final CreditorFinancialAccountType aCFAT = new CreditorFinancialAccountType ();
       if (aUBLPaymentMeans.getPayeeFinancialAccount () != null)
-        ifNotEmpty (aCFAT::setIBANID, aUBLPaymentMeans.getPayeeFinancialAccount ().getIDValue ());
+        ifNotEmpty (aUBLPaymentMeans.getPayeeFinancialAccount ().getIDValue (), aCFAT::setIBANID);
       aTSPMT.setPayeePartyCreditorFinancialAccount (aCFAT);
       ret.addSpecifiedTradeSettlementPaymentMeans (aTSPMT);
     }
 
-    for (final TaxTotalType aUBLTaxTotal : aUBLCreditNote.getTaxTotal ())
+    for (final TaxTotalType aUBLTaxTotal : aUBLDoc.getTaxTotal ())
       for (final TaxSubtotalType aUBLTaxSubtotal : aUBLTaxTotal.getTaxSubtotal ())
         ret.addApplicableTradeTax (convertApplicableTradeTax (aUBLTaxSubtotal));
 
-    if (aUBLCreditNote.hasInvoicePeriodEntries ())
+    // Value added tax point date BT-7
+    ifNotNull (aUBLDoc.getTaxPointDateValue (), x -> {
+      if (ret.hasApplicableTradeTaxEntries ())
+        ret.getApplicableTradeTaxAtIndex (0).setTaxPointDate (convertDate (x.toLocalDate ()));
+      else
+      {
+        TradeTaxType aTradeTax = new TradeTaxType ();
+        aTradeTax.setTaxPointDate (convertDate (x.toLocalDate ()));
+        ret.addApplicableTradeTax (aTradeTax);
+      }
+    });
+
+    if (aUBLDoc.hasInvoicePeriodEntries ())
     {
-      final PeriodType aUBLPeriod = aUBLCreditNote.getInvoicePeriodAtIndex (0);
+      final PeriodType aUBLPeriod = aUBLDoc.getInvoicePeriodAtIndex (0);
 
       final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
       if (aUBLPeriod.getStartDate () != null)
-        aSPT.setStartDateTime (convertDate (aUBLPeriod.getStartDate ().getValueLocal ()));
+        aSPT.setStartDateTime (convertDateTime (aUBLPeriod.getStartDate ().getValueLocal ()));
       if (aUBLPeriod.getEndDate () != null)
-        aSPT.setEndDateTime (convertDate (aUBLPeriod.getEndDate ().getValueLocal ()));
+        aSPT.setEndDateTime (convertDateTime (aUBLPeriod.getEndDate ().getValueLocal ()));
       ret.setBillingSpecifiedPeriod (aSPT);
     }
 
-    for (final AllowanceChargeType aUBLAllowanceCharge : aUBLCreditNote.getAllowanceCharge ())
+    for (final AllowanceChargeType aUBLAllowanceCharge : aUBLDoc.getAllowanceCharge ())
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
-    for (final PaymentTermsType aUBLPaymentTerms : aUBLCreditNote.getPaymentTerms ())
+    for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
       ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans));
 
-    final TaxTotalType aUBLTaxTotal = aUBLCreditNote.hasTaxTotalEntries () ? aUBLCreditNote.getTaxTotalAtIndex (0) : null;
-    ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLCreditNote.getLegalMonetaryTotal (),
-                                                                                                                   aUBLTaxTotal));
+    final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (), TaxTotalType::getTaxAmount);
+    ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
+                                                                                                                   aUBLTaxTotalAmounts));
 
-    if (aUBLCreditNote.getAccountingCost () != null)
-    {
+    ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {
       final TradeAccountingAccountType aTAAT = new TradeAccountingAccountType ();
-      aTAAT.setID (aUBLCreditNote.getAccountingCost ().getValue ());
+      aTAAT.setID (x);
       ret.addReceivableSpecifiedTradeAccountingAccount (aTAAT);
-    }
+    });
 
     return ret;
   }
 
   @Nullable
-  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@Nonnull final CreditNoteType aUBLCreditNote,
+  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@Nonnull final CreditNoteType aUBLDoc,
                                                                         @Nonnull final ErrorList aErrorList)
   {
-    ValueEnforcer.notNull (aUBLCreditNote, "UBLInvoice");
+    ValueEnforcer.notNull (aUBLDoc, "UBLCreditNote");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
     final CrossIndustryInvoiceType aCIIInvoice = new CrossIndustryInvoiceType ();
 
     {
       final ExchangedDocumentContextType aEDCT = new ExchangedDocumentContextType ();
-      if (aUBLCreditNote.getCustomizationID () != null)
-      {
+      // BT-24
+      ifNotEmpty (aUBLDoc.getCustomizationIDValue (), x -> {
         final DocumentContextParameterType aDCP = new DocumentContextParameterType ();
-        aDCP.setID (aUBLCreditNote.getCustomizationIDValue ());
+        aDCP.setID (x);
         aEDCT.addGuidelineSpecifiedDocumentContextParameter (aDCP);
-      }
+      });
       aCIIInvoice.setExchangedDocumentContext (aEDCT);
     }
 
     {
       final ExchangedDocumentType aEDT = new ExchangedDocumentType ();
-      ifNotEmpty (aEDT::setID, aUBLCreditNote.getIDValue ());
-      ifNotEmpty (aEDT::setTypeCode, aUBLCreditNote.getCreditNoteTypeCodeValue ());
 
-      // IssueDate
-      if (aUBLCreditNote.getIssueDate () != null)
-        aEDT.setIssueDateTime (convertDate (aUBLCreditNote.getIssueDate ().getValueLocal ()));
+      // Invoice number BT-1
+      ifNotEmpty (aUBLDoc.getIDValue (), aEDT::setID);
 
-      // Add add IncludedNote
-      for (final var aNote : aUBLCreditNote.getNote ())
+      // Invoice type code BT-3
+      ifNotEmpty (aUBLDoc.getCreditNoteTypeCodeValue (), aEDT::setTypeCode);
+
+      // IssueDate BT-2
+      ifNotNull (aUBLDoc.getIssueDate (), x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal ())));
+
+      // Add IncludedNote
+      for (final var aNote : aUBLDoc.getNote ())
         aEDT.addIncludedNote (convertNote (aNote));
 
       aCIIInvoice.setExchangedDocument (aEDT);
@@ -261,51 +282,54 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       final SupplyChainTradeTransactionType aSCTT = new SupplyChainTradeTransactionType ();
 
       // IncludedSupplyChainTradeLineItem
-      for (final var aLine : aUBLCreditNote.getCreditNoteLine ())
+      for (final var aLine : aUBLDoc.getCreditNoteLine ())
         aSCTT.addIncludedSupplyChainTradeLineItem (_convertCreditNoteLine (aLine));
 
       // ApplicableHeaderTradeAgreement
       {
         final HeaderTradeAgreementType aHTAT = new HeaderTradeAgreementType ();
 
+        // Buyer reference (BT-10)
+        ifNotEmpty (aUBLDoc.getBuyerReferenceValue (), aHTAT::setBuyerReference);
+
         // SellerTradeParty
-        final SupplierPartyType aSupplierParty = aUBLCreditNote.getAccountingSupplierParty ();
+        final SupplierPartyType aSupplierParty = aUBLDoc.getAccountingSupplierParty ();
         if (aSupplierParty != null)
           aHTAT.setSellerTradeParty (convertParty (aSupplierParty.getParty ()));
 
         // BuyerTradeParty
-        final CustomerPartyType aCustomerParty = aUBLCreditNote.getAccountingCustomerParty ();
+        final CustomerPartyType aCustomerParty = aUBLDoc.getAccountingCustomerParty ();
         if (aCustomerParty != null)
           aHTAT.setBuyerTradeParty (convertParty (aCustomerParty.getParty ()));
 
         // BuyerOrderReferencedDocument
-        if (aUBLCreditNote.getOrderReference () != null && aUBLCreditNote.getOrderReference ().getID () != null)
+        if (aUBLDoc.getOrderReference () != null && aUBLDoc.getOrderReference ().getID () != null)
         {
           final ReferencedDocumentType aRDT = new ReferencedDocumentType ();
-          aRDT.setIssuerAssignedID (aUBLCreditNote.getOrderReference ().getIDValue ());
+          aRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());
           aHTAT.setBuyerOrderReferencedDocument (aRDT);
         }
 
         // ContractReferencedDocument
-        if (aUBLCreditNote.hasContractDocumentReferenceEntries ())
+        if (aUBLDoc.hasContractDocumentReferenceEntries ())
         {
           final ReferencedDocumentType aCRDT = new ReferencedDocumentType ();
-          aCRDT.setIssuerAssignedID (aUBLCreditNote.getContractDocumentReferenceAtIndex (0).getIDValue ());
+          aCRDT.setIssuerAssignedID (aUBLDoc.getContractDocumentReferenceAtIndex (0).getIDValue ());
           aHTAT.setContractReferencedDocument (aCRDT);
         }
 
         // AdditionalReferencedDocument
-        for (final var aUBLDocDesc : aUBLCreditNote.getAdditionalDocumentReference ())
+        for (final var aUBLDocDesc : aUBLDoc.getAdditionalDocumentReference ())
           aHTAT.addAdditionalReferencedDocument (convertAdditionalReferencedDocument (aUBLDocDesc));
         aSCTT.setApplicableHeaderTradeAgreement (aHTAT);
       }
 
       // ApplicableHeaderTradeDelivery
-      aSCTT.setApplicableHeaderTradeDelivery (createApplicableHeaderTradeDelivery (aUBLCreditNote.hasDeliveryEntries () ? aUBLCreditNote.getDeliveryAtIndex (0)
-                                                                                                                        : null));
+      aSCTT.setApplicableHeaderTradeDelivery (createApplicableHeaderTradeDelivery (aUBLDoc.hasDeliveryEntries () ? aUBLDoc.getDeliveryAtIndex (0)
+                                                                                                                 : null));
 
       // ApplicableHeaderTradeSettlement
-      aSCTT.setApplicableHeaderTradeSettlement (_createApplicableHeaderTradeSettlement (aUBLCreditNote));
+      aSCTT.setApplicableHeaderTradeSettlement (_createApplicableHeaderTradeSettlement (aUBLDoc));
 
       aCIIInvoice.setSupplyChainTradeTransaction (aSCTT);
     }

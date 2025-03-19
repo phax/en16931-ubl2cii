@@ -131,6 +131,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReference>0150abc</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:ID>99887766</ram:ID>
         <ram:Name>SupplierTradingName Ltd.</ram:Name>

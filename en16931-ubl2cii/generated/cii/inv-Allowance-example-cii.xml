@@ -143,6 +143,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReference>0150abc</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:ID>99887766</ram:ID>
         <ram:Name>SupplierTradingName Ltd.</ram:Name>
@@ -221,6 +222,7 @@
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:PaymentReference>Snippet1</ram:PaymentReference>
+      <ram:TaxCurrencyCode>SEK</ram:TaxCurrencyCode>
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
       <ram:SpecifiedTradeSettlementPaymentMeans>
         <ram:TypeCode>30</ram:TypeCode>
@@ -233,6 +235,9 @@
         <ram:TypeCode>VAT</ram:TypeCode>
         <ram:BasisAmount>4900</ram:BasisAmount>
         <ram:CategoryCode>S</ram:CategoryCode>
+        <ram:TaxPointDate>
+          <udt:DateString format="102">20171201</udt:DateString>
+        </ram:TaxPointDate>
         <ram:RateApplicablePercent>25</ram:RateApplicablePercent>
       </ram:ApplicableTradeTax>
       <ram:ApplicableTradeTax>
@@ -288,6 +293,7 @@
         <ram:AllowanceTotalAmount>200</ram:AllowanceTotalAmount>
         <ram:TaxBasisTotalAmount>5900</ram:TaxBasisTotalAmount>
         <ram:TaxTotalAmount currencyID="EUR">1225</ram:TaxTotalAmount>
+        <ram:TaxTotalAmount currencyID="SEK">9324</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>7125</ram:GrandTotalAmount>
         <ram:TotalPrepaidAmount>1000</ram:TotalPrepaidAmount>
         <ram:DuePayableAmount>6125</ram:DuePayableAmount>

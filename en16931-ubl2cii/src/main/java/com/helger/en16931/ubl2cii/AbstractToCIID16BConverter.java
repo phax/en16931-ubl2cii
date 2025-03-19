@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.helger.commons.collection.impl.ICommonsList;
 import com.helger.commons.datetime.PDTFactory;
 import com.helger.commons.math.MathHelper;
 import com.helger.commons.string.StringHelper;
@@ -44,7 +45,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.Pay
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxCategoryType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSchemeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSubtotalType;
-import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxTotalType;
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.TaxAmountType;
 import un.unece.uncefact.data.standard.qualifieddatatype._100.FormattedDateTimeType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.HeaderTradeDeliveryType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LegalOrganizationType;
@@ -73,7 +74,7 @@ public abstract class AbstractToCIID16BConverter
 {
   private static final String CII_DATE_FORMAT = "102";
 
-  protected static <T> boolean ifNotNull (@Nonnull final Consumer <? super T> aConsumer, @Nullable final T aObj)
+  protected static <T> boolean ifNotNull (@Nullable final T aObj, @Nonnull final Consumer <? super T> aConsumer)
   {
     if (aObj == null)
       return false;
@@ -81,7 +82,7 @@ public abstract class AbstractToCIID16BConverter
     return true;
   }
 
-  protected static boolean ifNotEmpty (@Nonnull final Consumer <? super String> aConsumer, @Nullable final String s)
+  protected static boolean ifNotEmpty (@Nullable final String s, @Nonnull final Consumer <? super String> aConsumer)
   {
     if (StringHelper.hasNoText (s))
       return false;
@@ -134,13 +135,36 @@ public abstract class AbstractToCIID16BConverter
   }
 
   @Nullable
-  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType convertDate (@Nullable final LocalDate aLocalDate)
+  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType convertDateTime (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
 
     final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType ret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType ();
     ret.setDateTimeString (createDateTimeString (aLocalDate));
+    return ret;
+  }
+
+  @Nullable
+  private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString createDateString (@Nullable final LocalDate aLocalDate)
+  {
+    if (aLocalDate == null)
+      return null;
+
+    final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString aret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString ();
+    aret.setFormat (CII_DATE_FORMAT);
+    aret.setValue (createFormattedDateValue (aLocalDate));
+    return aret;
+  }
+
+  @Nullable
+  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType convertDate (@Nullable final LocalDate aLocalDate)
+  {
+    if (aLocalDate == null)
+      return null;
+
+    final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType ret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType ();
+    ret.setDateString (createDateString (aLocalDate));
     return ret;
   }
 
@@ -162,15 +186,9 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final IDType ret = new IDType ();
-    ifNotNull (ret::setSchemeID, aUBLID.getSchemeID ());
-    ifNotNull (ret::setValue, aUBLID.getValue ());
+    ifNotNull (aUBLID.getSchemeID (), ret::setSchemeID);
+    ifNotNull (aUBLID.getValue (), ret::setValue);
     return ret;
-  }
-
-  @Nullable
-  protected static AmountType convertAmount (@Nullable final com.helger.xsds.ccts.cct.schemamodule.AmountType aUBLAmount)
-  {
-    return convertAmount (aUBLAmount, false);
   }
 
   @Nullable
@@ -183,8 +201,14 @@ public abstract class AbstractToCIID16BConverter
     final AmountType ret = new AmountType ();
     if (bWithCurrency)
       ret.setCurrencyID (aUBLAmount.getCurrencyID ());
-    ifNotNull (ret::setValue, MathHelper.getWithoutTrailingZeroes (aUBLAmount.getValue ()));
+    ifNotNull (MathHelper.getWithoutTrailingZeroes (aUBLAmount.getValue ()), ret::setValue);
     return ret;
+  }
+
+  @Nullable
+  protected static AmountType convertAmount (@Nullable final com.helger.xsds.ccts.cct.schemamodule.AmountType aUBLAmount)
+  {
+    return convertAmount (aUBLAmount, false);
   }
 
   @Nullable
@@ -207,16 +231,16 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final TradeAddressType ret = new TradeAddressType ();
-    ifNotEmpty (ret::setLineOne, aUBLAddress.getStreetNameValue ());
-    ifNotEmpty (ret::setLineTwo, aUBLAddress.getAdditionalStreetNameValue ());
+    ifNotEmpty (aUBLAddress.getStreetNameValue (), ret::setLineOne);
+    ifNotEmpty (aUBLAddress.getAdditionalStreetNameValue (), ret::setLineTwo);
     if (aUBLAddress.hasAddressLineEntries ())
-      ifNotEmpty (ret::setLineThree, aUBLAddress.getAddressLineAtIndex (0).getLineValue ());
-    ifNotEmpty (ret::setCityName, aUBLAddress.getCityNameValue ());
-    ifNotEmpty (ret::setPostcodeCode, aUBLAddress.getPostalZoneValue ());
+      ifNotEmpty (aUBLAddress.getAddressLineAtIndex (0).getLineValue (), ret::setLineThree);
+    ifNotEmpty (aUBLAddress.getCityNameValue (), ret::setCityName);
+    ifNotEmpty (aUBLAddress.getPostalZoneValue (), ret::setPostcodeCode);
     if (aUBLAddress.getCountrySubentity () != null)
       ret.addCountrySubDivisionName (convertText (aUBLAddress.getCountrySubentity ().getValue ()));
     if (aUBLAddress.getCountry () != null)
-      ifNotEmpty (ret::setCountryID, aUBLAddress.getCountry ().getIdentificationCodeValue ());
+      ifNotEmpty (aUBLAddress.getCountry ().getIdentificationCodeValue (), ret::setCountryID);
     return ret;
   }
 
@@ -228,35 +252,35 @@ public abstract class AbstractToCIID16BConverter
 
     final TradePartyType aTPT = new TradePartyType ();
     for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
-      ifNotNull (aTPT::addID, convertID (aUBLPartyID.getID ()));
+      ifNotNull (convertID (aUBLPartyID.getID ()), aTPT::addID);
 
     if (aUBLParty.hasPartyNameEntries ())
-      ifNotEmpty (aTPT::setName, aUBLParty.getPartyNameAtIndex (0).getNameValue ());
+      ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aTPT::setName);
 
     if (aUBLParty.hasPartyLegalEntityEntries ())
     {
       final PartyLegalEntityType aUBLLegalEntity = aUBLParty.getPartyLegalEntity ().get (0);
 
       final LegalOrganizationType aLOT = new LegalOrganizationType ();
-      ifNotEmpty (aLOT::setTradingBusinessName, aUBLLegalEntity.getRegistrationNameValue ());
-      ifNotNull (aLOT::setID, convertID (aUBLLegalEntity.getCompanyID ()));
-      ifNotNull (aLOT::setPostalTradeAddress, convertAddress (aUBLLegalEntity.getRegistrationAddress ()));
+      ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aLOT::setTradingBusinessName);
+      ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID);
+      ifNotNull (convertAddress (aUBLLegalEntity.getRegistrationAddress ()), aLOT::setPostalTradeAddress);
 
       if (StringHelper.hasNoText (aTPT.getNameValue ()))
       {
         // Fill mandatory field
-        ifNotEmpty (aTPT::setName, aUBLLegalEntity.getRegistrationNameValue ());
+        ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);
       }
 
       aTPT.setSpecifiedLegalOrganization (aLOT);
     }
 
-    ifNotNull (aTPT::setPostalTradeAddress, convertAddress (aUBLParty.getPostalAddress ()));
+    ifNotNull (convertAddress (aUBLParty.getPostalAddress ()), aTPT::setPostalTradeAddress);
 
     if (aUBLParty.getEndpointID () != null)
     {
       final UniversalCommunicationType aUCT = new UniversalCommunicationType ();
-      ifNotNull (aUCT::setURIID, convertID (aUBLParty.getEndpointID ()));
+      ifNotNull (convertID (aUBLParty.getEndpointID ()), aUCT::setURIID);
       aTPT.addURIUniversalCommunication (aUCT);
     }
 
@@ -270,7 +294,7 @@ public abstract class AbstractToCIID16BConverter
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
           // MUST use "VA" scheme
-          ifNotEmpty (aID::setSchemeID, _getAsVAIfNecessary (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()));
+          ifNotEmpty (_getAsVAIfNecessary (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()), aID::setSchemeID);
         }
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
@@ -284,7 +308,7 @@ public abstract class AbstractToCIID16BConverter
   {
     final ReferencedDocumentType aURDT = new ReferencedDocumentType ();
 
-    ifNotEmpty (aURDT::setIssuerAssignedID, aUBLDocRef.getIDValue ());
+    ifNotEmpty (aUBLDocRef.getIDValue (), aURDT::setIssuerAssignedID);
 
     // Add DocumentTypeCode where possible
     if (isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
@@ -302,9 +326,9 @@ public abstract class AbstractToCIID16BConverter
     for (final var aUBLDocDesc : aUBLDocRef.getDocumentDescription ())
     {
       final TextType aText = new TextType ();
-      ifNotEmpty (aText::setValue, aUBLDocDesc.getValue ());
-      ifNotEmpty (aText::setLanguageID, aUBLDocDesc.getLanguageID ());
-      ifNotEmpty (aText::setLanguageLocaleID, aUBLDocDesc.getLanguageLocaleID ());
+      ifNotEmpty (aUBLDocDesc.getValue (), aText::setValue);
+      ifNotEmpty (aUBLDocDesc.getLanguageID (), aText::setLanguageID);
+      ifNotEmpty (aUBLDocDesc.getLanguageLocaleID (), aText::setLanguageLocaleID);
       aURDT.addName (aText);
     }
 
@@ -315,14 +339,14 @@ public abstract class AbstractToCIID16BConverter
       // mutually exclusive
       if (aUBLAttachment.getExternalReference () != null && aUBLAttachment.getExternalReference ().getURI () != null)
       {
-        ifNotEmpty (aURDT::setURIID, aUBLAttachment.getExternalReference ().getURI ().getValue ());
+        ifNotEmpty (aUBLAttachment.getExternalReference ().getURI ().getValue (), aURDT::setURIID);
       }
 
       if (aUBLAttachment.getEmbeddedDocumentBinaryObject () != null)
       {
         final BinaryObjectType aBOT = new BinaryObjectType ();
-        ifNotEmpty (aBOT::setMimeCode, aUBLAttachment.getEmbeddedDocumentBinaryObject ().getMimeCode ());
-        ifNotNull (aBOT::setValue, aUBLAttachment.getEmbeddedDocumentBinaryObject ().getValue ());
+        ifNotEmpty (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getMimeCode (), aBOT::setMimeCode);
+        ifNotNull (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getValue (), aBOT::setValue);
         aURDT.addAttachmentBinaryObject (aBOT);
       }
     }
@@ -341,15 +365,15 @@ public abstract class AbstractToCIID16BConverter
       if (aUBLLocation != null)
       {
         final TradePartyType aTPTHT = new TradePartyType ();
-        ifNotNull (aTPTHT::addID, convertID (aUBLLocation.getID ()));
-        ifNotNull (aTPTHT::setPostalTradeAddress, convertAddress (aUBLLocation.getAddress ()));
+        ifNotNull (convertID (aUBLLocation.getID ()), aTPTHT::addID);
+        ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress);
         ret.setShipToTradeParty (aTPTHT);
       }
 
       if (aUBLDelivery.getActualDeliveryDate () != null)
       {
         final SupplyChainEventType aSCET = new SupplyChainEventType ();
-        aSCET.setOccurrenceDateTime (convertDate (aUBLDelivery.getActualDeliveryDate ().getValueLocal ()));
+        aSCET.setOccurrenceDateTime (convertDateTime (aUBLDelivery.getActualDeliveryDate ().getValueLocal ()));
         ret.setActualDeliverySupplyChainEvent (aSCET);
       }
     }
@@ -364,15 +388,15 @@ public abstract class AbstractToCIID16BConverter
 
     final TradeTaxType ret = new TradeTaxType ();
     if (aUBLTaxScheme != null)
-      ifNotEmpty (ret::setTypeCode, aUBLTaxScheme.getIDValue ());
-    ifNotEmpty (ret::setCategoryCode, aUBLTaxCategory.getIDValue ());
-    ifNotNull (ret::addCalculatedAmount, convertAmount (aUBLTaxSubtotal.getTaxAmount ()));
-    ifNotEmpty (ret::setCategoryCode, aUBLTaxCategory.getIDValue ());
-    ifNotNull (ret::addBasisAmount, convertAmount (aUBLTaxSubtotal.getTaxableAmount ()));
-    ifNotNull (ret::setRateApplicablePercent, aUBLTaxCategory.getPercentValue ());
+      ifNotEmpty (aUBLTaxScheme.getIDValue (), ret::setTypeCode);
+    ifNotEmpty (aUBLTaxCategory.getIDValue (), ret::setCategoryCode);
+    ifNotNull (convertAmount (aUBLTaxSubtotal.getTaxAmount ()), ret::addCalculatedAmount);
+    ifNotEmpty (aUBLTaxCategory.getIDValue (), ret::setCategoryCode);
+    ifNotNull (convertAmount (aUBLTaxSubtotal.getTaxableAmount ()), ret::addBasisAmount);
+    ifNotNull (aUBLTaxCategory.getPercentValue (), ret::setRateApplicablePercent);
     if (aUBLTaxCategory.hasTaxExemptionReasonEntries ())
-      ifNotEmpty (ret::setExemptionReason, aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue ());
-    ifNotEmpty (ret::setExemptionReasonCode, aUBLTaxCategory.getTaxExemptionReasonCodeValue ());
+      ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue (), ret::setExemptionReason);
+    ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonCodeValue (), ret::setExemptionReasonCode);
     return ret;
   }
 
@@ -386,11 +410,11 @@ public abstract class AbstractToCIID16BConverter
     ret.setChargeIndicator (aITDC);
 
     ret.addActualAmount (convertAmount (aUBLAllowanceCharge.getAmount ()));
-    ifNotEmpty (ret::setReasonCode, aUBLAllowanceCharge.getAllowanceChargeReasonCodeValue ());
+    ifNotEmpty (aUBLAllowanceCharge.getAllowanceChargeReasonCodeValue (), ret::setReasonCode);
     if (aUBLAllowanceCharge.hasAllowanceChargeReasonEntries ())
       ret.setReason (aUBLAllowanceCharge.getAllowanceChargeReason ().get (0).getValue ());
-    ifNotNull (ret::setCalculationPercent, aUBLAllowanceCharge.getMultiplierFactorNumericValue ());
-    ifNotNull (ret::setBasisAmount, aUBLAllowanceCharge.getBaseAmountValue ());
+    ifNotNull (aUBLAllowanceCharge.getMultiplierFactorNumericValue (), ret::setCalculationPercent);
+    ifNotNull (aUBLAllowanceCharge.getBaseAmountValue (), ret::setBasisAmount);
 
     if (aUBLAllowanceCharge.hasTaxCategoryEntries ())
     {
@@ -399,9 +423,9 @@ public abstract class AbstractToCIID16BConverter
 
       final TradeTaxType aTradeTax = new TradeTaxType ();
       if (aUBLTaxSchene != null)
-        ifNotEmpty (aTradeTax::setTypeCode, aUBLTaxSchene.getIDValue ());
-      ifNotEmpty (aTradeTax::setCategoryCode, aUBLTaxCategory.getIDValue ());
-      ifNotNull (aTradeTax::setRateApplicablePercent, aUBLTaxCategory.getPercentValue ());
+        ifNotEmpty (aUBLTaxSchene.getIDValue (), aTradeTax::setTypeCode);
+      ifNotEmpty (aUBLTaxCategory.getIDValue (), aTradeTax::setCategoryCode);
+      ifNotNull (aUBLTaxCategory.getPercentValue (), aTradeTax::setRateApplicablePercent);
       ret.addCategoryTradeTax (aTradeTax);
     }
 
@@ -417,35 +441,36 @@ public abstract class AbstractToCIID16BConverter
       ret.addDescription (convertText (aNote.getValue ()));
 
     if (aUBLPaymentMeans != null && aUBLPaymentMeans.getPaymentDueDate () != null)
-      ret.setDueDateDateTime (convertDate (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+      ret.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
     return ret;
   }
 
   @Nonnull
   protected static TradeSettlementHeaderMonetarySummationType createSpecifiedTradeSettlementHeaderMonetarySummation (@Nullable final MonetaryTotalType aUBLMonetaryTotal,
-                                                                                                                     @Nullable final TaxTotalType aUBLTaxTotal)
+                                                                                                                     @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts)
   {
     final TradeSettlementHeaderMonetarySummationType ret = new TradeSettlementHeaderMonetarySummationType ();
     if (aUBLMonetaryTotal != null)
     {
-      ifNotNull (ret::addLineTotalAmount, convertAmount (aUBLMonetaryTotal.getLineExtensionAmount ()));
-      ifNotNull (ret::addChargeTotalAmount, convertAmount (aUBLMonetaryTotal.getChargeTotalAmount ()));
-      ifNotNull (ret::addAllowanceTotalAmount, convertAmount (aUBLMonetaryTotal.getAllowanceTotalAmount ()));
-      ifNotNull (ret::addTaxBasisTotalAmount, convertAmount (aUBLMonetaryTotal.getTaxExclusiveAmount ()));
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getLineExtensionAmount ()), ret::addLineTotalAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getChargeTotalAmount ()), ret::addChargeTotalAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getAllowanceTotalAmount ()), ret::addAllowanceTotalAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getTaxExclusiveAmount ()), ret::addTaxBasisTotalAmount);
     }
 
-    if (aUBLTaxTotal != null)
+    // BT-110 and BT-111
+    for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
       // Currency ID is required here
-      ifNotNull (ret::addTaxTotalAmount, convertAmount (aUBLTaxTotal.getTaxAmount (), true));
+      ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);
     }
 
     if (aUBLMonetaryTotal != null)
     {
-      ifNotNull (ret::addRoundingAmount, convertAmount (aUBLMonetaryTotal.getPayableRoundingAmount ()));
-      ifNotNull (ret::addGrandTotalAmount, convertAmount (aUBLMonetaryTotal.getTaxInclusiveAmount ()));
-      ifNotNull (ret::addTotalPrepaidAmount, convertAmount (aUBLMonetaryTotal.getPrepaidAmount ()));
-      ifNotNull (ret::addDuePayableAmount, convertAmount (aUBLMonetaryTotal.getPayableAmount ()));
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getPayableRoundingAmount ()), ret::addRoundingAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getTaxInclusiveAmount ()), ret::addGrandTotalAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getPrepaidAmount ()), ret::addTotalPrepaidAmount);
+      ifNotNull (convertAmount (aUBLMonetaryTotal.getPayableAmount ()), ret::addDuePayableAmount);
     }
 
     return ret;

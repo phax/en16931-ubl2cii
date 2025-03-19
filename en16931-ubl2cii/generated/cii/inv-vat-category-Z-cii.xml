@@ -44,6 +44,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReference>test reference</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:ID>7300010000001</ram:ID>
         <ram:Name>The Sellercompany Incorporated</ram:Name>
