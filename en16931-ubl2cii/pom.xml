@@ -30,6 +30,23 @@
   <inceptionYear>2024</inceptionYear>
   <url>https://github.com/phax/en16931-ubl2cii/en16931-ubl2cii</url>
 
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>philip</id>
+      <name>Philip Helger</name>
+      <email>ph(at)helger.com</email>
+      <url>https://www.helger.com</url>
+    </developer>
+  </developers>
+
   <dependencies>
     <dependency>
       <groupId>com.helger.ubl</groupId>

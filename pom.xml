@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.helger</groupId>
     <artifactId>parent-pom</artifactId>
-    <version>2.0.8</version>
+    <version>2.1.2</version>
   </parent>
   <artifactId>en16931-ubl2cii-parent-pom</artifactId>
   <version>1.1.2-SNAPSHOT</version>
@@ -43,7 +43,7 @@
     <connection>scm:git:https://github.com/phax/en16931-ubl2cii.git</connection>
     <developerConnection>scm:git:https://github.com/phax/en16931-ubl2cii.git</developerConnection>
     <url>https://github.com/phax/en16931-ubl2cii</url>
-    <tag>en16931-ubl2cii-parent-pom-1.1.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
@@ -56,8 +56,8 @@
   </developers>
 
   <properties>
-    <phive-rules.version>3.2.6</phive-rules.version>
-    <picocli.version>4.7.6</picocli.version>
+    <phive-rules.version>3.2.10</phive-rules.version>
+    <picocli.version>4.7.7</picocli.version>
   </properties>
 
   <dependencyManagement>
@@ -65,7 +65,7 @@
       <dependency>
         <groupId>com.helger.commons</groupId>
         <artifactId>ph-commons-parent-pom</artifactId>
-        <version>11.2.0</version>
+        <version>11.2.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
