@@ -16,6 +16,8 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
+* v1.1.2 - 2025-05-31
+    * Only pushing to Maven Central
 * v1.1.1 - 2025-03-20
     * Improved mapping for BT-6, BT-7, BT-8, BT-9, BT-10, BT-11 and BT-111
 * v1.1.0 - 2025-02-22
