@@ -285,9 +285,7 @@ public abstract class AbstractToCIID16BConverter
       aTPT.addURIUniversalCommunication (aUCT);
     }
 
-    if (aUBLParty.hasPartyTaxSchemeEntries ())
-    {
-      final PartyTaxSchemeType aUBLPartyTaxScheme = aUBLParty.getPartyTaxSchemeAtIndex (0);
+    for (final PartyTaxSchemeType aUBLPartyTaxScheme : aUBLParty.getPartyTaxScheme ())
       if (aUBLPartyTaxScheme.getCompanyIDValue () != null)
       {
         final TaxRegistrationType aTaxReg = new TaxRegistrationType ();
@@ -300,7 +298,6 @@ public abstract class AbstractToCIID16BConverter
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
       }
-    }
     return aTPT;
   }
 
