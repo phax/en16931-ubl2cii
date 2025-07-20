@@ -16,7 +16,7 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
-* v1.1.3 - work in progress
+* v1.1.3 - 2025-07-20
     * Copying all `PartyTaxScheme` elements to CII
 * v1.1.2 - 2025-05-31
     * Only pushing to Maven Central
