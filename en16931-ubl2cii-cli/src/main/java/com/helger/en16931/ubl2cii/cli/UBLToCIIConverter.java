@@ -29,24 +29,23 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.helger.base.state.ESuccess;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
-import com.helger.commons.collection.impl.CommonsArrayList;
-import com.helger.commons.collection.impl.ICommonsList;
-import com.helger.commons.error.IError;
-import com.helger.commons.error.list.ErrorList;
-import com.helger.commons.io.file.FileHelper;
-import com.helger.commons.io.file.FileSystemIterator;
-import com.helger.commons.io.file.FileSystemRecursiveIterator;
-import com.helger.commons.io.file.FilenameHelper;
-import com.helger.commons.state.ESuccess;
+import com.helger.collection.commons.CommonsArrayList;
+import com.helger.collection.commons.ICommonsList;
+import com.helger.diagnostics.error.IError;
+import com.helger.diagnostics.error.list.ErrorList;
 import com.helger.en16931.ubl2cii.UBLToCIIConversionHelper;
 import com.helger.en16931.ubl2cii.UBLToCIIVersion;
+import com.helger.io.file.FileHelper;
+import com.helger.io.file.FileSystemIterator;
+import com.helger.io.file.FileSystemRecursiveIterator;
+import com.helger.io.file.FilenameHelper;
 
+import jakarta.annotation.Nonnull;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

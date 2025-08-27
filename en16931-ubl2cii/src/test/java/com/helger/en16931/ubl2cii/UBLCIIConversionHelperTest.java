@@ -25,8 +25,8 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
-import com.helger.commons.error.list.ErrorList;
-import com.helger.commons.io.file.FileHelper;
+import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.io.file.FileHelper;
 
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 

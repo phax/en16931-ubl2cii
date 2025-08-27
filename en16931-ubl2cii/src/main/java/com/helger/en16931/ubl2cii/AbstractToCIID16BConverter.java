@@ -22,15 +22,14 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.helger.base.numeric.BigHelper;
+import com.helger.base.string.StringHelper;
+import com.helger.collection.commons.ICommonsList;
+import com.helger.datetime.helper.PDTFactory;
+import com.helger.datetime.xml.XMLOffsetDate;
 
-import com.helger.commons.collection.impl.ICommonsList;
-import com.helger.commons.datetime.PDTFactory;
-import com.helger.commons.datetime.XMLOffsetDate;
-import com.helger.commons.math.MathHelper;
-import com.helger.commons.string.StringHelper;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AttachmentType;
@@ -85,7 +84,7 @@ public abstract class AbstractToCIID16BConverter
 
   protected static boolean ifNotEmpty (@Nullable final String s, @Nonnull final Consumer <? super String> aConsumer)
   {
-    if (StringHelper.hasNoText (s))
+    if (StringHelper.isEmpty (s))
       return false;
     aConsumer.accept (s);
     return true;
@@ -202,7 +201,7 @@ public abstract class AbstractToCIID16BConverter
     final AmountType ret = new AmountType ();
     if (bWithCurrency)
       ret.setCurrencyID (aUBLAmount.getCurrencyID ());
-    ifNotNull (MathHelper.getWithoutTrailingZeroes (aUBLAmount.getValue ()), ret::setValue);
+    ifNotNull (BigHelper.getWithoutTrailingZeroes (aUBLAmount.getValue ()), ret::setValue);
     return ret;
   }
 
@@ -267,7 +266,7 @@ public abstract class AbstractToCIID16BConverter
       ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID);
       ifNotNull (convertAddress (aUBLLegalEntity.getRegistrationAddress ()), aLOT::setPostalTradeAddress);
 
-      if (StringHelper.hasNoText (aTPT.getNameValue ()))
+      if (StringHelper.isEmpty (aTPT.getNameValue ()))
       {
         // Fill mandatory field
         ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);

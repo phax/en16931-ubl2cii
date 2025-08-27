@@ -27,8 +27,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.helger.commons.io.resource.FileSystemResource;
-import com.helger.commons.string.StringHelper;
+import com.helger.base.string.StringImplode;
+import com.helger.io.resource.FileSystemResource;
 import com.helger.phive.api.execute.ValidationExecutionManager;
 import com.helger.phive.api.result.ValidationResult;
 import com.helger.phive.api.result.ValidationResultList;
@@ -61,11 +61,11 @@ public final class TestIfAllUBLFilesAreEN16931CompliantFuncTest
       for (final ValidationResult aResult : aResultList)
       {
         if (!aResult.getErrorList ().isEmpty ())
-          LOGGER.error (StringHelper.imploder ()
-                                    .source (aResult.getErrorList (),
-                                             x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
-                                    .separator ('\n')
-                                    .build ());
+          LOGGER.error (StringImplode.imploder ()
+                                     .source (aResult.getErrorList (),
+                                              x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
+                                     .separator ('\n')
+                                     .build ());
         assertTrue ("Errors: " + aResult.getErrorList ().toString (), aResult.getErrorList ().isEmpty ());
       }
     }
@@ -88,11 +88,11 @@ public final class TestIfAllUBLFilesAreEN16931CompliantFuncTest
       for (final ValidationResult aResult : aResultList)
       {
         if (!aResult.getErrorList ().isEmpty ())
-          LOGGER.error (StringHelper.imploder ()
-                                    .source (aResult.getErrorList (),
-                                             x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
-                                    .separator ('\n')
-                                    .build ());
+          LOGGER.error (StringImplode.imploder ()
+                                     .source (aResult.getErrorList (),
+                                              x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
+                                     .separator ('\n')
+                                     .build ());
         assertTrue ("Errors: " + aResult.getErrorList ().toString (), aResult.getErrorList ().isEmpty ());
       }
     }

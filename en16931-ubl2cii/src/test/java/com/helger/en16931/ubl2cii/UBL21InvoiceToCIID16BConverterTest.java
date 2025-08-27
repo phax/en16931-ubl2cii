@@ -27,12 +27,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.helger.base.state.ESuccess;
+import com.helger.base.string.StringImplode;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
-import com.helger.commons.error.list.ErrorList;
-import com.helger.commons.io.file.FilenameHelper;
-import com.helger.commons.io.resource.FileSystemResource;
-import com.helger.commons.state.ESuccess;
-import com.helger.commons.string.StringHelper;
+import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.io.file.FilenameHelper;
+import com.helger.io.resource.FileSystemResource;
 import com.helger.phive.api.execute.ValidationExecutionManager;
 import com.helger.phive.api.result.ValidationResult;
 import com.helger.phive.api.result.ValidationResultList;
@@ -102,11 +102,11 @@ public final class UBL21InvoiceToCIID16BConverterTest
                                                                         .getAsString (aCrossIndustryInvoice));
 
           // Log errors
-          LOGGER.error (StringHelper.imploder ()
-                                    .source (aResult.getErrorList (),
-                                             x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
-                                    .separator ('\n')
-                                    .build ());
+          LOGGER.error (StringImplode.imploder ()
+                                     .source (aResult.getErrorList (),
+                                              x -> x.getErrorFieldName () + " - " + x.getErrorText (Locale.ROOT))
+                                     .separator ('\n')
+                                     .build ());
         }
         assertTrue ("Errors: " + aResult.getErrorList ().toString (), aResult.getErrorList ().isEmpty ());
       }
