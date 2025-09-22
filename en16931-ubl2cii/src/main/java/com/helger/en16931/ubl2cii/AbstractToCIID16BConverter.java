@@ -344,6 +344,7 @@ public abstract class AbstractToCIID16BConverter
         final BinaryObjectType aBOT = new BinaryObjectType ();
         ifNotEmpty (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getMimeCode (), aBOT::setMimeCode);
         ifNotNull (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getValue (), aBOT::setValue);
+        ifNotEmpty (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getFilename (), aBOT::setFilename);
         aURDT.addAttachmentBinaryObject (aBOT);
       }
     }
