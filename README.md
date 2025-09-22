@@ -16,6 +16,9 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
+v2.0.1 - 2025-09-22
+* Added missing mapping of BT-125-2 (Attachment filename).
+
 v2.0.0 - 2025-08-27
 * Requires Java 17 as the minimum version
 * Updated to ph-commons 12.0.0
