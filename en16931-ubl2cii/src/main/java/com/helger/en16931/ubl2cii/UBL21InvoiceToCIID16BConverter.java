@@ -111,7 +111,10 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     final ReferencedDocumentType aRDT = new ReferencedDocumentType ();
     if (aUBLLine.hasOrderLineReferenceEntries ())
     {
-      aRDT.setLineID (aUBLLine.getOrderLineReferenceAtIndex (0).getLineIDValue ());
+      final var aUBLOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
+
+      // BT-132
+      aRDT.setLineID (aUBLOrderLineRef.getLineIDValue ());
     }
 
     // NetPriceProductTradePrice
@@ -170,7 +173,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
   {
     final HeaderTradeSettlementType ret = new HeaderTradeSettlementType ();
 
-    final PaymentMeansType aUBLPaymentMeans = aUBLDoc.hasPaymentMeansEntries () ? aUBLDoc.getPaymentMeansAtIndex (0) : null;
+    final PaymentMeansType aUBLPaymentMeans = aUBLDoc.hasPaymentMeansEntries () ? aUBLDoc.getPaymentMeansAtIndex (0)
+                                                                                : null;
 
     if (aUBLPaymentMeans != null && aUBLPaymentMeans.hasPaymentIDEntries ())
       ifNotEmpty (aUBLPaymentMeans.getPaymentIDAtIndex (0).getValue (), x -> ret.addPaymentReference (convertText (x)));
@@ -208,7 +212,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     };
 
     // Value added tax point date BT-7
-    ifNotNull (aUBLDoc.getTaxPointDateValue (), x -> fGetOrCreateTradeTax.get ().setTaxPointDate (convertDate (x.toLocalDate ())));
+    ifNotNull (aUBLDoc.getTaxPointDateValue (),
+               x -> fGetOrCreateTradeTax.get ().setTaxPointDate (convertDate (x.toLocalDate ())));
 
     if (aUBLDoc.hasInvoicePeriodEntries ())
     {
@@ -216,7 +221,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
 
       // Value added tax point date code BT-8
       if (aUBLPeriod.hasDescriptionCodeEntries ())
-        ifNotEmpty (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue (), x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
+        ifNotEmpty (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue (),
+                    x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
       final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
       if (aUBLPeriod.getStartDate () != null)
@@ -234,7 +240,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
                                                                             aUBLPaymentMeans,
                                                                             aUBLDoc.getDueDateValue ()));
 
-    final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (), TaxTotalType::getTaxAmount);
+    final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
+                                                                                      TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
                                                                                                                    aUBLTaxTotalAmounts));
 
