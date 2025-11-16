@@ -16,6 +16,10 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
+v2.1.0 - 2025-11-16
+* Updated to ph-commons 12.1.0
+* Using JSpecify annotations
+
 v2.0.1 - 2025-09-22
 * Added missing mapping of BT-125-2 (Attachment filename).
 

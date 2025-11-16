@@ -19,6 +19,8 @@ package com.helger.en16931.ubl2cii;
 
 import java.io.File;
 
+import org.jspecify.annotations.NonNull;
+
 import com.helger.annotation.Nonempty;
 import com.helger.annotation.style.ReturnsMutableCopy;
 import com.helger.collection.commons.CommonsArrayList;
@@ -28,8 +30,6 @@ import com.helger.io.file.FileSystemRecursiveIterator;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.en16931.EN16931Validation;
 import com.helger.phive.xml.source.IValidationSourceXML;
-
-import jakarta.annotation.Nonnull;
 
 final class MockSettings
 {
@@ -43,7 +43,7 @@ final class MockSettings
     EN16931Validation.initEN16931 (VES_REGISTRY);
   }
 
-  @Nonnull
+  @NonNull
   @Nonempty
   @ReturnsMutableCopy
   public static ICommonsList <File> getAllTestFilesUBL21Invoice ()
@@ -55,7 +55,7 @@ final class MockSettings
     return ret;
   }
 
-  @Nonnull
+  @NonNull
   @Nonempty
   @ReturnsMutableCopy
   public static ICommonsList <File> getAllTestFilesUBL21CreditNote ()

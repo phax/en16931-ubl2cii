@@ -20,6 +20,8 @@ package com.helger.en16931.ubl2cii;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 
 import com.helger.annotation.WillClose;
@@ -35,8 +37,6 @@ import com.helger.xml.sax.WrappedCollectingSAXErrorHandler;
 import com.helger.xml.serialize.read.DOMReader;
 import com.helger.xml.serialize.read.DOMReaderSettings;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
@@ -52,8 +52,8 @@ public final class UBLToCIIConversionHelper
   {}
 
   @Nullable
-  public static CrossIndustryInvoiceType convertUBL21InvoiceToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                                       @Nonnull final ErrorList aErrorList)
+  public static CrossIndustryInvoiceType convertUBL21InvoiceToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                                       @NonNull final ErrorList aErrorList)
   {
     // Read UBL 2.1
     final InvoiceType aUBLInvoice = UBL21Marshaller.invoice ().setCollectErrors (aErrorList).read (aIS);
@@ -64,10 +64,10 @@ public final class UBLToCIIConversionHelper
     return UBL21InvoiceToCIID16BConverter.convertToCrossIndustryInvoice (aUBLInvoice, aErrorList);
   }
 
-  @Nonnull
-  public static ESuccess convertUBL21InvoiceToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                       @Nonnull @WillClose final OutputStream aOS,
-                                                       @Nonnull final ErrorList aErrorList)
+  @NonNull
+  public static ESuccess convertUBL21InvoiceToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                       @NonNull @WillClose final OutputStream aOS,
+                                                       @NonNull final ErrorList aErrorList)
   {
     final CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL21InvoiceToCIID16B (aIS, aErrorList);
     if (aCrossIndustryInvoice == null)
@@ -80,8 +80,8 @@ public final class UBLToCIIConversionHelper
   }
 
   @Nullable
-  public static CrossIndustryInvoiceType convertUBL21CreditNoteToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                                          @Nonnull final ErrorList aErrorList)
+  public static CrossIndustryInvoiceType convertUBL21CreditNoteToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                                          @NonNull final ErrorList aErrorList)
   {
     // Read UBL 2.1
     final CreditNoteType aUBLCreditNote = UBL21Marshaller.creditNote ().setCollectErrors (aErrorList).read (aIS);
@@ -92,10 +92,10 @@ public final class UBLToCIIConversionHelper
     return UBL21CreditNoteToCIID16BConverter.convertToCrossIndustryInvoice (aUBLCreditNote, aErrorList);
   }
 
-  @Nonnull
-  public static ESuccess convertUBL21CreditNoteToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                          @Nonnull @WillClose final OutputStream aOS,
-                                                          @Nonnull final ErrorList aErrorList)
+  @NonNull
+  public static ESuccess convertUBL21CreditNoteToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                          @NonNull @WillClose final OutputStream aOS,
+                                                          @NonNull final ErrorList aErrorList)
   {
     // Main conversion
     final CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL21CreditNoteToCIID16B (aIS, aErrorList);
@@ -109,8 +109,8 @@ public final class UBLToCIIConversionHelper
   }
 
   @Nullable
-  public static CrossIndustryInvoiceType convertUBL21AutoDetectToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                                          @Nonnull final ErrorList aErrorList)
+  public static CrossIndustryInvoiceType convertUBL21AutoDetectToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                                          @NonNull final ErrorList aErrorList)
   {
     // Read exactly once into XML
     final Document aDoc = DOMReader.readXMLDOM (aIS,
@@ -150,10 +150,10 @@ public final class UBLToCIIConversionHelper
     return null;
   }
 
-  @Nonnull
-  public static ESuccess convertUBL21AutoDetectToCIID16B (@Nonnull @WillNotClose final InputStream aIS,
-                                                          @Nonnull @WillClose final OutputStream aOS,
-                                                          @Nonnull final ErrorList aErrorList)
+  @NonNull
+  public static ESuccess convertUBL21AutoDetectToCIID16B (@NonNull @WillNotClose final InputStream aIS,
+                                                          @NonNull @WillClose final OutputStream aOS,
+                                                          @NonNull final ErrorList aErrorList)
   {
     final CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL21AutoDetectToCIID16B (aIS, aErrorList);
     if (aCrossIndustryInvoice == null)

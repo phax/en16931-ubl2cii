@@ -22,14 +22,15 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.helper.PDTFactory;
 import com.helger.datetime.xml.XMLOffsetDate;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AttachmentType;
@@ -74,7 +75,7 @@ public abstract class AbstractToCIID16BConverter
 {
   private static final String CII_DATE_FORMAT = "102";
 
-  protected static <T> boolean ifNotNull (@Nullable final T aObj, @Nonnull final Consumer <? super T> aConsumer)
+  protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
   {
     if (aObj == null)
       return false;
@@ -82,7 +83,7 @@ public abstract class AbstractToCIID16BConverter
     return true;
   }
 
-  protected static boolean ifNotEmpty (@Nullable final String s, @Nonnull final Consumer <? super String> aConsumer)
+  protected static boolean ifNotEmpty (@Nullable final String s, @NonNull final Consumer <? super String> aConsumer)
   {
     if (StringHelper.isEmpty (s))
       return false;
@@ -122,8 +123,7 @@ public abstract class AbstractToCIID16BConverter
     return aFormatter.format (aDate);
   }
 
-  @Nullable
-  private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.DateTimeString createDateTimeString (@Nullable final LocalDate aLocalDate)
+  private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.@Nullable DateTimeString createDateTimeString (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
@@ -134,8 +134,7 @@ public abstract class AbstractToCIID16BConverter
     return aret;
   }
 
-  @Nullable
-  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType convertDateTime (@Nullable final LocalDate aLocalDate)
+  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.@Nullable DateTimeType convertDateTime (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
@@ -145,8 +144,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
-  @Nullable
-  private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString createDateString (@Nullable final LocalDate aLocalDate)
+  private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.@Nullable DateString createDateString (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
@@ -157,8 +155,7 @@ public abstract class AbstractToCIID16BConverter
     return aret;
   }
 
-  @Nullable
-  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType convertDate (@Nullable final LocalDate aLocalDate)
+  protected static un.unece.uncefact.data.standard.unqualifieddatatype._100.@Nullable DateType convertDate (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
@@ -180,7 +177,7 @@ public abstract class AbstractToCIID16BConverter
   }
 
   @Nullable
-  protected static IDType convertID (@Nullable final com.helger.xsds.ccts.cct.schemamodule.IdentifierType aUBLID)
+  protected static IDType convertID (final com.helger.xsds.ccts.cct.schemamodule.@Nullable IdentifierType aUBLID)
   {
     if (aUBLID == null)
       return null;
@@ -192,7 +189,7 @@ public abstract class AbstractToCIID16BConverter
   }
 
   @Nullable
-  protected static AmountType convertAmount (@Nullable final com.helger.xsds.ccts.cct.schemamodule.AmountType aUBLAmount,
+  protected static AmountType convertAmount (final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLAmount,
                                              final boolean bWithCurrency)
   {
     if (aUBLAmount == null)
@@ -206,13 +203,12 @@ public abstract class AbstractToCIID16BConverter
   }
 
   @Nullable
-  protected static AmountType convertAmount (@Nullable final com.helger.xsds.ccts.cct.schemamodule.AmountType aUBLAmount)
+  protected static AmountType convertAmount (final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLAmount)
   {
     return convertAmount (aUBLAmount, false);
   }
 
-  @Nullable
-  protected static un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.NoteType convertNote (@Nullable final oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.NoteType aUBLNote)
+  protected static un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.@Nullable NoteType convertNote (final oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.@Nullable NoteType aUBLNote)
   {
     if (aUBLNote == null || aUBLNote.getValue () == null)
       return null;
@@ -300,8 +296,8 @@ public abstract class AbstractToCIID16BConverter
     return aTPT;
   }
 
-  @Nonnull
-  protected static ReferencedDocumentType convertAdditionalReferencedDocument (@Nonnull final DocumentReferenceType aUBLDocRef)
+  @NonNull
+  protected static ReferencedDocumentType convertAdditionalReferencedDocument (@NonNull final DocumentReferenceType aUBLDocRef)
   {
     final ReferencedDocumentType aURDT = new ReferencedDocumentType ();
 
@@ -378,8 +374,8 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
-  @Nonnull
-  protected static TradeTaxType convertApplicableTradeTax (@Nonnull final TaxSubtotalType aUBLTaxSubtotal)
+  @NonNull
+  protected static TradeTaxType convertApplicableTradeTax (@NonNull final TaxSubtotalType aUBLTaxSubtotal)
   {
     final TaxCategoryType aUBLTaxCategory = aUBLTaxSubtotal.getTaxCategory ();
     final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
@@ -398,8 +394,8 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
-  @Nonnull
-  protected static TradeAllowanceChargeType convertSpecifiedTradeAllowanceCharge (@Nonnull final AllowanceChargeType aUBLAllowanceCharge)
+  @NonNull
+  protected static TradeAllowanceChargeType convertSpecifiedTradeAllowanceCharge (@NonNull final AllowanceChargeType aUBLAllowanceCharge)
   {
     final TradeAllowanceChargeType ret = new TradeAllowanceChargeType ();
 
@@ -430,8 +426,8 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
-  @Nonnull
-  protected static TradePaymentTermsType convertSpecifiedTradePaymentTerms (@Nonnull final PaymentTermsType aUBLPaymenTerms,
+  @NonNull
+  protected static TradePaymentTermsType convertSpecifiedTradePaymentTerms (@NonNull final PaymentTermsType aUBLPaymenTerms,
                                                                             @Nullable final PaymentMeansType aUBLPaymentMeans,
                                                                             @Nullable final XMLOffsetDate aInvoiceDueDate)
   {
@@ -451,7 +447,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
-  @Nonnull
+  @NonNull
   protected static TradeSettlementHeaderMonetarySummationType createSpecifiedTradeSettlementHeaderMonetarySummation (@Nullable final MonetaryTotalType aUBLMonetaryTotal,
                                                                                                                      @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts)
   {

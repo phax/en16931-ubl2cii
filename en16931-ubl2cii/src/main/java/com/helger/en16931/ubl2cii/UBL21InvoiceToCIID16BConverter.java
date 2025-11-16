@@ -19,13 +19,14 @@ package com.helger.en16931.ubl2cii;
 
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import com.helger.base.enforce.ValueEnforcer;
 import com.helger.collection.commons.CommonsArrayList;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.diagnostics.error.list.ErrorList;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CommodityClassificationType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CustomerPartyType;
@@ -59,8 +60,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
   private UBL21InvoiceToCIID16BConverter ()
   {}
 
-  @Nonnull
-  private static SupplyChainTradeLineItemType _convertInvoiceLine (@Nonnull final InvoiceLineType aUBLLine)
+  @NonNull
+  private static SupplyChainTradeLineItemType _convertInvoiceLine (@NonNull final InvoiceLineType aUBLLine)
   {
     final SupplyChainTradeLineItemType ret = new SupplyChainTradeLineItemType ();
     final DocumentLineDocumentType aDLDT = new DocumentLineDocumentType ();
@@ -168,8 +169,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     return ret;
   }
 
-  @Nonnull
-  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@Nonnull final InvoiceType aUBLDoc)
+  @NonNull
+  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@NonNull final InvoiceType aUBLDoc)
   {
     final HeaderTradeSettlementType ret = new HeaderTradeSettlementType ();
 
@@ -255,8 +256,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
   }
 
   @Nullable
-  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@Nonnull final InvoiceType aUBLDoc,
-                                                                        @Nonnull final ErrorList aErrorList)
+  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@NonNull final InvoiceType aUBLDoc,
+                                                                        @NonNull final ErrorList aErrorList)
   {
     ValueEnforcer.notNull (aUBLDoc, "UBLInvoice");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
