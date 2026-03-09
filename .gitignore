@@ -1,11 +1,9 @@
-.classpath
-.project
-zz
-
 .settings/
-# generated/
 target/
 
-# *-cii.xml
+.classpath
+.DS_Store
+.project
 pom.xml.releaseBackup
 release.properties
+zz
