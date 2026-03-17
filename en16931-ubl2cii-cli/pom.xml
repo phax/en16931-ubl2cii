@@ -26,7 +26,7 @@
     <version>2.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>en16931-ubl2cii-cli</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>en16931-ubl2cii-cli</name>
   <inceptionYear>2025</inceptionYear>
   <url>https://github.com/phax/en16931-ubl2cii/en16931-ubl2cii-cli</url>
@@ -81,21 +81,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Main-Class>com.helger.en16931.ubl2cii.cli.UBLToCIIConverter</Main-Class>
-            <Automatic-Module-Name>com.helger.en16931.ubl2cii.cli</Automatic-Module-Name>
-            <Export-Package>
-              com.helger.en16931.ubl2cii.cli
-            </Export-Package>
-            <Import-Package>!jakarta.annotation.*,*</Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

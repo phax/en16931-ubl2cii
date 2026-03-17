@@ -18,6 +18,9 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
+v2.1.1 - work in progress
+* No more OSGI bundle packaging
+
 v2.1.0 - 2025-11-16
 * Updated to ph-commons 12.1.0
 * Using JSpecify annotations
