@@ -1,7 +1,7 @@
 # en16931-ubl2cii
 
 <!-- ph-badge-start -->
-[![Maven Central](https://img.shields.io/maven-central/v/com.helger/en16931-ubl2cii)](https://img.shields.io/maven-central/v/com.helger/en16931-ubl2cii)
+[![Sonatype Central](https://maven-badges.sml.io/sonatype-central/com.helger/en16931-ubl2cii-parent-pom/badge.svg)](https://maven-badges.sml.io/sonatype-central/com.helger/en16931-ubl2cii-parent-pom/)
 [![javadoc](https://javadoc.io/badge2/com.helger/en16931-ubl2cii/javadoc.svg)](https://javadoc.io/doc/com.helger/en16931-ubl2cii)
 <!-- ph-badge-end -->
 
