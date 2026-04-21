@@ -17,9 +17,8 @@
  */
 package com.helger.en16931.ubl2cii;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
@@ -28,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
-import com.helger.datetime.helper.PDTFactory;
 import com.helger.datetime.xml.XMLOffsetDate;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
@@ -74,6 +72,7 @@ import un.unece.uncefact.data.standard.unqualifieddatatype._100.TextType;
 public abstract class AbstractToCIID16BConverter
 {
   private static final String CII_DATE_FORMAT = "102";
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern ("yyyyMMdd");
 
   protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
   {
@@ -118,9 +117,7 @@ public abstract class AbstractToCIID16BConverter
     if (aLocalDate == null)
       return null;
 
-    final SimpleDateFormat aFormatter = new SimpleDateFormat ("yyyyMMdd");
-    final Date aDate = PDTFactory.createDate (aLocalDate);
-    return aFormatter.format (aDate);
+    return DATE_FORMATTER.format (aLocalDate);
   }
 
   private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.@Nullable DateTimeString createDateTimeString (@Nullable final LocalDate aLocalDate)
