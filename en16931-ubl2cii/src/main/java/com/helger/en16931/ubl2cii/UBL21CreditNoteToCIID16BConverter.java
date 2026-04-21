@@ -268,6 +268,12 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         aDCP.setID (x);
         aEDCT.addGuidelineSpecifiedDocumentContextParameter (aDCP);
       });
+      // BT-23
+      ifNotEmpty (aUBLDoc.getProfileIDValue (), x -> {
+        final DocumentContextParameterType aDCP = new DocumentContextParameterType ();
+        aDCP.setID (x);
+        aEDCT.addBusinessProcessSpecifiedDocumentContextParameter (aDCP);
+      });
       aCIIInvoice.setExchangedDocumentContext (aEDCT);
     }
 
