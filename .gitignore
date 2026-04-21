@@ -1,4 +1,7 @@
+.claude/
+.idea/
 .settings/
+bin/
 target/
 
 .classpath
@@ -7,3 +10,5 @@ target/
 pom.xml.releaseBackup
 release.properties
 zz
+
+*.iml
