@@ -19,6 +19,7 @@ This library is licensed under the Apache License Version 2.0.
 # News and noteworthy
 
 v2.1.1 - work in progress
+* Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
 * No more OSGI bundle packaging
 
 v2.1.0 - 2025-11-16
