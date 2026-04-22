@@ -18,7 +18,7 @@ This library is licensed under the Apache License Version 2.0.
 
 # News and noteworthy
 
-v2.1.1 - work in progress
+v2.2.0 - 2026-04-22
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
 * Fixed BT-27/BT-44 (Party name) mapping: `RegistrationName` now correctly maps to `TradeParty/Name` instead of `TradingBusinessName`
 * Fixed BT-28/BT-45 (Trading name) mapping: `PartyName/Name` now correctly maps to `SpecifiedLegalOrganization/TradingBusinessName` instead of `TradeParty/Name`

@@ -413,12 +413,15 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
                     x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
       // BG-14 INVOICING PERIOD (BT-73/BT-74)
-      final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
-      if (aUBLPeriod.getStartDate () != null)
-        aSPT.setStartDateTime (convertDateTime (aUBLPeriod.getStartDate ().getValueLocal ()));
-      if (aUBLPeriod.getEndDate () != null)
-        aSPT.setEndDateTime (convertDateTime (aUBLPeriod.getEndDate ().getValueLocal ()));
-      ret.setBillingSpecifiedPeriod (aSPT);
+      if (aUBLPeriod.getStartDate () != null || aUBLPeriod.getEndDate () != null)
+      {
+        final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
+        if (aUBLPeriod.getStartDate () != null)
+          aSPT.setStartDateTime (convertDateTime (aUBLPeriod.getStartDate ().getValueLocal ()));
+        if (aUBLPeriod.getEndDate () != null)
+          aSPT.setEndDateTime (convertDateTime (aUBLPeriod.getEndDate ().getValueLocal ()));
+        ret.setBillingSpecifiedPeriod (aSPT);
+      }
     }
 
     // BG-20 DOCUMENT LEVEL ALLOWANCES / BG-21 DOCUMENT LEVEL CHARGES
@@ -593,14 +596,17 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
         }
 
         // Purchase order reference BT-13
-        if (aUBLDoc.getOrderReference () != null && StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getIDValue ()))
+        if (aUBLDoc.getOrderReference () != null)
         {
-          final ReferencedDocumentType aBuyerOrderRDT = new ReferencedDocumentType ();
-          aBuyerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());
-          aHTAT.setBuyerOrderReferencedDocument (aBuyerOrderRDT);
+          if (StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getIDValue ()))
+          {
+            final ReferencedDocumentType aBuyerOrderRDT = new ReferencedDocumentType ();
+            aBuyerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());
+            aHTAT.setBuyerOrderReferencedDocument (aBuyerOrderRDT);
+          }
 
           // BT-14 Sales order reference
-          if (aUBLDoc.getOrderReference ().getSalesOrderID () != null)
+          if (StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getSalesOrderIDValue ()))
           {
             final ReferencedDocumentType aSellerOrderRDT = new ReferencedDocumentType ();
             aSellerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getSalesOrderIDValue ());

@@ -321,15 +321,26 @@ public abstract class AbstractToCIID16BConverter
 
       // BT-27/BT-44/BT-59/BT-62 Party name
       // UBL RegistrationName is the legal name → CII TradeParty/Name
-      ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);
+      final boolean bHasRegistrationName = ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);
 
       final LegalOrganizationType aLOT = new LegalOrganizationType ();
       boolean bUseLOT = false;
-      // BT-28/BT-45 Trading name
-      // UBL PartyName/Name is the trading name → CII TradingBusinessName
       if (aUBLParty.hasPartyNameEntries ())
-        if (ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aLOT::setTradingBusinessName))
-          bUseLOT = true;
+      {
+        if (bHasRegistrationName)
+        {
+          // BT-28/BT-45 Trading name
+          // UBL PartyName/Name is the trading name → CII TradingBusinessName
+          if (ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aLOT::setTradingBusinessName))
+            bUseLOT = true;
+        }
+        else
+        {
+          // BT-59/BT-62 Payee/TaxRep name (no RegistrationName present)
+          // UBL PartyName/Name is the party name → CII TradeParty/Name
+          ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aTPT::setName);
+        }
+      }
       // BT-30/BT-30-1/BT-47/BT-47-1/BT-61/BT-61-1 Legal registration identifier
       if (ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID))
         bUseLOT = true;
