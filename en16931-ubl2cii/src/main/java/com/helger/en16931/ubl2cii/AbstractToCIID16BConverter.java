@@ -121,6 +121,20 @@ public abstract class AbstractToCIID16BConverter
     return DATE_FORMATTER.format (aLocalDate);
   }
 
+  @Nullable
+  protected static FormattedDateTimeType convertFormattedDateTime (@Nullable final LocalDate aLocalDate)
+  {
+    if (aLocalDate == null)
+      return null;
+
+    final FormattedDateTimeType ret = new FormattedDateTimeType ();
+    final FormattedDateTimeType.DateTimeString aDTS = new FormattedDateTimeType.DateTimeString ();
+    aDTS.setFormat (CII_DATE_FORMAT);
+    aDTS.setValue (createFormattedDateValue (aLocalDate));
+    ret.setDateTimeString (aDTS);
+    return ret;
+  }
+
   private static un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.@Nullable DateTimeString createDateTimeString (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
@@ -403,12 +417,9 @@ public abstract class AbstractToCIID16BConverter
     else
       aURDT.setTypeCode ("916");
 
+    // BT-26 Preceding Invoice issue date / document issue date
     if (aUBLDocRef.getIssueDate () != null)
-    {
-      final FormattedDateTimeType aFIDT = new FormattedDateTimeType ();
-      aFIDT.setDateTimeString (createFormattedDateValue (aUBLDocRef.getIssueDateValueLocal ()));
-      aURDT.setFormattedIssueDateTime (aFIDT);
-    }
+      aURDT.setFormattedIssueDateTime (convertFormattedDateTime (aUBLDocRef.getIssueDateValueLocal ()));
 
     // BT-123 Supporting document description
     for (final var aUBLDocDesc : aUBLDocRef.getDocumentDescription ())
@@ -462,8 +473,15 @@ public abstract class AbstractToCIID16BConverter
       if (aUBLLocation != null)
       {
         // BT-71/BT-71-1 Deliver to location identifier
-        if (ifNotNull (convertID (aUBLLocation.getID ()), aTPTHT::addID))
+        final IDType aLocID = convertID (aUBLLocation.getID ());
+        if (aLocID != null)
+        {
+          if (StringHelper.isNotEmpty (aLocID.getSchemeID ()))
+            aTPTHT.addGlobalID (aLocID);
+          else
+            aTPTHT.addID (aLocID);
           bUseShipToParty = true;
+        }
         // BG-15 DELIVER TO ADDRESS
         if (ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress))
           bUseShipToParty = true;
@@ -599,10 +617,16 @@ public abstract class AbstractToCIID16BConverter
     }
 
     // BT-110/BT-111 Invoice total VAT amount (in document/accounting currency)
+    // Skip zero values — cii2ubl creates a synthetic TaxTotal with value 0 when
+    // CII has no TaxTotalAmount (because UBL mandates TaxTotal). Emitting it
+    // back would produce an element that wasn't in the original CII.
     for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
-      // Currency ID is required here
-      ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);
+      if (aUBLTaxAmount.getValue () != null && aUBLTaxAmount.getValue ().signum () != 0)
+      {
+        // Currency ID is required here
+        ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);
+      }
     }
 
     if (aUBLMonetaryTotal != null)

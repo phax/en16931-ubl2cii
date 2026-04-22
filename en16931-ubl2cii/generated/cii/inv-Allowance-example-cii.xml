@@ -50,7 +50,6 @@
         </ram:GrossPriceProductTradePrice>
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>410</ram:ChargeAmount>
-          <ram:BasisQuantity unitCode="C62">1</ram:BasisQuantity>
         </ram:NetPriceProductTradePrice>
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery>
@@ -283,7 +282,7 @@
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>
-        <ram:ID schemeID="0088">7300010000001</ram:ID>
+        <ram:GlobalID schemeID="0088">7300010000001</ram:GlobalID>
         <ram:Name>Delivery party Name</ram:Name>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>21234</ram:PostcodeCode>

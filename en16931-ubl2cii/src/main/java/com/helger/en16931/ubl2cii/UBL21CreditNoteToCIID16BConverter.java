@@ -45,8 +45,35 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.Tax
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.TaxAmountType;
 import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
-import un.unece.uncefact.data.standard.qualifieddatatype._100.FormattedDateTimeType;
-import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.*;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.CreditorFinancialAccountType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.CreditorFinancialInstitutionType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.DebtorFinancialAccountType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.DocumentContextParameterType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.DocumentLineDocumentType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ExchangedDocumentContextType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ExchangedDocumentType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.HeaderTradeAgreementType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.HeaderTradeDeliveryType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.HeaderTradeSettlementType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeAgreementType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeDeliveryType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeSettlementType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ProductCharacteristicType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ProductClassificationType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ReferencedDocumentType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SpecifiedPeriodType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainTradeLineItemType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainTradeTransactionType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAccountingAccountType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAllowanceChargeType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeCountryType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePaymentTermsType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePriceType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeProductType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeSettlementFinancialCardType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeSettlementLineMonetarySummationType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeSettlementPaymentMeansType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeTaxType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.CodeType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.QuantityType;
 
@@ -152,15 +179,6 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       {
         aNetPrice = new TradePriceType ();
         aNetPrice.addChargeAmount (convertAmount (aUBLPrice.getPriceAmount ()));
-
-        // BT-149/BT-150 Item price base quantity and unit of measure
-        if (aUBLPrice.getBaseQuantity () != null)
-        {
-          final QuantityType aBQ = new QuantityType ();
-          aBQ.setValue (aUBLPrice.getBaseQuantity ().getValue ());
-          aBQ.setUnitCode (aUBLPrice.getBaseQuantity ().getUnitCode ());
-          aNetPrice.setBasisQuantity (aBQ);
-        }
       }
 
       // BT-147/BT-148 Item price discount / gross price
@@ -185,12 +203,24 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         }
 
         // BT-149/BT-150 base quantity on gross price
+        // cii2ubl prefers the gross BasisQuantity, so place it back on gross
         if (aUBLPrice.getBaseQuantity () != null)
         {
           final QuantityType aBQ = new QuantityType ();
           aBQ.setValue (aUBLPrice.getBaseQuantity ().getValue ());
           aBQ.setUnitCode (aUBLPrice.getBaseQuantity ().getUnitCode ());
           aGrossPrice.setBasisQuantity (aBQ);
+        }
+      }
+      else
+      {
+        // BT-149/BT-150 base quantity on net price (no gross price present)
+        if (aNetPrice != null && aUBLPrice.getBaseQuantity () != null)
+        {
+          final QuantityType aBQ = new QuantityType ();
+          aBQ.setValue (aUBLPrice.getBaseQuantity ().getValue ());
+          aBQ.setUnitCode (aUBLPrice.getBaseQuantity ().getUnitCode ());
+          aNetPrice.setBasisQuantity (aBQ);
         }
       }
     }
@@ -238,6 +268,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         aLineSPT.setEndDateTime (convertDateTime (aUBLLinePeriod.getEndDate ().getValueLocal ()));
       aLineTradeSettlement.setBillingSpecifiedPeriod (aLineSPT);
     }
+
+    // BT-128/BT-128-1 Invoice line object identifier
+    for (final var aUBLLineDocRef : aUBLLine.getDocumentReference ())
+      aLineTradeSettlement.addAdditionalReferencedDocument (convertAdditionalReferencedDocument (aUBLLineDocRef));
 
     // BG-27 INVOICE LINE ALLOWANCES / BG-28 INVOICE LINE CHARGES
     for (final AllowanceChargeType aUBLLineAC : aUBLLine.getAllowanceCharge ())
@@ -418,18 +452,23 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
 
     // BG-19: BT-90 Bank assigned creditor identifier
     // In UBL this is on the Seller or Payee PartyIdentification with @schemeID="SEPA"
+    // Check both parties since it may be on either one
     {
-      final var aUBLParty = aUBLDoc.getPayeeParty () != null ? aUBLDoc.getPayeeParty ()
-                                                              : (aUBLDoc.getAccountingSupplierParty () != null
-                                                                  ? aUBLDoc.getAccountingSupplierParty ().getParty ()
-                                                                  : null);
-      if (aUBLParty != null)
+      boolean bFound = false;
+      for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PartyType [] {
+          aUBLDoc.getPayeeParty (),
+          aUBLDoc.getAccountingSupplierParty () != null ? aUBLDoc.getAccountingSupplierParty ().getParty () : null })
+      {
+        if (bFound || aUBLParty == null)
+          continue;
         for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
           if (aUBLPartyID.getID () != null && "SEPA".equals (aUBLPartyID.getID ().getSchemeID ()))
           {
-            ifNotEmpty (aUBLPartyID.getID ().getValue (), ret::setCreditorReferenceID);
+            if (ifNotEmpty (aUBLPartyID.getID ().getValue (), ret::setCreditorReferenceID))
+              bFound = true;
             break;
           }
+      }
     }
 
     // BG-3 PRECEDING INVOICE REFERENCE (BT-25/BT-26)
@@ -443,11 +482,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         ifNotEmpty (aUBLInvRef.getIDValue (), aIRD::setIssuerAssignedID);
         // BT-26 Preceding Invoice issue date
         if (aUBLInvRef.getIssueDate () != null)
-        {
-          final FormattedDateTimeType aFDT = new FormattedDateTimeType ();
-          aFDT.setDateTimeString (createFormattedDateValue (aUBLInvRef.getIssueDateValueLocal ()));
-          aIRD.setFormattedIssueDateTime (aFDT);
-        }
+          aIRD.setFormattedIssueDateTime (convertFormattedDateTime (aUBLInvRef.getIssueDateValueLocal ()));
         ret.setInvoiceReferencedDocument (aIRD);
       }
     }

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.list.ErrorList;
 import com.helger.en16931.cii2ubl.CIIToUBL21Converter;
+import com.helger.io.file.FileOperationManager;
 import com.helger.io.file.FilenameHelper;
 
 import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
@@ -57,6 +58,13 @@ public final class CIIRoundTripTest
     {
       LOGGER.info ("Round-trip testing " + aFile.getName ());
 
+      // Make sure the output file is clean
+      final String sBaseName = FilenameHelper.getBaseName (aFile.getName ());
+      final File aOrigOut = new File ("generated/roundtrip/" + sBaseName + "-orig.xml");
+      final File aRoundTripOut = new File ("generated/roundtrip/" + sBaseName + "-roundtrip.xml");
+      FileOperationManager.INSTANCE.deleteFileIfExisting (aOrigOut);
+      FileOperationManager.INSTANCE.deleteFileIfExisting (aRoundTripOut);
+ 
       // Step 1: Read source CII
       final CrossIndustryInvoiceType aOrigCII = CII_MARSHALLER.read (aFile);
       assertNotNull ("Failed to read CII: " + aFile, aOrigCII);
@@ -83,10 +91,7 @@ public final class CIIRoundTripTest
       if (!sOrigXML.equals (sRoundTripXML))
       {
         // Write both files for manual inspection
-        final String sBaseName = FilenameHelper.getBaseName (aFile.getName ());
-        final File aOrigOut = new File ("generated/roundtrip/" + sBaseName + "-orig.xml");
-        final File aRoundTripOut = new File ("generated/roundtrip/" + sBaseName + "-roundtrip.xml");
-        CII_MARSHALLER.setFormattedOutput (true).write (aOrigCII, aOrigOut);
+          CII_MARSHALLER.setFormattedOutput (true).write (aOrigCII, aOrigOut);
         CII_MARSHALLER.setFormattedOutput (true).write (aRoundTripCII, aRoundTripOut);
 
         LOGGER.warn ("Round-trip mismatch for " +
@@ -96,6 +101,8 @@ public final class CIIRoundTripTest
                      " and round-trip to " +
                      aRoundTripOut.getPath ());
       }
+      else
+        LOGGER.info("Round-trip match for " + aFile.getName () );
     }
   }
 
@@ -147,6 +154,8 @@ public final class CIIRoundTripTest
                      " and round-trip to " +
                      aRoundTripOut.getPath ());
       }
+      else
+        LOGGER.info("Round-trip match for " + aFile.getName () );
     }
   }
 }

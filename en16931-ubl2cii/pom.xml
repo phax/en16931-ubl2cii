@@ -86,7 +86,7 @@
     <dependency>
       <groupId>com.helger</groupId>
       <artifactId>en16931-cii2ubl</artifactId>
-      <version>3.1.6</version>
+      <version>${cii2ubl.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

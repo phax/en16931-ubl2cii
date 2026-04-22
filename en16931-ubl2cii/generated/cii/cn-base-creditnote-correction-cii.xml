@@ -152,7 +152,7 @@
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>
-        <ram:ID schemeID="0088">9483759475923478</ram:ID>
+        <ram:GlobalID schemeID="0088">9483759475923478</ram:GlobalID>
         <ram:Name>Delivery party Name</ram:Name>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>21234</ram:PostcodeCode>

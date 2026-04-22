@@ -105,7 +105,6 @@
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>1200</ram:LineTotalAmount>
         <ram:TaxBasisTotalAmount>1200</ram:TaxBasisTotalAmount>
-        <ram:TaxTotalAmount currencyID="GBP">0</ram:TaxTotalAmount>
         <ram:GrandTotalAmount>1200</ram:GrandTotalAmount>
         <ram:DuePayableAmount>1200</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
