@@ -22,8 +22,29 @@ v2.1.1 - work in progress
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
 * Fixed BT-27/BT-44 (Party name) mapping: `RegistrationName` now correctly maps to `TradeParty/Name` instead of `TradingBusinessName`
 * Fixed BT-28/BT-45 (Trading name) mapping: `PartyName/Name` now correctly maps to `SpecifiedLegalOrganization/TradingBusinessName` instead of `TradeParty/Name`
+* Fixed empty `SpecifiedLegalOrganization` and `BuyerOrderReferencedDocument` elements being emitted when no data is present
+* Added mapping of BT-14 (Sales order reference)
+* Added mapping of BT-15 (Receiving advice reference)
+* Added mapping of BT-16 (Despatch advice reference)
+* Added mapping of BT-17 (Tender or lot reference) with correct TypeCode="50"
+* Added mapping of BT-18-1/BT-128-1 (Invoiced object identifier scheme ID) → `ReferenceTypeCode`
 * Added mapping of BT-33 (Seller additional legal information): `CompanyLegalForm` → `TradeParty/Description`
+* Added mapping of BT-70 (Deliver to party name)
+* Added mapping of BT-82 (Payment means text): `PaymentMeansCode/@Name` → `Information`
+* Added mapping of BT-85 (Payment account name)
+* Added mapping of BT-86 (Payment service provider identifier / BIC)
+* Added mapping of BT-156 (Item Buyer's identifier)
+* Added mapping of BT-159 (Item country of origin)
+* Added mapping of BG-3 (Preceding invoice reference): BT-25/BT-26
 * Added mapping of BG-6/BG-9 (Seller/Buyer contact): BT-41/BT-56 (contact point), BT-42/BT-57 (telephone), BT-43/BT-58 (email)
+* Added mapping of BG-11/BG-12 (Seller tax representative party and postal address): BT-62/BT-63/BT-64..BT-69
+* Added mapping of BG-18 (Payment card information): BT-87/BT-88
+* Added mapping of BG-19 (Direct debit): BT-89/BT-90/BT-91
+* Added mapping of BG-26 (Invoice line period): BT-134/BT-135
+* Added mapping of BG-27/BG-28 (Invoice line allowances and charges): BT-136..BT-145
+* Added mapping of BT-147/BT-148 (Item price discount / gross price)
+* Added mapping of BT-149/BT-150 (Item price base quantity and unit of measure)
+* Added round-trip test suite (CII → UBL → CII) using en16931-cii2ubl as test dependency
 * No more OSGI bundle packaging
 
 v2.1.0 - 2025-11-16

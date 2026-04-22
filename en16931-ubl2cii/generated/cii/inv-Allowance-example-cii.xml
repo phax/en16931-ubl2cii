@@ -33,10 +33,24 @@
         <ram:DesignatedProductClassification>
           <ram:ClassCode listID="SRV">09348023</ram:ClassCode>
         </ram:DesignatedProductClassification>
+        <ram:OriginTradeCountry>
+          <ram:ID>NO</ram:ID>
+        </ram:OriginTradeCountry>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
+        <ram:GrossPriceProductTradePrice>
+          <ram:ChargeAmount>450</ram:ChargeAmount>
+          <ram:BasisQuantity unitCode="C62">1</ram:BasisQuantity>
+          <ram:AppliedTradeAllowanceCharge>
+            <ram:ChargeIndicator>
+              <udt:Indicator>false</udt:Indicator>
+            </ram:ChargeIndicator>
+            <ram:ActualAmount>40</ram:ActualAmount>
+          </ram:AppliedTradeAllowanceCharge>
+        </ram:GrossPriceProductTradePrice>
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>410</ram:ChargeAmount>
+          <ram:BasisQuantity unitCode="C62">1</ram:BasisQuantity>
         </ram:NetPriceProductTradePrice>
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery>
@@ -48,6 +62,24 @@
           <ram:CategoryCode>S</ram:CategoryCode>
           <ram:RateApplicablePercent>25.0</ram:RateApplicablePercent>
         </ram:ApplicableTradeTax>
+        <ram:SpecifiedTradeAllowanceCharge>
+          <ram:ChargeIndicator>
+            <udt:Indicator>true</udt:Indicator>
+          </ram:ChargeIndicator>
+          <ram:CalculationPercent>1</ram:CalculationPercent>
+          <ram:BasisAmount>100</ram:BasisAmount>
+          <ram:ActualAmount>1</ram:ActualAmount>
+          <ram:ReasonCode>CG</ram:ReasonCode>
+          <ram:Reason>Cleaning</ram:Reason>
+        </ram:SpecifiedTradeAllowanceCharge>
+        <ram:SpecifiedTradeAllowanceCharge>
+          <ram:ChargeIndicator>
+            <udt:Indicator>false</udt:Indicator>
+          </ram:ChargeIndicator>
+          <ram:ActualAmount>101</ram:ActualAmount>
+          <ram:ReasonCode>95</ram:ReasonCode>
+          <ram:Reason>Discount</ram:Reason>
+        </ram:SpecifiedTradeAllowanceCharge>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
           <ram:LineTotalAmount>4000</ram:LineTotalAmount>
         </ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -81,6 +113,7 @@
         </ram:BuyerOrderReferencedDocument>
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>200</ram:ChargeAmount>
+          <ram:BasisQuantity unitCode="C62">2</ram:BasisQuantity>
         </ram:NetPriceProductTradePrice>
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery>
@@ -92,6 +125,14 @@
           <ram:CategoryCode>E</ram:CategoryCode>
           <ram:RateApplicablePercent>0.0</ram:RateApplicablePercent>
         </ram:ApplicableTradeTax>
+        <ram:BillingSpecifiedPeriod>
+          <ram:StartDateTime>
+            <udt:DateTimeString format="102">20171201</udt:DateTimeString>
+          </ram:StartDateTime>
+          <ram:EndDateTime>
+            <udt:DateTimeString format="102">20171205</udt:DateTimeString>
+          </ram:EndDateTime>
+        </ram:BillingSpecifiedPeriod>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
           <ram:LineTotalAmount>1000</ram:LineTotalAmount>
         </ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -136,6 +177,32 @@
           <ram:CategoryCode>S</ram:CategoryCode>
           <ram:RateApplicablePercent>25.0</ram:RateApplicablePercent>
         </ram:ApplicableTradeTax>
+        <ram:BillingSpecifiedPeriod>
+          <ram:StartDateTime>
+            <udt:DateTimeString format="102">20171201</udt:DateTimeString>
+          </ram:StartDateTime>
+          <ram:EndDateTime>
+            <udt:DateTimeString format="102">20171205</udt:DateTimeString>
+          </ram:EndDateTime>
+        </ram:BillingSpecifiedPeriod>
+        <ram:SpecifiedTradeAllowanceCharge>
+          <ram:ChargeIndicator>
+            <udt:Indicator>true</udt:Indicator>
+          </ram:ChargeIndicator>
+          <ram:CalculationPercent>1</ram:CalculationPercent>
+          <ram:BasisAmount>100</ram:BasisAmount>
+          <ram:ActualAmount>1</ram:ActualAmount>
+          <ram:ReasonCode>CG</ram:ReasonCode>
+          <ram:Reason>Charge</ram:Reason>
+        </ram:SpecifiedTradeAllowanceCharge>
+        <ram:SpecifiedTradeAllowanceCharge>
+          <ram:ChargeIndicator>
+            <udt:Indicator>false</udt:Indicator>
+          </ram:ChargeIndicator>
+          <ram:ActualAmount>101</ram:ActualAmount>
+          <ram:ReasonCode>95</ram:ReasonCode>
+          <ram:Reason>Discount</ram:Reason>
+        </ram:SpecifiedTradeAllowanceCharge>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
           <ram:LineTotalAmount>900</ram:LineTotalAmount>
         </ram:SpecifiedTradeSettlementLineMonetarySummation>
@@ -205,6 +272,7 @@
       <ram:AdditionalReferencedDocument>
         <ram:IssuerAssignedID>DR35141</ram:IssuerAssignedID>
         <ram:TypeCode>130</ram:TypeCode>
+        <ram:ReferenceTypeCode>ABT</ram:ReferenceTypeCode>
       </ram:AdditionalReferencedDocument>
       <ram:AdditionalReferencedDocument>
         <ram:IssuerAssignedID>ts12345</ram:IssuerAssignedID>
@@ -216,6 +284,7 @@
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>
         <ram:ID schemeID="0088">7300010000001</ram:ID>
+        <ram:Name>Delivery party Name</ram:Name>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>21234</ram:PostcodeCode>
           <ram:LineOne>Delivery street 2</ram:LineOne>
@@ -238,9 +307,14 @@
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
       <ram:SpecifiedTradeSettlementPaymentMeans>
         <ram:TypeCode>30</ram:TypeCode>
+        <ram:Information>Credit transfer</ram:Information>
         <ram:PayeePartyCreditorFinancialAccount>
           <ram:IBANID>IBAN32423940</ram:IBANID>
+          <ram:AccountName>AccountName</ram:AccountName>
         </ram:PayeePartyCreditorFinancialAccount>
+        <ram:PayeeSpecifiedCreditorFinancialInstitution>
+          <ram:BICID>BIC324098</ram:BICID>
+        </ram:PayeeSpecifiedCreditorFinancialInstitution>
       </ram:SpecifiedTradeSettlementPaymentMeans>
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>1225</ram:CalculatedAmount>

@@ -366,6 +366,10 @@ public abstract class AbstractToCIID16BConverter
     // BT-122 Supporting document reference
     ifNotEmpty (aUBLDocRef.getIDValue (), aURDT::setIssuerAssignedID);
 
+    // BT-18-1/BT-128-1 Scheme identifier → ReferenceTypeCode
+    if (aUBLDocRef.getID () != null)
+      ifNotEmpty (aUBLDocRef.getID ().getSchemeID (), aURDT::setReferenceTypeCode);
+
     // Add DocumentTypeCode where possible
     if (isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
       aURDT.setTypeCode (aUBLDocRef.getDocumentTypeCodeValue ());
@@ -425,15 +429,29 @@ public abstract class AbstractToCIID16BConverter
     if (aUBLDelivery != null)
     {
       final LocationType aUBLLocation = aUBLDelivery.getDeliveryLocation ();
+      final TradePartyType aTPTHT = new TradePartyType ();
+      boolean bUseShipToParty = false;
+
       if (aUBLLocation != null)
       {
-        final TradePartyType aTPTHT = new TradePartyType ();
         // BT-71/BT-71-1 Deliver to location identifier
-        ifNotNull (convertID (aUBLLocation.getID ()), aTPTHT::addID);
+        if (ifNotNull (convertID (aUBLLocation.getID ()), aTPTHT::addID))
+          bUseShipToParty = true;
         // BG-15 DELIVER TO ADDRESS
-        ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress);
-        ret.setShipToTradeParty (aTPTHT);
+        if (ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress))
+          bUseShipToParty = true;
       }
+
+      // BT-70 Deliver to party name
+      if (aUBLDelivery.getDeliveryParty () != null &&
+          aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
+      {
+        if (ifNotEmpty (aUBLDelivery.getDeliveryParty ().getPartyNameAtIndex (0).getNameValue (), aTPTHT::setName))
+          bUseShipToParty = true;
+      }
+
+      if (bUseShipToParty)
+        ret.setShipToTradeParty (aTPTHT);
 
       // BT-72 Actual delivery date
       if (aUBLDelivery.getActualDeliveryDate () != null)

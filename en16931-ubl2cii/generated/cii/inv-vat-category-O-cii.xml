@@ -84,6 +84,9 @@
         <ram:PayeePartyCreditorFinancialAccount>
           <ram:IBANID>SE1212341234123412</ram:IBANID>
         </ram:PayeePartyCreditorFinancialAccount>
+        <ram:PayeeSpecifiedCreditorFinancialInstitution>
+          <ram:BICID>SEXDABCD</ram:BICID>
+        </ram:PayeeSpecifiedCreditorFinancialInstitution>
       </ram:SpecifiedTradeSettlementPaymentMeans>
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>0</ram:CalculatedAmount>

@@ -27,6 +27,9 @@
         <ram:DesignatedProductClassification>
           <ram:ClassCode listID="SRV">09348023</ram:ClassCode>
         </ram:DesignatedProductClassification>
+        <ram:OriginTradeCountry>
+          <ram:ID>NO</ram:ID>
+        </ram:OriginTradeCountry>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
         <ram:BuyerOrderReferencedDocument>
@@ -64,6 +67,9 @@
         <ram:DesignatedProductClassification>
           <ram:ClassCode listID="SRV">09348023</ram:ClassCode>
         </ram:DesignatedProductClassification>
+        <ram:OriginTradeCountry>
+          <ram:ID>NO</ram:ID>
+        </ram:OriginTradeCountry>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
         <ram:BuyerOrderReferencedDocument>
@@ -140,6 +146,9 @@
           <ram:ID schemeID="VA">SE4598375937</ram:ID>
         </ram:SpecifiedTaxRegistration>
       </ram:BuyerTradeParty>
+      <ram:SellerOrderReferencedDocument>
+        <ram:IssuerAssignedID>123456</ram:IssuerAssignedID>
+      </ram:SellerOrderReferencedDocument>
       <ram:BuyerOrderReferencedDocument>
         <ram:IssuerAssignedID>NA</ram:IssuerAssignedID>
       </ram:BuyerOrderReferencedDocument>
@@ -147,6 +156,7 @@
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>
         <ram:ID schemeID="0088">9483759475923478</ram:ID>
+        <ram:Name>Delivery party Name</ram:Name>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>21234</ram:PostcodeCode>
           <ram:LineOne>Delivery street 2</ram:LineOne>
@@ -166,9 +176,14 @@
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
       <ram:SpecifiedTradeSettlementPaymentMeans>
         <ram:TypeCode>30</ram:TypeCode>
+        <ram:Information>Credit transfer</ram:Information>
         <ram:PayeePartyCreditorFinancialAccount>
           <ram:IBANID>IBAN32423940</ram:IBANID>
+          <ram:AccountName>AccountName</ram:AccountName>
         </ram:PayeePartyCreditorFinancialAccount>
+        <ram:PayeeSpecifiedCreditorFinancialInstitution>
+          <ram:BICID>BIC324098</ram:BICID>
+        </ram:PayeeSpecifiedCreditorFinancialInstitution>
       </ram:SpecifiedTradeSettlementPaymentMeans>
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>331.25</ram:CalculatedAmount>
