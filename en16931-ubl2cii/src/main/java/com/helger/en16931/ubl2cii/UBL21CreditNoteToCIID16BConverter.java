@@ -139,7 +139,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     {
       final ProductClassificationType aPCT = new ProductClassificationType ();
       final CodeType aCT = new CodeType ();
+      // BT-158-1 listID
       ifNotEmpty (aUBLCC.getItemClassificationCode ().getListID (), aCT::setListID);
+      // BT-158-2 listVersionID
+      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListVersionID (), aCT::setListVersionID);
       ifNotEmpty (aUBLCC.getItemClassificationCode ().getValue (), aCT::setValue);
       aPCT.setClassCode (aCT);
       aTPT.addDesignatedProductClassification (aPCT);
@@ -402,8 +405,9 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       final PeriodType aUBLPeriod = aUBLDoc.getInvoicePeriodAtIndex (0);
 
       // Value added tax point date code BT-8
+      // BT-8 Value added tax point date code (reverse-mapped to CII code list)
       if (aUBLPeriod.hasDescriptionCodeEntries ())
-        ifNotEmpty (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue (),
+        ifNotEmpty (mapDueDateTypeCodeToCII (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue ()),
                     x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
       // BG-14 (BT-73/BT-74)
@@ -577,7 +581,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         // Not available in CreditNote
 
         // Purchase order reference BT-13
-        if (aUBLDoc.getOrderReference () != null && aUBLDoc.getOrderReference ().getID () != null)
+        if (aUBLDoc.getOrderReference () != null && StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getIDValue ()))
         {
           final ReferencedDocumentType aBuyerOrderRDT = new ReferencedDocumentType ();
           aBuyerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());

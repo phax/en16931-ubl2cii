@@ -91,6 +91,21 @@ public abstract class AbstractToCIID16BConverter
     return true;
   }
 
+  // BT-8: Reverse mapping of DueDateTypeCode from UBL to CII.
+  // UBL uses a subset of UNTDID 2005; CII uses the full code list.
+  // See cii2ubl AbstractCIIToUBLConverter.mapDueDateTypeCode for the forward mapping.
+  @Nullable
+  protected static String mapDueDateTypeCodeToCII (@Nullable final String s)
+  {
+    if ("3".equals (s))
+      return "5";
+    if ("35".equals (s))
+      return "29";
+    if ("432".equals (s))
+      return "72";
+    return s;
+  }
+
   protected static boolean isOriginatorDocumentReferenceTypeCode (@Nullable final String s)
   {
     // BT-17
