@@ -357,6 +357,9 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     };
 
     // Value added tax point date BT-7
+    // Value added tax point date BT-7
+    // EN 16931 rule CII-SR-461 requires at most one TaxPointDate across all
+    // ApplicableTradeTax entries, so set it only on the first one.
     ifNotNull (aUBLDoc.getTaxPointDateValue (),
                x -> fGetOrCreateTradeTax.get ().setTaxPointDate (convertDate (x.toLocalDate ())));
 

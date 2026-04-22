@@ -206,15 +206,32 @@ public abstract class AbstractToCIID16BConverter
     return convertAmount (aUBLAmount, false);
   }
 
-  // BG-1: BT-21/BT-22 Invoice note
+  // BG-1: BT-21 Invoice note subject code + BT-22 Invoice note
+  // The cii2ubl converter encodes the subject code as a "#code#" prefix in the
+  // UBL Note value. This method parses it back out.
   protected static un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.@Nullable NoteType convertNote (final oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.@Nullable NoteType aUBLNote)
   {
     if (aUBLNote == null || aUBLNote.getValue () == null)
       return null;
 
     final un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.NoteType ret = new un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.NoteType ();
+
+    String sValue = aUBLNote.getValue ();
+
+    // BT-21 Subject code: parse "#code#" prefix
+    if (sValue.length () >= 3 && sValue.charAt (0) == '#')
+    {
+      final int nEnd = sValue.indexOf ('#', 1);
+      if (nEnd > 1)
+      {
+        ret.setSubjectCode (sValue.substring (1, nEnd));
+        sValue = sValue.substring (nEnd + 1);
+      }
+    }
+
+    // BT-22 Note content
     final TextType aTT = new TextType ();
-    aTT.setValue (aUBLNote.getValue ());
+    aTT.setValue (sValue);
     ret.addContent (aTT);
     return ret;
   }
@@ -256,8 +273,18 @@ public abstract class AbstractToCIID16BConverter
 
     final TradePartyType aTPT = new TradePartyType ();
     // BT-29/BT-29-1/BT-46/BT-46-1/BT-60/BT-60-1 Party identifier
+    // If the UBL ID has a schemeID, use CII GlobalID; otherwise use CII ID
     for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
-      ifNotNull (convertID (aUBLPartyID.getID ()), aTPT::addID);
+    {
+      final IDType aCIIID = convertID (aUBLPartyID.getID ());
+      if (aCIIID != null)
+      {
+        if (StringHelper.isNotEmpty (aCIIID.getSchemeID ()))
+          aTPT.addGlobalID (aCIIID);
+        else
+          aTPT.addID (aCIIID);
+      }
+    }
 
     if (aUBLParty.hasPartyLegalEntityEntries ())
     {

@@ -117,7 +117,7 @@
         </ram:SpecifiedTaxRegistration>
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
-        <ram:ID schemeID="0002">FR23342</ram:ID>
+        <ram:GlobalID schemeID="0002">FR23342</ram:GlobalID>
         <ram:Name>Buyer Official Name</ram:Name>
         <ram:SpecifiedLegalOrganization>
           <ram:ID schemeID="0183">39937423947</ram:ID>
