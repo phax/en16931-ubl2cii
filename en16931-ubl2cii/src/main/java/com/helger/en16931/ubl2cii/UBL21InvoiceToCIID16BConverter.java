@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.helger.base.enforce.ValueEnforcer;
+import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.CommonsArrayList;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.diagnostics.error.list.ErrorList;
@@ -116,11 +117,15 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     ret.setSpecifiedTradeProduct (aTPT);
 
     // BT-132 Referenced purchase order line reference
-    final ReferencedDocumentType aRDT = new ReferencedDocumentType ();
+    ReferencedDocumentType aRDT = null;
     if (aUBLLine.hasOrderLineReferenceEntries ())
     {
       final var aUBLOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
-      aRDT.setLineID (aUBLOrderLineRef.getLineIDValue ());
+      if (StringHelper.isNotEmpty (aUBLOrderLineRef.getLineIDValue ()))
+      {
+        aRDT = new ReferencedDocumentType ();
+        aRDT.setLineID (aUBLOrderLineRef.getLineIDValue ());
+      }
     }
 
     // BG-29: BT-146 Item net price
@@ -132,7 +137,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
 
     // SpecifiedLineTradeAgreement
     final LineTradeAgreementType aLTAT = new LineTradeAgreementType ();
-    aLTAT.setBuyerOrderReferencedDocument (aRDT);
+    if (aRDT != null)
+      aLTAT.setBuyerOrderReferencedDocument (aRDT);
     aLTAT.setNetPriceProductTradePrice (aLTPT);
     ret.setSpecifiedLineTradeAgreement (aLTAT);
 

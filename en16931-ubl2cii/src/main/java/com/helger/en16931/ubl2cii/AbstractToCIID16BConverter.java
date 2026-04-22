@@ -52,6 +52,7 @@ import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentit
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainEventType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TaxRegistrationType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAddressType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeContactType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAllowanceChargeType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePartyType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePaymentTermsType;
@@ -258,28 +259,38 @@ public abstract class AbstractToCIID16BConverter
     for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
       ifNotNull (convertID (aUBLPartyID.getID ()), aTPT::addID);
 
-    // BT-27/BT-44/BT-59/BT-62 Party name
-    if (aUBLParty.hasPartyNameEntries ())
-      ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aTPT::setName);
-
     if (aUBLParty.hasPartyLegalEntityEntries ())
     {
       final PartyLegalEntityType aUBLLegalEntity = aUBLParty.getPartyLegalEntity ().get (0);
 
+      // BT-27/BT-44/BT-59/BT-62 Party name
+      // UBL RegistrationName is the legal name → CII TradeParty/Name
+      ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);
+
       final LegalOrganizationType aLOT = new LegalOrganizationType ();
+      boolean bUseLOT = false;
       // BT-28/BT-45 Trading name
-      ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aLOT::setTradingBusinessName);
+      // UBL PartyName/Name is the trading name → CII TradingBusinessName
+      if (aUBLParty.hasPartyNameEntries ())
+        if (ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aLOT::setTradingBusinessName))
+          bUseLOT = true;
       // BT-30/BT-30-1/BT-47/BT-47-1/BT-61/BT-61-1 Legal registration identifier
-      ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID);
-      ifNotNull (convertAddress (aUBLLegalEntity.getRegistrationAddress ()), aLOT::setPostalTradeAddress);
+      if (ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID))
+        bUseLOT = true;
+      if (ifNotNull (convertAddress (aUBLLegalEntity.getRegistrationAddress ()), aLOT::setPostalTradeAddress))
+        bUseLOT = true;
 
-      if (StringHelper.isEmpty (aTPT.getNameValue ()))
-      {
-        // Fill mandatory field
-        ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aTPT::setName);
-      }
+      if (bUseLOT)
+        aTPT.setSpecifiedLegalOrganization (aLOT);
 
-      aTPT.setSpecifiedLegalOrganization (aLOT);
+      // BT-33 Seller additional legal information
+      ifNotEmpty (aUBLLegalEntity.getCompanyLegalFormValue (), x -> aTPT.addDescription (convertText (x)));
+    }
+    else
+    {
+      // No PartyLegalEntity — fall back to PartyName for the party name
+      if (aUBLParty.hasPartyNameEntries ())
+        ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aTPT::setName);
     }
 
     // BG-5/BG-8 Postal address
@@ -307,6 +318,42 @@ public abstract class AbstractToCIID16BConverter
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
       }
+
+    // BG-6/BG-9 Contact (BT-41/BT-42/BT-43 and BT-56/BT-57/BT-58)
+    if (aUBLParty.getContact () != null)
+    {
+      final var aUBLContact = aUBLParty.getContact ();
+      final TradeContactType aTCT = new TradeContactType ();
+      boolean bUseContact = false;
+
+      // BT-41/BT-56 Contact point
+      if (ifNotEmpty (aUBLContact.getNameValue (), aTCT::setPersonName))
+        bUseContact = true;
+
+      // BT-42/BT-57 Contact telephone number
+      if (StringHelper.isNotEmpty (aUBLContact.getTelephoneValue ()))
+      {
+        final UniversalCommunicationType aPhone = new UniversalCommunicationType ();
+        aPhone.setCompleteNumber (aUBLContact.getTelephoneValue ());
+        aTCT.setTelephoneUniversalCommunication (aPhone);
+        bUseContact = true;
+      }
+
+      // BT-43/BT-58 Contact email address
+      if (StringHelper.isNotEmpty (aUBLContact.getElectronicMailValue ()))
+      {
+        final UniversalCommunicationType aEmail = new UniversalCommunicationType ();
+        final IDType aEmailID = new IDType ();
+        aEmailID.setValue (aUBLContact.getElectronicMailValue ());
+        aEmail.setURIID (aEmailID);
+        aTCT.setEmailURIUniversalCommunication (aEmail);
+        bUseContact = true;
+      }
+
+      if (bUseContact)
+        aTPT.addDefinedTradeContact (aTCT);
+    }
+
     return aTPT;
   }
 

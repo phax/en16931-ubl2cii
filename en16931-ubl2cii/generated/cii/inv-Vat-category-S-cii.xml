@@ -71,7 +71,6 @@
         </ram:DesignatedProductClassification>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
-        <ram:BuyerOrderReferencedDocument />
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>200</ram:ChargeAmount>
         </ram:NetPriceProductTradePrice>
@@ -111,7 +110,6 @@
         </ram:DesignatedProductClassification>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
-        <ram:BuyerOrderReferencedDocument />
         <ram:NetPriceProductTradePrice>
           <ram:ChargeAmount>90</ram:ChargeAmount>
         </ram:NetPriceProductTradePrice>
@@ -137,11 +135,21 @@
       <ram:BuyerReference>0150abc</ram:BuyerReference>
       <ram:SellerTradeParty>
         <ram:ID>99887766</ram:ID>
-        <ram:Name>SupplierTradingName Ltd.</ram:Name>
+        <ram:Name>SupplierOfficialName Ltd</ram:Name>
+        <ram:Description>AdditionalLegalInformation</ram:Description>
         <ram:SpecifiedLegalOrganization>
           <ram:ID>GB983294</ram:ID>
-          <ram:TradingBusinessName>SupplierOfficialName Ltd</ram:TradingBusinessName>
+          <ram:TradingBusinessName>SupplierTradingName Ltd.</ram:TradingBusinessName>
         </ram:SpecifiedLegalOrganization>
+        <ram:DefinedTradeContact>
+          <ram:PersonName>John Doe</ram:PersonName>
+          <ram:TelephoneUniversalCommunication>
+            <ram:CompleteNumber>9384203984</ram:CompleteNumber>
+          </ram:TelephoneUniversalCommunication>
+          <ram:EmailURIUniversalCommunication>
+            <ram:URIID>john.doe@foo.bar</ram:URIID>
+          </ram:EmailURIUniversalCommunication>
+        </ram:DefinedTradeContact>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>GB 123 EW</ram:PostcodeCode>
           <ram:LineOne>Main street 1</ram:LineOne>
@@ -158,10 +166,10 @@
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
         <ram:ID schemeID="0002">FR23342</ram:ID>
-        <ram:Name>BuyerTradingName AS</ram:Name>
+        <ram:Name>Buyer Official Name</ram:Name>
         <ram:SpecifiedLegalOrganization>
           <ram:ID schemeID="0183">39937423947</ram:ID>
-          <ram:TradingBusinessName>Buyer Official Name</ram:TradingBusinessName>
+          <ram:TradingBusinessName>BuyerTradingName AS</ram:TradingBusinessName>
         </ram:SpecifiedLegalOrganization>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>456 34</ram:PostcodeCode>

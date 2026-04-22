@@ -66,4 +66,26 @@ final class MockSettings
         ret.add (f);
     return ret;
   }
+
+  @NonNull
+  @ReturnsMutableCopy
+  public static ICommonsList <File> getAllTestFilesCIIInvoice ()
+  {
+    final ICommonsList <File> ret = new CommonsArrayList <> ();
+    for (final File f : new FileSystemRecursiveIterator (new File ("src/test/resources/external/cii")))
+      if (f.isFile () && f.getName ().endsWith (".xml") && !f.getName ().contains ("CreditNote"))
+        ret.add (f);
+    return ret;
+  }
+
+  @NonNull
+  @ReturnsMutableCopy
+  public static ICommonsList <File> getAllTestFilesCIICreditNote ()
+  {
+    final ICommonsList <File> ret = new CommonsArrayList <> ();
+    for (final File f : new FileSystemRecursiveIterator (new File ("src/test/resources/external/cii")))
+      if (f.isFile () && f.getName ().endsWith (".xml") && f.getName ().contains ("CreditNote"))
+        ret.add (f);
+    return ret;
+  }
 }

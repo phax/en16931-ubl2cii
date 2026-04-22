@@ -20,6 +20,10 @@ This library is licensed under the Apache License Version 2.0.
 
 v2.1.1 - work in progress
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
+* Fixed BT-27/BT-44 (Party name) mapping: `RegistrationName` now correctly maps to `TradeParty/Name` instead of `TradingBusinessName`
+* Fixed BT-28/BT-45 (Trading name) mapping: `PartyName/Name` now correctly maps to `SpecifiedLegalOrganization/TradingBusinessName` instead of `TradeParty/Name`
+* Added mapping of BT-33 (Seller additional legal information): `CompanyLegalForm` → `TradeParty/Description`
+* Added mapping of BG-6/BG-9 (Seller/Buyer contact): BT-41/BT-56 (contact point), BT-42/BT-57 (telephone), BT-43/BT-58 (email)
 * No more OSGI bundle packaging
 
 v2.1.0 - 2025-11-16

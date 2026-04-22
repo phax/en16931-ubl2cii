@@ -51,9 +51,6 @@
       <ram:SellerTradeParty>
         <ram:ID>7300010000001</ram:ID>
         <ram:Name>The Sellercompany Incorporated</ram:Name>
-        <ram:SpecifiedLegalOrganization>
-          <ram:TradingBusinessName>The Sellercompany Incorporated</ram:TradingBusinessName>
-        </ram:SpecifiedLegalOrganization>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>54321</ram:PostcodeCode>
           <ram:LineOne>Main street 2, Building 4</ram:LineOne>
@@ -69,9 +66,6 @@
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
         <ram:Name>The Buyercompany</ram:Name>
-        <ram:SpecifiedLegalOrganization>
-          <ram:TradingBusinessName>The Buyercompany</ram:TradingBusinessName>
-        </ram:SpecifiedLegalOrganization>
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>101</ram:PostcodeCode>
           <ram:LineOne>Anystreet 8</ram:LineOne>
