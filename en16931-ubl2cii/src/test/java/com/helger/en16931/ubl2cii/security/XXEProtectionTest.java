@@ -20,26 +20,24 @@ package com.helger.en16931.ubl2cii.security;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
+import com.helger.base.io.nonblocking.NonBlockingByteArrayInputStream;
 import com.helger.diagnostics.error.list.ErrorList;
 import com.helger.en16931.ubl2cii.UBLToCIIConversionHelper;
 
 /**
- * Security tests verifying XXE (XML External Entity) protection in the XML
- * parsing pipeline.
+ * Security tests verifying XXE (XML External Entity) protection in the XML parsing pipeline.
  *
  * @author Security Audit
  */
 public final class XXEProtectionTest
 {
   /**
-   * Test that a classic XXE payload with an external entity referencing a local
-   * file is rejected by the auto-detect parser (which uses DOMReader
-   * internally).
+   * Test that a classic XXE payload with an external entity referencing a local file is rejected by
+   * the auto-detect parser (which uses DOMReader internally).
    */
   @Test
   public void testXXEEntityExpansionRejected ()
@@ -54,8 +52,8 @@ public final class XXEProtectionTest
                                "</Invoice>";
 
     final ErrorList aErrorList = new ErrorList ();
-    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new ByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
-                                                                                   aErrorList);
+    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new NonBlockingByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
+                                                                                  aErrorList);
 
     // The parser must reject the document (return null) due to the DOCTYPE
     assertNull ("XXE payload must be rejected by the parser", aResult);
@@ -63,8 +61,7 @@ public final class XXEProtectionTest
   }
 
   /**
-   * Test that a Billion Laughs (XML bomb) payload is rejected. This tests
-   * entity expansion limits.
+   * Test that a Billion Laughs (XML bomb) payload is rejected. This tests entity expansion limits.
    */
   @Test
   public void testBillionLaughsRejected ()
@@ -81,8 +78,8 @@ public final class XXEProtectionTest
                                   "</Invoice>";
 
     final ErrorList aErrorList = new ErrorList ();
-    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new ByteArrayInputStream (sBillionLaughs.getBytes (StandardCharsets.UTF_8)),
-                                                                                   aErrorList);
+    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new NonBlockingByteArrayInputStream (sBillionLaughs.getBytes (StandardCharsets.UTF_8)),
+                                                                                  aErrorList);
 
     assertNull ("Billion Laughs payload must be rejected", aResult);
     assertTrue ("Error list must contain parsing errors", aErrorList.containsAtLeastOneError ());
@@ -104,16 +101,16 @@ public final class XXEProtectionTest
                             "</Invoice>";
 
     final ErrorList aErrorList = new ErrorList ();
-    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new ByteArrayInputStream (sPayload.getBytes (StandardCharsets.UTF_8)),
-                                                                                   aErrorList);
+    final var aResult = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (new NonBlockingByteArrayInputStream (sPayload.getBytes (StandardCharsets.UTF_8)),
+                                                                                  aErrorList);
 
     assertNull ("External parameter entity payload must be rejected", aResult);
     assertTrue ("Error list must contain parsing errors", aErrorList.containsAtLeastOneError ());
   }
 
   /**
-   * Test that XXE is also rejected when using the direct Invoice conversion
-   * path (JAXB-based parsing via UBL21Marshaller).
+   * Test that XXE is also rejected when using the direct Invoice conversion path (JAXB-based
+   * parsing via UBL21Marshaller).
    */
   @Test
   public void testXXERejectedViaInvoicePath ()
@@ -127,16 +124,15 @@ public final class XXEProtectionTest
                                "</Invoice>";
 
     final ErrorList aErrorList = new ErrorList ();
-    final var aResult = UBLToCIIConversionHelper.convertUBL21InvoiceToCIID16B (new ByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
-                                                                                aErrorList);
+    final var aResult = UBLToCIIConversionHelper.convertUBL21InvoiceToCIID16B (new NonBlockingByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
+                                                                               aErrorList);
 
     // Either null (rejected) or the entity was not resolved (safe either way)
     if (aResult != null)
     {
       // If JAXB parsed it, verify the entity was NOT resolved
       // (the ID should not contain file contents)
-      assertTrue ("XXE entity must not be resolved in JAXB path",
-                  aErrorList.containsAtLeastOneError ());
+      assertTrue ("XXE entity must not be resolved in JAXB path", aErrorList.containsAtLeastOneError ());
     }
   }
 
@@ -155,13 +151,12 @@ public final class XXEProtectionTest
                                "</CreditNote>";
 
     final ErrorList aErrorList = new ErrorList ();
-    final var aResult = UBLToCIIConversionHelper.convertUBL21CreditNoteToCIID16B (new ByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
-                                                                                   aErrorList);
+    final var aResult = UBLToCIIConversionHelper.convertUBL21CreditNoteToCIID16B (new NonBlockingByteArrayInputStream (sXXEPayload.getBytes (StandardCharsets.UTF_8)),
+                                                                                  aErrorList);
 
     if (aResult != null)
     {
-      assertTrue ("XXE entity must not be resolved in CreditNote JAXB path",
-                  aErrorList.containsAtLeastOneError ());
+      assertTrue ("XXE entity must not be resolved in CreditNote JAXB path", aErrorList.containsAtLeastOneError ());
     }
   }
 }
