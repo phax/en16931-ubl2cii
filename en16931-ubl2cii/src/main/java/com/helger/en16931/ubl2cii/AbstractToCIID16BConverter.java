@@ -205,6 +205,7 @@ public abstract class AbstractToCIID16BConverter
     return convertAmount (aUBLAmount, false);
   }
 
+  // BG-1: BT-21/BT-22 Invoice note
   protected static un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.@Nullable NoteType convertNote (final oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.@Nullable NoteType aUBLNote)
   {
     if (aUBLNote == null || aUBLNote.getValue () == null)
@@ -217,6 +218,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
+  // Converts BG-5/BG-8/BG-12/BG-15 postal address
   @Nullable
   protected static TradeAddressType convertAddress (@Nullable final AddressType aUBLAddress)
   {
@@ -224,19 +226,27 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final TradeAddressType ret = new TradeAddressType ();
+    // BT-35/BT-50/BT-64/BT-75 Address line 1
     ifNotEmpty (aUBLAddress.getStreetNameValue (), ret::setLineOne);
+    // BT-36/BT-51/BT-65/BT-76 Address line 2
     ifNotEmpty (aUBLAddress.getAdditionalStreetNameValue (), ret::setLineTwo);
+    // BT-162/BT-163/BT-164/BT-165 Address line 3
     if (aUBLAddress.hasAddressLineEntries ())
       ifNotEmpty (aUBLAddress.getAddressLineAtIndex (0).getLineValue (), ret::setLineThree);
+    // BT-37/BT-52/BT-66/BT-77 City
     ifNotEmpty (aUBLAddress.getCityNameValue (), ret::setCityName);
+    // BT-38/BT-53/BT-67/BT-78 Post code
     ifNotEmpty (aUBLAddress.getPostalZoneValue (), ret::setPostcodeCode);
+    // BT-39/BT-54/BT-68/BT-79 Country subdivision
     if (aUBLAddress.getCountrySubentity () != null)
       ret.addCountrySubDivisionName (convertText (aUBLAddress.getCountrySubentity ().getValue ()));
+    // BT-40/BT-55/BT-69/BT-80 Country code
     if (aUBLAddress.getCountry () != null)
       ifNotEmpty (aUBLAddress.getCountry ().getIdentificationCodeValue (), ret::setCountryID);
     return ret;
   }
 
+  // BG-4/BG-7/BG-10/BG-11 Party conversion
   @Nullable
   protected static TradePartyType convertParty (@Nullable final PartyType aUBLParty)
   {
@@ -244,9 +254,11 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final TradePartyType aTPT = new TradePartyType ();
+    // BT-29/BT-29-1/BT-46/BT-46-1/BT-60/BT-60-1 Party identifier
     for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
       ifNotNull (convertID (aUBLPartyID.getID ()), aTPT::addID);
 
+    // BT-27/BT-44/BT-59/BT-62 Party name
     if (aUBLParty.hasPartyNameEntries ())
       ifNotEmpty (aUBLParty.getPartyNameAtIndex (0).getNameValue (), aTPT::setName);
 
@@ -255,7 +267,9 @@ public abstract class AbstractToCIID16BConverter
       final PartyLegalEntityType aUBLLegalEntity = aUBLParty.getPartyLegalEntity ().get (0);
 
       final LegalOrganizationType aLOT = new LegalOrganizationType ();
+      // BT-28/BT-45 Trading name
       ifNotEmpty (aUBLLegalEntity.getRegistrationNameValue (), aLOT::setTradingBusinessName);
+      // BT-30/BT-30-1/BT-47/BT-47-1/BT-61/BT-61-1 Legal registration identifier
       ifNotNull (convertID (aUBLLegalEntity.getCompanyID ()), aLOT::setID);
       ifNotNull (convertAddress (aUBLLegalEntity.getRegistrationAddress ()), aLOT::setPostalTradeAddress);
 
@@ -268,8 +282,10 @@ public abstract class AbstractToCIID16BConverter
       aTPT.setSpecifiedLegalOrganization (aLOT);
     }
 
+    // BG-5/BG-8 Postal address
     ifNotNull (convertAddress (aUBLParty.getPostalAddress ()), aTPT::setPostalTradeAddress);
 
+    // BT-34/BT-34-1/BT-49/BT-49-1 Electronic address
     if (aUBLParty.getEndpointID () != null)
     {
       final UniversalCommunicationType aUCT = new UniversalCommunicationType ();
@@ -277,6 +293,7 @@ public abstract class AbstractToCIID16BConverter
       aTPT.addURIUniversalCommunication (aUCT);
     }
 
+    // BT-31/BT-32/BT-48/BT-63 Tax registration
     for (final PartyTaxSchemeType aUBLPartyTaxScheme : aUBLParty.getPartyTaxScheme ())
       if (aUBLPartyTaxScheme.getCompanyIDValue () != null)
       {
@@ -293,11 +310,13 @@ public abstract class AbstractToCIID16BConverter
     return aTPT;
   }
 
+  // BG-24/BT-17/BT-18: Additional/Originator/Object document reference
   @NonNull
   protected static ReferencedDocumentType convertAdditionalReferencedDocument (@NonNull final DocumentReferenceType aUBLDocRef)
   {
     final ReferencedDocumentType aURDT = new ReferencedDocumentType ();
 
+    // BT-122 Supporting document reference
     ifNotEmpty (aUBLDocRef.getIDValue (), aURDT::setIssuerAssignedID);
 
     // Add DocumentTypeCode where possible
@@ -313,6 +332,7 @@ public abstract class AbstractToCIID16BConverter
       aURDT.setFormattedIssueDateTime (aFIDT);
     }
 
+    // BT-123 Supporting document description
     for (final var aUBLDocDesc : aUBLDocRef.getDocumentDescription ())
     {
       final TextType aText = new TextType ();
@@ -327,16 +347,20 @@ public abstract class AbstractToCIID16BConverter
     {
       // External Reference and Embedded Document Binary Object should be
       // mutually exclusive
+      // BT-124 External document location
       if (aUBLAttachment.getExternalReference () != null && aUBLAttachment.getExternalReference ().getURI () != null)
       {
         ifNotEmpty (aUBLAttachment.getExternalReference ().getURI ().getValue (), aURDT::setURIID);
       }
 
+      // BT-125 Attached document
       if (aUBLAttachment.getEmbeddedDocumentBinaryObject () != null)
       {
         final BinaryObjectType aBOT = new BinaryObjectType ();
+        // BT-125-1 Attached document Mime code
         ifNotEmpty (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getMimeCode (), aBOT::setMimeCode);
         ifNotNull (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getValue (), aBOT::setValue);
+        // BT-125-2 Attached document Filename
         ifNotEmpty (aUBLAttachment.getEmbeddedDocumentBinaryObject ().getFilename (), aBOT::setFilename);
         aURDT.addAttachmentBinaryObject (aBOT);
       }
@@ -344,6 +368,7 @@ public abstract class AbstractToCIID16BConverter
     return aURDT;
   }
 
+  // BG-13 DELIVERY INFORMATION
   @Nullable
   protected static HeaderTradeDeliveryType createApplicableHeaderTradeDelivery (@Nullable final DeliveryType aUBLDelivery)
   {
@@ -356,11 +381,14 @@ public abstract class AbstractToCIID16BConverter
       if (aUBLLocation != null)
       {
         final TradePartyType aTPTHT = new TradePartyType ();
+        // BT-71/BT-71-1 Deliver to location identifier
         ifNotNull (convertID (aUBLLocation.getID ()), aTPTHT::addID);
+        // BG-15 DELIVER TO ADDRESS
         ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress);
         ret.setShipToTradeParty (aTPTHT);
       }
 
+      // BT-72 Actual delivery date
       if (aUBLDelivery.getActualDeliveryDate () != null)
       {
         final SupplyChainEventType aSCET = new SupplyChainEventType ();
@@ -371,6 +399,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
+  // BG-23 VAT BREAKDOWN
   @NonNull
   protected static TradeTaxType convertApplicableTradeTax (@NonNull final TaxSubtotalType aUBLTaxSubtotal)
   {
@@ -378,19 +407,27 @@ public abstract class AbstractToCIID16BConverter
     final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
 
     final TradeTaxType ret = new TradeTaxType ();
+    // BT-118 VAT category code scheme
     if (aUBLTaxScheme != null)
       ifNotEmpty (aUBLTaxScheme.getIDValue (), ret::setTypeCode);
+    // BT-118 VAT category code
     ifNotEmpty (aUBLTaxCategory.getIDValue (), ret::setCategoryCode);
+    // BT-117 VAT category tax amount
     ifNotNull (convertAmount (aUBLTaxSubtotal.getTaxAmount ()), ret::addCalculatedAmount);
     ifNotEmpty (aUBLTaxCategory.getIDValue (), ret::setCategoryCode);
+    // BT-116 VAT category taxable amount
     ifNotNull (convertAmount (aUBLTaxSubtotal.getTaxableAmount ()), ret::addBasisAmount);
+    // BT-119 VAT category rate
     ifNotNull (aUBLTaxCategory.getPercentValue (), ret::setRateApplicablePercent);
+    // BT-120 VAT exemption reason text
     if (aUBLTaxCategory.hasTaxExemptionReasonEntries ())
       ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue (), ret::setExemptionReason);
+    // BT-121 VAT exemption reason code
     ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonCodeValue (), ret::setExemptionReasonCode);
     return ret;
   }
 
+  // BG-20/BG-21/BG-27/BG-28 Allowance/Charge details
   @NonNull
   protected static TradeAllowanceChargeType convertSpecifiedTradeAllowanceCharge (@NonNull final AllowanceChargeType aUBLAllowanceCharge)
   {
@@ -400,13 +437,19 @@ public abstract class AbstractToCIID16BConverter
     aITDC.setIndicator (Boolean.valueOf (aUBLAllowanceCharge.getChargeIndicator ().isValue ()));
     ret.setChargeIndicator (aITDC);
 
+    // BT-92/BT-99/BT-136/BT-141 Amount
     ret.addActualAmount (convertAmount (aUBLAllowanceCharge.getAmount ()));
+    // BT-98/BT-105/BT-140/BT-145 Reason code
     ifNotEmpty (aUBLAllowanceCharge.getAllowanceChargeReasonCodeValue (), ret::setReasonCode);
+    // BT-97/BT-104/BT-139/BT-144 Reason
     if (aUBLAllowanceCharge.hasAllowanceChargeReasonEntries ())
       ret.setReason (aUBLAllowanceCharge.getAllowanceChargeReason ().get (0).getValue ());
+    // BT-94/BT-101/BT-138/BT-143 Percentage
     ifNotNull (aUBLAllowanceCharge.getMultiplierFactorNumericValue (), ret::setCalculationPercent);
+    // BT-93/BT-100/BT-137/BT-142 Base amount
     ifNotNull (aUBLAllowanceCharge.getBaseAmountValue (), ret::setBasisAmount);
 
+    // BT-95/BT-102 VAT category code and BT-96/BT-103 VAT rate
     if (aUBLAllowanceCharge.hasTaxCategoryEntries ())
     {
       final TaxCategoryType aUBLTaxCategory = aUBLAllowanceCharge.getTaxCategoryAtIndex (0);
@@ -423,6 +466,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
+  // BT-20 Payment terms + BT-9 Payment due date
   @NonNull
   protected static TradePaymentTermsType convertSpecifiedTradePaymentTerms (@NonNull final PaymentTermsType aUBLPaymenTerms,
                                                                             @Nullable final PaymentMeansType aUBLPaymentMeans,
@@ -444,6 +488,7 @@ public abstract class AbstractToCIID16BConverter
     return ret;
   }
 
+  // BG-22 DOCUMENT TOTALS
   @NonNull
   protected static TradeSettlementHeaderMonetarySummationType createSpecifiedTradeSettlementHeaderMonetarySummation (@Nullable final MonetaryTotalType aUBLMonetaryTotal,
                                                                                                                      @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts)
@@ -451,13 +496,17 @@ public abstract class AbstractToCIID16BConverter
     final TradeSettlementHeaderMonetarySummationType ret = new TradeSettlementHeaderMonetarySummationType ();
     if (aUBLMonetaryTotal != null)
     {
+      // BT-106 Sum of Invoice line net amount
       ifNotNull (convertAmount (aUBLMonetaryTotal.getLineExtensionAmount ()), ret::addLineTotalAmount);
+      // BT-108 Sum of charges on document level
       ifNotNull (convertAmount (aUBLMonetaryTotal.getChargeTotalAmount ()), ret::addChargeTotalAmount);
+      // BT-107 Sum of allowances on document level
       ifNotNull (convertAmount (aUBLMonetaryTotal.getAllowanceTotalAmount ()), ret::addAllowanceTotalAmount);
+      // BT-109 Invoice total amount without VAT
       ifNotNull (convertAmount (aUBLMonetaryTotal.getTaxExclusiveAmount ()), ret::addTaxBasisTotalAmount);
     }
 
-    // BT-110 and BT-111
+    // BT-110/BT-111 Invoice total VAT amount (in document/accounting currency)
     for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
       // Currency ID is required here
@@ -466,9 +515,13 @@ public abstract class AbstractToCIID16BConverter
 
     if (aUBLMonetaryTotal != null)
     {
+      // BT-114 Rounding amount
       ifNotNull (convertAmount (aUBLMonetaryTotal.getPayableRoundingAmount ()), ret::addRoundingAmount);
+      // BT-112 Invoice total amount with VAT
       ifNotNull (convertAmount (aUBLMonetaryTotal.getTaxInclusiveAmount ()), ret::addGrandTotalAmount);
+      // BT-113 Paid amount
       ifNotNull (convertAmount (aUBLMonetaryTotal.getPrepaidAmount ()), ret::addTotalPrepaidAmount);
+      // BT-115 Amount due for payment
       ifNotNull (convertAmount (aUBLMonetaryTotal.getPayableAmount ()), ret::addDuePayableAmount);
     }
 

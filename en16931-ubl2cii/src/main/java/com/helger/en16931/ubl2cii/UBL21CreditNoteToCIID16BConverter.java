@@ -58,14 +58,17 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
   private UBL21CreditNoteToCIID16BConverter ()
   {}
 
+  // BG-25 CREDIT NOTE LINE
   @NonNull
   private static SupplyChainTradeLineItemType _convertCreditNoteLine (@NonNull final CreditNoteLineType aUBLLine)
   {
     final SupplyChainTradeLineItemType ret = new SupplyChainTradeLineItemType ();
     final DocumentLineDocumentType aDLDT = new DocumentLineDocumentType ();
 
+    // BT-126
     aDLDT.setLineID (aUBLLine.getIDValue ());
 
+    // BT-127
     for (final var aUBLNote : aUBLLine.getNote ())
       aDLDT.addIncludedNote (convertNote (aUBLNote));
 
@@ -74,18 +77,22 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     // SpecifiedTradeProduct
     final TradeProductType aTPT = new TradeProductType ();
     final ItemType aUBLItem = aUBLLine.getItem ();
+    // BT-157/BT-157-1
     if (aUBLItem.getStandardItemIdentification () != null)
       aTPT.setGlobalID (convertID (aUBLItem.getStandardItemIdentification ().getID ()));
 
+    // BT-155
     if (aUBLItem.getSellersItemIdentification () != null)
       aTPT.setSellerAssignedID (aUBLItem.getSellersItemIdentification ().getIDValue ());
 
+    // BT-153
     aTPT.addName (convertText (aUBLItem.getNameValue ()));
 
+    // BT-154
     if (aUBLItem.hasDescriptionEntries ())
       aTPT.setDescription (aUBLItem.getDescriptionAtIndex (0).getValue ());
 
-    // ApplicableProductCharacteristic
+    // BG-32 (BT-160/BT-161)
     for (final ItemPropertyType aUBLAddItemProp : aUBLLine.getItem ().getAdditionalItemProperty ())
     {
       final ProductCharacteristicType aPCT = new ProductCharacteristicType ();
@@ -94,7 +101,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       aTPT.addApplicableProductCharacteristic (aPCT);
     }
 
-    // DesignatedProductClassification
+    // BT-158/BT-158-1/BT-158-2
     for (final CommodityClassificationType aUBLCC : aUBLLine.getItem ().getCommodityClassification ())
     {
       final ProductClassificationType aPCT = new ProductClassificationType ();
@@ -106,7 +113,6 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     }
     ret.setSpecifiedTradeProduct (aTPT);
 
-    // BuyerOrderReferencedDocument
     final ReferencedDocumentType aRDT = new ReferencedDocumentType ();
     if (aUBLLine.hasOrderLineReferenceEntries ())
     {
@@ -116,7 +122,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       aRDT.setLineID (aOrderLineRef.getLineIDValue ());
     }
 
-    // NetPriceProductTradePrice
+    // BG-29: BT-146
     final TradePriceType aLTPT = new TradePriceType ();
     if (aUBLLine.getPrice () != null && aUBLLine.getPrice ().getPriceAmount () != null)
     {
@@ -129,7 +135,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     aLTAT.setNetPriceProductTradePrice (aLTPT);
     ret.setSpecifiedLineTradeAgreement (aLTAT);
 
-    // SpecifiedLineTradeDelivery
+    // BT-129/BT-130 Credited quantity
     final LineTradeDeliveryType aLTDT = new LineTradeDeliveryType ();
     final QuantityType aQuantity = new QuantityType ();
     aQuantity.setUnitCode (aUBLLine.getCreditedQuantity ().getUnitCode ());
@@ -137,7 +143,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     aLTDT.setBilledQuantity (aQuantity);
     ret.setSpecifiedLineTradeDelivery (aLTDT);
 
-    // SpecifiedLineTradeSettlement
+    // BG-30 (BT-151/BT-152)
     final LineTradeSettlementType aLineTradeSettlement = new LineTradeSettlementType ();
     for (final TaxCategoryType aUBLTaxCategory : aUBLLine.getItem ().getClassifiedTaxCategory ())
     {
@@ -151,9 +157,11 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       aLineTradeSettlement.addApplicableTradeTax (aTradeTax);
     }
 
+    // BT-131
     final TradeSettlementLineMonetarySummationType aLineMonetarySum = new TradeSettlementLineMonetarySummationType ();
     ifNotNull (convertAmount (aUBLLine.getLineExtensionAmount ()), aLineMonetarySum::addLineTotalAmount);
 
+    // BT-133
     if (aUBLLine.getAccountingCostValue () != null)
     {
       final TradeAccountingAccountType aTAATL = new TradeAccountingAccountType ();
@@ -175,6 +183,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     final PaymentMeansType aUBLPaymentMeans = aUBLDoc.hasPaymentMeansEntries () ? aUBLDoc.getPaymentMeansAtIndex (0)
                                                                                 : null;
 
+    // BT-83
     if (aUBLPaymentMeans != null && aUBLPaymentMeans.hasPaymentIDEntries ())
       ifNotEmpty (aUBLPaymentMeans.getPaymentIDAtIndex (0).getValue (), x -> ret.addPaymentReference (convertText (x)));
 
@@ -184,8 +193,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     // Tax currency code BT-6
     ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
 
+    // BG-10 PAYEE
     ifNotNull (convertParty (aUBLDoc.getPayeeParty ()), ret::setPayeeTradeParty);
 
+    // BG-16/BG-17
     if (aUBLPaymentMeans != null)
     {
       final TradeSettlementPaymentMeansType aPaymentMeans = new TradeSettlementPaymentMeansType ();
@@ -198,6 +209,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       ret.addSpecifiedTradeSettlementPaymentMeans (aPaymentMeans);
     }
 
+    // BG-23 VAT BREAKDOWN
     for (final TaxTotalType aUBLTaxTotal : aUBLDoc.getTaxTotal ())
       for (final TaxSubtotalType aUBLTaxSubtotal : aUBLTaxTotal.getTaxSubtotal ())
         ret.addApplicableTradeTax (convertApplicableTradeTax (aUBLTaxSubtotal));
@@ -223,6 +235,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         ifNotEmpty (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue (),
                     x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
+      // BG-14 (BT-73/BT-74)
       final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
       if (aUBLPeriod.getStartDate () != null)
         aSPT.setStartDateTime (convertDateTime (aUBLPeriod.getStartDate ().getValueLocal ()));
@@ -231,17 +244,21 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       ret.setBillingSpecifiedPeriod (aSPT);
     }
 
+    // BG-20/BG-21
     for (final AllowanceChargeType aUBLAllowanceCharge : aUBLDoc.getAllowanceCharge ())
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
+    // BT-20 + BT-9
     for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
       ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans, null));
 
+    // BG-22 DOCUMENT TOTALS
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
                                                                                                                    aUBLTaxTotalAmounts));
 
+    // BT-19
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {
       final TradeAccountingAccountType aTAAT = new TradeAccountingAccountType ();
       aTAAT.setID (x);
@@ -261,6 +278,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     final CrossIndustryInvoiceType aCIIInvoice = new CrossIndustryInvoiceType ();
 
     {
+      // BG-2
       final ExchangedDocumentContextType aEDCT = new ExchangedDocumentContextType ();
       // BT-24
       ifNotEmpty (aUBLDoc.getCustomizationIDValue (), x -> {
@@ -289,7 +307,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       // IssueDate BT-2
       ifNotNull (aUBLDoc.getIssueDate (), x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal ())));
 
-      // Add IncludedNote
+      // BG-1
       for (final var aNote : aUBLDoc.getNote ())
         aEDT.addIncludedNote (convertNote (aNote));
 
@@ -299,7 +317,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     {
       final SupplyChainTradeTransactionType aSCTT = new SupplyChainTradeTransactionType ();
 
-      // IncludedSupplyChainTradeLineItem
+      // BG-25
       for (final var aLine : aUBLDoc.getCreditNoteLine ())
         aSCTT.addIncludedSupplyChainTradeLineItem (_convertCreditNoteLine (aLine));
 
@@ -310,12 +328,12 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         // Buyer reference (BT-10)
         ifNotEmpty (aUBLDoc.getBuyerReferenceValue (), aHTAT::setBuyerReference);
 
-        // SellerTradeParty
+        // BG-4 SELLER
         final SupplierPartyType aSupplierParty = aUBLDoc.getAccountingSupplierParty ();
         if (aSupplierParty != null)
           aHTAT.setSellerTradeParty (convertParty (aSupplierParty.getParty ()));
 
-        // BuyerTradeParty
+        // BG-7 BUYER
         final CustomerPartyType aCustomerParty = aUBLDoc.getAccountingCustomerParty ();
         if (aCustomerParty != null)
           aHTAT.setBuyerTradeParty (convertParty (aCustomerParty.getParty ()));
@@ -331,7 +349,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
           aHTAT.setBuyerOrderReferencedDocument (aRDT);
         }
 
-        // ContractReferencedDocument
+        // BT-12
         if (aUBLDoc.hasContractDocumentReferenceEntries ())
         {
           final ReferencedDocumentType aCRDT = new ReferencedDocumentType ();
@@ -339,13 +357,13 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
           aHTAT.setContractReferencedDocument (aCRDT);
         }
 
-        // AdditionalReferencedDocument
+        // BG-24 + BT-18/BT-18-1
         for (final var aUBLDocDesc : aUBLDoc.getAdditionalDocumentReference ())
           aHTAT.addAdditionalReferencedDocument (convertAdditionalReferencedDocument (aUBLDocDesc));
         aSCTT.setApplicableHeaderTradeAgreement (aHTAT);
       }
 
-      // ApplicableHeaderTradeDelivery
+      // BG-13
       aSCTT.setApplicableHeaderTradeDelivery (createApplicableHeaderTradeDelivery (aUBLDoc.hasDeliveryEntries () ? aUBLDoc.getDeliveryAtIndex (0)
                                                                                                                  : null));
 
