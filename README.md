@@ -3,6 +3,8 @@
 <!-- ph-badge-start -->
 [![Sonatype Central](https://maven-badges.sml.io/sonatype-central/com.helger/en16931-ubl2cii-parent-pom/badge.svg)](https://maven-badges.sml.io/sonatype-central/com.helger/en16931-ubl2cii-parent-pom/)
 [![javadoc](https://javadoc.io/badge2/com.helger/en16931-ubl2cii/javadoc.svg)](https://javadoc.io/doc/com.helger/en16931-ubl2cii)
+
+> If this project saved you some time or made your day a little easier, a star would mean a lot — it helps others find it too.
 <!-- ph-badge-end -->
 
 Converter library for EN 16931:2017 invoices from UBL 2.1 to CII D16B
