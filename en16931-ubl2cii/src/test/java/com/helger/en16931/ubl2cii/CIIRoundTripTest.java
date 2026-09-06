@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.list.ErrorList;
-import com.helger.en16931.cii2ubl.CIIToUBL21Converter;
+import com.helger.en16931.cii2ubl.en2017.CIID16BToUBL21Converter;
 import com.helger.io.file.FileOperationManager;
 import com.helger.io.file.FilenameHelper;
 
@@ -37,9 +37,8 @@ import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 
 /**
- * Round-trip test: CII → UBL 2.1 (via en16931-cii2ubl) → CII (via
- * en16931-ubl2cii). Compares the re-created CII XML with the original to
- * detect data loss in the conversion chain.
+ * Round-trip test: CII → UBL 2.1 (via en16931-cii2ubl) → CII (via en16931-ubl2cii). Compares the
+ * re-created CII XML with the original to detect data loss in the conversion chain.
  *
  * @author Philip Helger
  */
@@ -52,7 +51,7 @@ public final class CIIRoundTripTest
   @Test
   public void testRoundTripInvoices ()
   {
-    final CIIToUBL21Converter aCIIToUBL = new CIIToUBL21Converter ();
+    final CIID16BToUBL21Converter aCIIToUBL = new CIID16BToUBL21Converter ();
 
     for (final File aFile : MockSettings.getAllTestFilesCIIInvoice ())
     {
@@ -64,7 +63,7 @@ public final class CIIRoundTripTest
       final File aRoundTripOut = new File ("generated/roundtrip/" + sBaseName + "-roundtrip.xml");
       FileOperationManager.INSTANCE.deleteFileIfExisting (aOrigOut);
       FileOperationManager.INSTANCE.deleteFileIfExisting (aRoundTripOut);
- 
+
       // Step 1: Read source CII
       final CrossIndustryInvoiceType aOrigCII = CII_MARSHALLER.read (aFile);
       assertNotNull ("Failed to read CII: " + aFile, aOrigCII);
@@ -78,7 +77,7 @@ public final class CIIRoundTripTest
       // Step 3: UBL Invoice → CII
       aErrorList.clear ();
       final CrossIndustryInvoiceType aRoundTripCII = UBL21InvoiceToCIID16BConverter.convertToCrossIndustryInvoice (aUBLInvoice,
-                                                                                                                    aErrorList);
+                                                                                                                   aErrorList);
       assertTrue ("UBL→CII errors for " + aFile + ": " + aErrorList.toString (), aErrorList.containsNoError ());
       assertNotNull ("UBL→CII returned null for " + aFile, aRoundTripCII);
 
@@ -91,7 +90,7 @@ public final class CIIRoundTripTest
       if (!sOrigXML.equals (sRoundTripXML))
       {
         // Write both files for manual inspection
-          CII_MARSHALLER.setFormattedOutput (true).write (aOrigCII, aOrigOut);
+        CII_MARSHALLER.setFormattedOutput (true).write (aOrigCII, aOrigOut);
         CII_MARSHALLER.setFormattedOutput (true).write (aRoundTripCII, aRoundTripOut);
 
         LOGGER.warn ("Round-trip mismatch for " +
@@ -102,14 +101,14 @@ public final class CIIRoundTripTest
                      aRoundTripOut.getPath ());
       }
       else
-        LOGGER.info("Round-trip match for " + aFile.getName () );
+        LOGGER.info ("Round-trip match for " + aFile.getName ());
     }
   }
 
   @Test
   public void testRoundTripCreditNotes ()
   {
-    final CIIToUBL21Converter aCIIToUBL = new CIIToUBL21Converter ();
+    final CIID16BToUBL21Converter aCIIToUBL = new CIID16BToUBL21Converter ();
 
     for (final File aFile : MockSettings.getAllTestFilesCIICreditNote ())
     {
@@ -128,7 +127,7 @@ public final class CIIRoundTripTest
       // Step 3: UBL Credit Note → CII
       aErrorList.clear ();
       final CrossIndustryInvoiceType aRoundTripCII = UBL21CreditNoteToCIID16BConverter.convertToCrossIndustryInvoice (aUBLCreditNote,
-                                                                                                                       aErrorList);
+                                                                                                                      aErrorList);
       assertTrue ("UBL→CII errors for " + aFile + ": " + aErrorList.toString (), aErrorList.containsNoError ());
       assertNotNull ("UBL→CII returned null for " + aFile, aRoundTripCII);
 
@@ -155,7 +154,7 @@ public final class CIIRoundTripTest
                      aRoundTripOut.getPath ());
       }
       else
-        LOGGER.info("Round-trip match for " + aFile.getName () );
+        LOGGER.info ("Round-trip match for " + aFile.getName ());
     }
   }
 }
