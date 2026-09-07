@@ -488,26 +488,13 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
   }
 
   /**
-   * A line reference that the UBL binding requires but the document does not have carries the
-   * placeholder <code>None</code> - see the notes on BT-188, BT-189, BT-191, BT-198 and BT-200 of
-   * the mapping table. It must not be copied to CII, where the element is genuinely optional.
-   */
-  public static final String UBL_LINE_REFERENCE_PLACEHOLDER = "None";
-
-  @Nullable
-  protected static String withoutLineReferencePlaceholder (@Nullable final String sLineID)
-  {
-    return UBL_LINE_REFERENCE_PLACEHOLDER.equals (sLineID) ? null : sLineID;
-  }
-
-  /**
    * Build a CII referenced document out of a document identifier and a line identifier, which is
    * the shape of every line level document reference added in 2026.
    *
    * @param sIssuerAssignedID
    *        The document identifier. May be <code>null</code>.
    * @param sLineID
-   *        The line identifier. May be <code>null</code> and may be the placeholder.
+   *        The line identifier. May be <code>null</code>. Either argument may be the placeholder.
    * @return <code>null</code> if neither of the two is present.
    */
   @Nullable
@@ -515,8 +502,10 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
                                                                         @Nullable final String sLineID)
   {
     final ReferencedDocumentType ret = new ReferencedDocumentType ();
-    boolean bUse = ifNotEmpty (sIssuerAssignedID, ret::setIssuerAssignedID);
-    if (ifNotEmpty (withoutLineReferencePlaceholder (sLineID), ret::setLineID))
+    // Both carry the placeholder when the other one forced the enclosing UBL element into
+    // existence - BT-188 with BT-132 and BT-200 with BT-201
+    boolean bUse = ifNotEmpty (withoutPlaceholder (sIssuerAssignedID), ret::setIssuerAssignedID);
+    if (ifNotEmpty (withoutPlaceholder (sLineID), ret::setLineID))
       bUse = true;
     return bUse ? ret : null;
   }

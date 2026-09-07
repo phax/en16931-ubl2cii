@@ -40,7 +40,9 @@ import com.helger.collection.commons.CommonsLinkedHashSet;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.collection.commons.ICommonsOrderedSet;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.basics.codelist.EN16931CodeLists;
 import com.helger.en16931.cii2ubl.en2026.CIID25AToUBL25Converter;
+import com.helger.en16931.ubl2cii.MockRoundTrip;
 import com.helger.en16931.ubl2cii.UBLToCIIDispatcher;
 import com.helger.io.file.FileSystemIterator;
 import com.helger.xml.XMLHelper;
@@ -72,8 +74,9 @@ public final class CIID25ARoundTripTest
   static
   {
     EXPECTED_LOSSES = new CommonsLinkedHashSet <> ();
-    // BT-11-1 Project name is a CII-only element with no UBL counterpart. On the way back the
-    // EN prescribed constant "Project reference" is written instead of the original name.
+    // BT-11-1 Project name is a CII only element with no UBL counterpart, so the original value
+    // cannot survive. On the way back the binding prescribes repeating BT-11 as the name, which is
+    // what this library writes - the same element, a different value.
     EXPECTED_LOSSES.add ("/SpecifiedProcuringProject/Name");
     // BT-90 Bank assigned creditor identifier. EN 16931 defines it inside BG-19 DIRECT DEBIT, and
     // en16931-cii2ubl maps it only there. All but one of the CII originals carry
@@ -163,6 +166,97 @@ public final class CIID25ARoundTripTest
   {
     final String sPath = sLeaf.substring (0, sLeaf.indexOf ('='));
     return EXPECTED_LOSSES.containsAny (sPath::endsWith);
+  }
+
+  /**
+   * BT-189 without BT-190: <code>cbc:LineID</code> is mandatory inside the UBL
+   * <code>cac:DespatchLineReference</code>, so en16931-cii2ubl has to invent a value for it. Both
+   * libraries have to agree on which one, or the round trip invents a line reference that the
+   * original document never had. The agreed value is
+   * {@link EN16931CodeLists#MISSING_VALUE_PLACEHOLDER}, which this library drops again.
+   */
+  @Test
+  public void testLineReferencePlaceholderIsNotInvented ()
+  {
+    final CIID25ACrossIndustryInvoiceTypeMarshaller aCIIMarshaller = new CIID25ACrossIndustryInvoiceTypeMarshaller ();
+    final CrossIndustryInvoiceType aOrigCII = aCIIMarshaller.read (new File (MockD25ASettings.BASE_TEST_DIR_CII_D25A +
+                                                                            "d25a-new-lineref-invoice.xml"));
+    assertNotNull (aOrigCII);
+
+    // BT-189 stays, BT-190 goes - the UBL element around it remains mandatory
+    aOrigCII.getSupplyChainTradeTransaction ()
+            .getIncludedSupplyChainTradeLineItemAtIndex (0)
+            .getSpecifiedLineTradeDelivery ()
+            .getDespatchAdviceReferencedDocument ()
+            .setLineID ((un.unece.uncefact.data.standard.cii.d25a.udt.IDType) null);
+
+    final ErrorList aErrorList = new ErrorList ();
+    final Serializable aUBL = new CIID25AToUBL25Converter ().convertToInvoice (aOrigCII, aErrorList);
+    assertTrue (aErrorList.toString (), aErrorList.containsNoError ());
+    assertNotNull (aUBL);
+
+    // en16931-cii2ubl writes the placeholder into the mandatory element
+    final Document aUBLDoc = com.helger.ubl25.UBL25Marshaller.invoice ()
+                                                             .getAsDocument ((InvoiceType) aUBL);
+    assertNotNull (aUBLDoc);
+    assertTrue ("en16931-cii2ubl no longer writes the agreed placeholder",
+                MockRoundTrip.getAllLeaves (aUBLDoc)
+                             .containsKey ("/Invoice/InvoiceLine/DespatchLineReference/LineID=" +
+                                           EN16931CodeLists.MISSING_VALUE_PLACEHOLDER));
+
+    // and this library drops it again, so no BT-190 is invented
+    aErrorList.clear ();
+    final Serializable aRoundTripCII = UBLToCIIDispatcher.convertUBLtoCII (aUBLDoc, null, aErrorList);
+    assertTrue (aErrorList.toString (), aErrorList.containsNoError ());
+    assertNotNull (aRoundTripCII);
+
+    final Document aRoundTripDoc = aCIIMarshaller.getAsDocument ((CrossIndustryInvoiceType) aRoundTripCII);
+    assertNotNull (aRoundTripDoc);
+    for (final String sLeaf : MockRoundTrip.getAllLeaves (aRoundTripDoc).keySet ())
+      if (sLeaf.startsWith ("/CrossIndustryInvoice/SupplyChainTradeTransaction/IncludedSupplyChainTradeLineItem/SpecifiedLineTradeDelivery/DespatchAdviceReferencedDocument/LineID"))
+        fail ("The round trip invented the line reference " + sLeaf);
+  }
+
+  /**
+   * BT-14 without BT-13: <code>cbc:ID</code> is mandatory in the UBL <code>cac:OrderReference</code>
+   * that BT-14 needs, so en16931-cii2ubl writes the agreed placeholder there. This library has to
+   * recognise it, or the round trip invents a purchase order reference the original never had.
+   */
+  @Test
+  public void testOrderReferencePlaceholderIsNotInvented ()
+  {
+    final CIID25ACrossIndustryInvoiceTypeMarshaller aCIIMarshaller = new CIID25ACrossIndustryInvoiceTypeMarshaller ();
+    final CrossIndustryInvoiceType aOrigCII = aCIIMarshaller.read (new File (MockD25ASettings.BASE_TEST_DIR_CII_D25A +
+                                                                            "d25a-full-invoice.xml"));
+    assertNotNull (aOrigCII);
+
+    // BT-14 stays, BT-13 goes - the UBL element around it remains mandatory
+    aOrigCII.getSupplyChainTradeTransaction ()
+            .getApplicableHeaderTradeAgreement ()
+            .setBuyerOrderReferencedDocument (null);
+
+    final ErrorList aErrorList = new ErrorList ();
+    final Serializable aUBL = new CIID25AToUBL25Converter ().convertToInvoice (aOrigCII, aErrorList);
+    assertTrue (aErrorList.toString (), aErrorList.containsNoError ());
+    assertNotNull (aUBL);
+
+    final Document aUBLDoc = com.helger.ubl25.UBL25Marshaller.invoice ().getAsDocument ((InvoiceType) aUBL);
+    assertNotNull (aUBLDoc);
+    assertTrue ("en16931-cii2ubl no longer writes the agreed placeholder",
+                MockRoundTrip.getAllLeaves (aUBLDoc)
+                             .containsKey ("/Invoice/OrderReference/ID=" +
+                                           EN16931CodeLists.MISSING_VALUE_PLACEHOLDER));
+
+    aErrorList.clear ();
+    final Serializable aRoundTripCII = UBLToCIIDispatcher.convertUBLtoCII (aUBLDoc, null, aErrorList);
+    assertTrue (aErrorList.toString (), aErrorList.containsNoError ());
+    assertNotNull (aRoundTripCII);
+
+    final Document aRoundTripDoc = aCIIMarshaller.getAsDocument ((CrossIndustryInvoiceType) aRoundTripCII);
+    assertNotNull (aRoundTripDoc);
+    for (final String sLeaf : MockRoundTrip.getAllLeaves (aRoundTripDoc).keySet ())
+      if (sLeaf.contains ("/BuyerOrderReferencedDocument/"))
+        fail ("The round trip invented the purchase order reference " + sLeaf);
   }
 
   @Test

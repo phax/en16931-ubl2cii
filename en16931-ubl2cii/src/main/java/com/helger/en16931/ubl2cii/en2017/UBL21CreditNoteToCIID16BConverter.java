@@ -587,10 +587,13 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         // Purchase order reference BT-13
         if (aUBLDoc.getOrderReference () != null)
         {
-          if (StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getIDValue ()))
+          // cbc:ID is mandatory in cac:OrderReference, so a document that has only BT-14 carries
+          // the placeholder here instead of a BT-13 value
+          final String sBuyerOrderID = withoutPlaceholder (aUBLDoc.getOrderReference ().getIDValue ());
+          if (StringHelper.isNotEmpty (sBuyerOrderID))
           {
             final ReferencedDocumentType aBuyerOrderRDT = new ReferencedDocumentType ();
-            aBuyerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());
+            aBuyerOrderRDT.setIssuerAssignedID (sBuyerOrderID);
             aHTAT.setBuyerOrderReferencedDocument (aBuyerOrderRDT);
           }
 

@@ -775,10 +775,11 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e,
                  "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:ID",
                  "PROJECT-7");
-    // BT-11-1 Project name is mandatory in CII as soon as the container is used
+    // BT-11-1 Project name is mandatory in CII as soon as the container is used, and the binding
+    // says to repeat BT-11 there because UBL has no counterpart for it
     assertXPath (e,
                  "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:Name",
-                 "Project reference");
+                 "PROJECT-7");
 
     // BG-1 and BT-10/BT-10-1 behave exactly as on the invoice
     assertXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[1]/ram:SubjectCode", "AAI");

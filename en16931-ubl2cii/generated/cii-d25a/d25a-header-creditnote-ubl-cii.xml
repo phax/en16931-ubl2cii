@@ -108,7 +108,7 @@
       </ram:ContractReferencedDocument>
       <ram:SpecifiedProcuringProject>
         <ram:ID>PROJECT-7</ram:ID>
-        <ram:Name>Project reference</ram:Name>
+        <ram:Name>PROJECT-7</ram:Name>
       </ram:SpecifiedProcuringProject>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery />

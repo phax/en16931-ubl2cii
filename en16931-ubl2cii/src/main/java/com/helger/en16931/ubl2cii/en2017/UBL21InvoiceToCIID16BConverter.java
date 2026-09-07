@@ -590,8 +590,10 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
           ifNotEmpty (aProjRef.getIDValue (), x -> {
             final ProcuringProjectType aProcuringProject = new ProcuringProjectType ();
             aProcuringProject.setID (x);
-            // Constant value according to EN
-            aProcuringProject.setName ("Project reference");
+            // BT-11-1 Project name is mandatory in CII as soon as ram:SpecifiedProcuringProject
+            // exists, and UBL has no counterpart for it. The binding says to repeat BT-11 there,
+            // and this branch only runs for a non empty BT-11, so no placeholder is needed.
+            aProcuringProject.setName (x);
             aHTAT.setSpecifiedProcuringProject (aProcuringProject);
           });
         }
@@ -599,10 +601,13 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
         // Purchase order reference BT-13
         if (aUBLDoc.getOrderReference () != null)
         {
-          if (StringHelper.isNotEmpty (aUBLDoc.getOrderReference ().getIDValue ()))
+          // cbc:ID is mandatory in cac:OrderReference, so a document that has only BT-14 carries
+          // the placeholder here instead of a BT-13 value
+          final String sBuyerOrderID = withoutPlaceholder (aUBLDoc.getOrderReference ().getIDValue ());
+          if (StringHelper.isNotEmpty (sBuyerOrderID))
           {
             final ReferencedDocumentType aBuyerOrderRDT = new ReferencedDocumentType ();
-            aBuyerOrderRDT.setIssuerAssignedID (aUBLDoc.getOrderReference ().getIDValue ());
+            aBuyerOrderRDT.setIssuerAssignedID (sBuyerOrderID);
             aHTAT.setBuyerOrderReferencedDocument (aBuyerOrderRDT);
           }
 

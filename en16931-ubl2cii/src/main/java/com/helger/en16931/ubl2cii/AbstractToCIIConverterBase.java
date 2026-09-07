@@ -26,6 +26,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.helger.en16931.basics.ConversionHelper;
+import com.helger.en16931.basics.codelist.EN16931CodeLists;
 import com.helger.en16931.basics.EEN16931DateFormatCode;
 
 /**
@@ -60,6 +61,23 @@ public abstract class AbstractToCIIConverterBase
   protected static boolean ifNotEmpty (@Nullable final String s, @NonNull final Consumer <? super String> aConsumer)
   {
     return ConversionHelper.ifNotEmpty (s, aConsumer);
+  }
+
+  /**
+   * Drop the placeholder that a syntax binding prescribes where an element is mandatory but the
+   * business term behind it is absent - see
+   * {@link com.helger.en16931.basics.codelist.EN16931CodeLists#MISSING_VALUE_PLACEHOLDER}. UBL
+   * needs it for BT-13 and for the line references BT-132, BT-190, BT-192 and BT-199, and it must
+   * never be copied to CII, where those elements are genuinely optional.
+   *
+   * @param sValue
+   *        The value read from the source document. May be <code>null</code>.
+   * @return <code>null</code> if the value is the placeholder.
+   */
+  @Nullable
+  protected static String withoutPlaceholder (@Nullable final String sValue)
+  {
+    return EN16931CodeLists.MISSING_VALUE_PLACEHOLDER.equals (sValue) ? null : sValue;
   }
 
   /**
