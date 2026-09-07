@@ -116,7 +116,6 @@
       <ram:BuyerReferenceID schemeID="ADE">BUYER-REF-4711</ram:BuyerReferenceID>
       <ram:SellerTradeParty>
         <ram:GlobalID schemeID="0088">4035811234567</ram:GlobalID>
-        <ram:GlobalID schemeID="SEPA">SEPA-CRED-1</ram:GlobalID>
         <ram:Name>Seller Ltd</ram:Name>
         <ram:SpecifiedLegalOrganization>
           <ram:ID schemeID="0198">FN123456x</ram:ID>

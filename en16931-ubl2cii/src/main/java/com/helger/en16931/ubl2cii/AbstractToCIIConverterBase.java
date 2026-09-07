@@ -50,6 +50,15 @@ public abstract class AbstractToCIIConverterBase
    */
   protected static final EEN16931DateFormatCode CII_DATE_TIME_FORMAT = EEN16931DateFormatCode.CCYYMMDDHHMMSSZHHMM;
 
+  /**
+   * The scheme identifier BT-90-1 of the bank assigned creditor identifier. It is the only thing
+   * that tells BT-90 apart from the party identifiers BT-29, BT-46 and BT-60, which share the UBL
+   * element <code>cac:PartyIdentification/cbc:ID</code> with it. A party identifier scheme must be
+   * an ISO 6523 ICD code, so a party identification carrying this value must never be written as
+   * one.
+   */
+  protected static final String BT_90_SCHEME_ID = "SEPA";
+
   private static final DateTimeFormatter CII_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern (CII_DATE_TIME_FORMAT.getJavaPattern ());
 
   protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)

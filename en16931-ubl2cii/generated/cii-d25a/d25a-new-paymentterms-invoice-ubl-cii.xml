@@ -217,7 +217,6 @@
       <ram:InvoiceCurrencyCode>EUR</ram:InvoiceCurrencyCode>
       <ram:PayeeTradeParty>
         <ram:GlobalID schemeID="0088">4035822222222</ram:GlobalID>
-        <ram:GlobalID schemeID="SEPA">SEPA-CRED-1</ram:GlobalID>
         <ram:Name>Payee Ltd</ram:Name>
         <ram:SpecifiedLegalOrganization>
           <ram:ID schemeID="0198">FN999999z</ram:ID>

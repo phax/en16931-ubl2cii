@@ -75,12 +75,16 @@ public final class CIID25ARoundTripTest
     // BT-11-1 Project name is a CII-only element with no UBL counterpart. On the way back the
     // EN prescribed constant "Project reference" is written instead of the original name.
     EXPECTED_LOSSES.add ("/SpecifiedProcuringProject/Name");
-    // BT-90 Bank assigned creditor identifier. en16931-cii2ubl 4.0.0 does not write it on the
-    // CII D25A -> UBL 2.5 leg, so it is already gone before this library sees the document.
-    // Not a defect of en16931-ubl2cii - the 2017 path of cii2ubl does write it.
+    // BT-90 Bank assigned creditor identifier. EN 16931 defines it inside BG-19 DIRECT DEBIT, and
+    // en16931-cii2ubl maps it only there. All but one of the CII originals carry
+    // ram:CreditorReferenceID next to a credit transfer payment means instead, which is outside
+    // BG-19, so the value is dropped on the way to UBL. The one direct debit original round trips
+    // it - so this is a property of the test data, not a defect of either library.
     EXPECTED_LOSSES.add ("/ApplicableHeaderTradeSettlement/CreditorReferenceID");
-    // BT-114 Rounding amount. Same situation: it is not in the UBL 2.5 document at all, so there
-    // is nothing to read back.
+    // BT-114 Rounding amount. Every CII original has it as "0.00", and en16931-cii2ubl
+    // deliberately skips a zero rounding amount - a documented work around for
+    // https://github.com/ConnectingEurope/eInvoicing-EN16931/issues/242. A non-zero rounding
+    // amount does round trip, see the coverage invoice of UBL25RoundTripTest.
     EXPECTED_LOSSES.add ("/SpecifiedTradeSettlementHeaderMonetarySummation/RoundingAmount");
     // BT-149/BT-150 Item price base quantity. CII carries it on the net *and* on the gross price,
     // UBL has a single cac:Price/cbc:BaseQuantity for both. The way back can only restore one of

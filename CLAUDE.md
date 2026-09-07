@@ -101,8 +101,7 @@ JUnit 4. Test classes live in the package of the code they test.
 
 - **EN 16931:2017** — `en2017.UBL21InvoiceToCIID16BConverterTest` and its credit note counterpart
   convert the UBL 2.1 samples in `src/test/resources/external/ubl21/` and validate the CII output
-  against the EN 16931 Schematron via phive-rules. `en2017.CIIRoundTripTest` goes CII → UBL → CII
-  using en16931-cii2ubl as a test dependency.
+  against the EN 16931 Schematron via phive-rules.
 - **EN 16931:2026** — `en2026.UBL25ToCIID25AConverterTest` uses the UBL 2.5 corpus in
   `src/test/resources/external/ubl25/`, because **no Schematron exists for 2026 yet**. Correctness
   rests on XSD validity of both sides plus one XPath assertion per business term, with the
@@ -111,9 +110,15 @@ JUnit 4. Test classes live in the package of the code they test.
 - `en2026.MappingCoverageTest` fails if any row of `docs/en16931-2026-syntax.md` is never named in
   the 2026 converters. It exists because the mapping document's own "New in 2026" table is not a
   complete diff — cii2ubl missed BT-122-1 that way.
-- `en2026.CIID25ARoundTripTest` goes CII D25A → UBL 2.5 → CII D25A and compares leaf values
-  numerically. Its `EXPECTED_LOSSES` set documents every value a round trip cannot preserve, with
-  the reason; anything else fails the test.
+- **Round trips, in both directions.** `en2017.CIIRoundTripTest` and `en2026.CIID25ARoundTripTest`
+  start at CII; `en2017.UBL21RoundTripTest` and `en2026.UBL25RoundTripTest` start at UBL, which is
+  the direction this library converts. Only the latter two can see a business term that *this*
+  library drops — in the CII → UBL → CII direction the value is already gone from the UBL input we
+  receive. All four use `MockRoundTrip`, which reduces a document to the multiset of its leaf
+  values — every childless element plus every attribute — so the comparison ignores element order
+  but still catches a container written once instead of three times. Each test has an
+  `EXPECTED_LOSSES` set naming every value a round trip cannot preserve *and why*; anything else
+  fails. Both UBL round trips are lossless today apart from `cbc:NetworkID`.
 - Converted output is written to `en16931-ubl2cii/generated/cii/` and `generated/cii-d25a/`, both
   **tracked in git**. `git status` on those folders is the regression check — it is how the 2017
   path was proven unchanged through the restructuring.
@@ -121,9 +126,30 @@ JUnit 4. Test classes live in the package of the code they test.
 
 ### The test corpus
 
-The UBL 2.5 files are the output of en16931-cii2ubl for its 16 hand written CII D25A instances, and
-those originals are kept in `src/test/resources/external/cii-d25a/` as the round-trip reference.
-The corpus therefore covers all 284 mapping rows by construction.
+The UBL 2.5 files in `ubl25/inv/` and `ubl25/cn/` are the output of en16931-cii2ubl for its 16 hand
+written CII D25A instances, and those originals are kept in `src/test/resources/external/cii-d25a/`
+as the round-trip reference.
+
+Being cii2ubl's output, that corpus contains only what cii2ubl emits — it does **not** cover all
+284 mapping rows, contrary to what one might assume. The same holds for the UBL 2.1 Peppol samples,
+which never exercised 17 of the 180 rows of the 2017 mapping. The `coverage` files close both gaps
+and are the only hand written UBL documents here:
+
+| File | Business terms it exists for |
+|------|------------------------------|
+| `ubl21/inv/coverage/en16931-coverage-invoice.xml` | BT-8, BT-15, BT-16, BT-17, BT-26, BT-87, BT-88, BT-114, BT-125 with BT-125-1 and BT-125-2, BT-128 with BT-128-1, BT-156, BT-158-2 |
+| `ubl21/inv/coverage/en16931-coverage-directdebit-invoice.xml` | BT-89, BT-90, BT-91 |
+| `ubl25/inv/d25a-coverage-invoice-ubl.xml` | BT-8, BT-89, BT-90, BT-91, BT-114, BG-24 with BT-122 to BT-125 |
+| `ubl25/inv/d25a-coverage-card-invoice-ubl.xml` | BT-87, BT-88 |
+
+The payment terms are split across files because CII-SR-467 forbids more than one distinct payment
+means type code per document, and because BT-90 only survives a round trip inside BG-19 — see the
+traps below.
+
+What no round trip can reach is the fixed-value discriminator rows — BT-122-1 (`916`), and the
+`@schemeID='VA'` respectively `cac:TaxScheme/cbc:ID='VAT'` alternatives of BT-31, BT-32, BT-48 and
+BT-63. cii2ubl emits only one of each pair, so the other form would always be reported as a loss.
+`MappingCoverageTest` is what guards those.
 
 ## Key Dependencies
 
@@ -156,3 +182,11 @@ The corpus therefore covers all 284 mapping rows by construction.
   They are told apart by the elements they use, and one CII container is emitted per UBL one.
 - **`cac:PaymentTerms` is 0..n since 2026**, so anything 0..1 inside it — BT-9 in particular —
   belongs on the first one only.
+- **`cac:PartyIdentification/cbc:ID` is BT-29/BT-46/BT-60 *and* BT-90**, told apart only by
+  `@schemeID="SEPA"` (`AbstractToCIIConverterBase.BT_90_SCHEME_ID`). BT-90 has a dedicated CII
+  element, so it must be skipped in the party identifier loop — writing it as `ram:GlobalID` too
+  violates BR-CL-10, because `SEPA` is not an ISO 6523 ICD code.
+- **BT-90 lives inside BG-19 DIRECT DEBIT.** en16931-cii2ubl maps `ram:CreditorReferenceID` back to
+  UBL only when the payment means is a direct debit, which is what the EN 16931 model prescribes. A
+  CII document carrying it next to a credit transfer therefore loses it — that is the data being
+  wrong, not the converter.
