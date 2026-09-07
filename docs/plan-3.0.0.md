@@ -1,6 +1,6 @@
 # Plan: en16931-ubl2cii 3.0.0
 
-Status: **A0-A13 done** - all 284 mapping rows implemented. A3 absorbed A5, and the coverage guard of A16 was pulled forward into phase 4 to serve as its worklist. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
+Status: **complete** - all 18 action items done. A3 absorbed A5, and the coverage guard of A16 was pulled forward into phase 4 to serve as its worklist. Two defects were found in the source documents (findings 7 and 8) and two in `en16931-cii2ubl` (BT-90 and BT-114 on its 2026 path), all recorded below. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
 
 ## 1. Goal
 
@@ -323,7 +323,7 @@ Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against ea
     compared against the original D25A.
   - **Done when:** every one of the 284 mapping rows is asserted by at least one test.
 
-- [ ] **A17 — Documentation** · ~2 h
+- [x] **A17 — Documentation** · ~2 h
   - `README.md`: document the two bindings, the new package names, the CLI, `en16931-basics`.
   - `CLAUDE.md`: converter hierarchy, the mapping documents, the test strategy.
   - `README.md` News and noteworthy: `v3.0.0 - work in progress`.
@@ -373,3 +373,4 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 | A14 | 2026-09-07 | `[3.0.0 A14]` | Routes on two axes - the document type from the document element, the edition from BT-24. `en16931-basics` already reads BT-24 from UBL as well as CII, so nothing had to be written for the detection itself. The common return type is `Serializable`, because the two `CrossIndustryInvoiceType` classes are unrelated - hence `writeCII` picks the marshaller. |
 | A15 | 2026-09-07 | `[3.0.0 A15]` | Verified end to end against the fat JAR, not just the library: three files in one invocation produce D16B for the 2017 one and D25A for the two 2026 ones, a legacy ZUGFeRD BT-24 fails with the documented message, `--en-version 2017` converts it, and a bogus value is rejected by name. No `--ubl` alias was needed - this project never had a target version option. |
 | A16 | 2026-09-07 | `[3.0.0 A16]` | The coverage guard was pulled forward and landed with A13. The round trip compares **leaf values**, numerically normalised, rather than the serialized XML - literal comparison reported 389 differences that were all trailing zeroes. Of the 24 real ones, none is a defect of this library: five documented causes, two of them inherent to the UBL representation (BT-149/BT-150 and BT-84/BT-91) and two attributable to the cii2ubl leg (**BT-90 and BT-114 are absent from its UBL 2.5 output**). |
+| A17 | 2026-09-07 | `[3.0.0 A17]` | README, CLAUDE.md and the News entry. `docs/00readme.txt` carries the same open citation question as in cii2ubl and was left untouched. |

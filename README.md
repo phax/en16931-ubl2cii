@@ -7,18 +7,78 @@
 > If this project saved you some time or made your day a little easier, a star would mean a lot — it helps others find it too.
 <!-- ph-badge-end -->
 
-Converter library for EN 16931:2017 invoices from UBL 2.1 to CII D16B
+Converter library for EN 16931 invoices and credit notes from UBL to CII.
+
+Both editions of the standard are supported, each with exactly one syntax pair:
+
+| Edition | Input | Output | Specification identifier (BT-24) |
+|---------|-------|--------|----------------------------------|
+| EN 16931:2017 | UBL 2.1 | CII D16B | `urn:cen.eu:en16931:2017` |
+| EN 16931:2026 | UBL 2.5 | CII D25A | `urn:cen.eu:en16931:2026` |
+
+This is a Java 17+ library that converts a Universal Business Language (UBL) document into a Cross
+Industry Invoice (CII) document following the rules of the European Norm (EN) 16931, which defines a
+common semantic data model for electronic invoices in Europe. Invoices and Credit Notes are both
+supported, and a command line client is included.
+
+This is the counterpart to https://github.com/phax/en16931-cii2ubl, which converts in the other
+direction. The facts about the standard that both projects need - the editions, the code lists and
+the BT-24 based edition detection - live in https://github.com/phax/en16931-basics.
 
 This version is based on the version of @VartikaG02: https://github.com/VartikaG02/en16931-ubl2cii - it was extended by adding CII conformance to the EN.
- Additionally UBL Credit Notes are supported and a commandline client was added.
-
-This is a Java 17+ library that converts a Universal Business Language (UBL) 2.1 into a Cross Industry Invoice (CII) D16B document following the rules of the European Norm (EN) 16931 that defines a common semantic data model for electronic invoices in Europe.
-
-This is the counterpart to https://github.com/phax/en16931-cii2ubl which can be used to convert CII D16B invoices to different UBL versions.
 
 This library is licensed under the Apache License Version 2.0.
 
+# Usage
+
+## As a library
+
+`UBLToCIIDispatcher` is the entry point when the edition is not known in advance. It determines the
+document type from the document element and the EN 16931 edition from BT-24, and returns either a
+CII D16B or a CII D25A `CrossIndustryInvoiceType`:
+
+```java
+final ErrorList aErrorList = new ErrorList ();
+final Document aUBLDoc = DOMReader.readXMLDOM (aSourceFile);
+// null = detect the edition from BT-24; pass EEN16931Edition.EN2017 or EN2026 to force it
+final Serializable aCII = UBLToCIIDispatcher.convertUBLtoCII (aUBLDoc, null, aErrorList);
+if (aCII != null && aErrorList.containsNoError ())
+  UBLToCIIDispatcher.writeCII (aCII, FileHelper.getOutputStream (aDestFile), aErrorList);
+```
+
+The edition is never guessed: a missing or unknown BT-24 adds an error to the `ErrorList` and
+returns `null`.
+
+When the edition *is* known, call the converter of that edition directly:
+
+| Edition | Invoice | Credit Note |
+|---------|---------|-------------|
+| 2017 | `en2017.UBL21InvoiceToCIID16BConverter` | `en2017.UBL21CreditNoteToCIID16BConverter` |
+| 2026 | `en2026.UBL25InvoiceToCIID25AConverter` | `en2026.UBL25CreditNoteToCIID25AConverter` |
+
+`UBLToCIIConversionHelper` offers the same as stream based convenience methods.
+
+Conversion is successful only if a non-`null` result is returned **and** the `ErrorList` contains no
+error.
+
+## Command line
+
+```bash
+java -jar en16931-ubl2cii-cli-full.jar -t ./output invoice.xml
+```
+
+The EN 16931 edition is taken from BT-24 of each source file. Use `--en-version 2017` or
+`--en-version 2026` to force it, which is what documents with a non-conformant BT-24 need.
+
 # News and noteworthy
+
+v3.0.0 - work in progress
+* Added support for **EN 16931:2026** - UBL 2.5 to CII D25A - covering all 284 rows of the syntax mapping
+* The converters moved into edition specific sub-packages `com.helger.en16931.ubl2cii.en2017` and `.en2026` - this is a breaking change for existing imports
+* Added `UBLToCIIDispatcher`, which determines the document type from the document element and the EN 16931 edition from BT-24
+* Added `--en-version 2017|2026` to the command line client; without it the edition is detected per file
+* Now using [en16931-basics](https://github.com/phax/en16931-basics) for the code lists, the UNTDID 2379 date formats and the BT-24 based edition detection
+* Fixed BT-9 (Payment due date) being written into every `cac:PaymentTerms` instead of only the first one, which became visible when `cac:PaymentTerms` turned 0..n in the 2026 binding
 
 v2.2.0 - 2026-04-22
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
