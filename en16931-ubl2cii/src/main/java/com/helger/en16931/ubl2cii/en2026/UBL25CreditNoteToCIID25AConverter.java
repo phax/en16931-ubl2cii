@@ -551,6 +551,20 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
       }
     }
 
+    // BG-34 CHARGES ON BEHALF OF A THIRD PARTY
+    for (final var aUBLCollectionLine : aUBLDoc.getCollectionCreditNoteLine ())
+    {
+      // BT-180 Charges specification
+      final ItemType aUBLCollectionItem = aUBLCollectionLine.getItem ();
+      final String sReason = aUBLCollectionItem != null && aUBLCollectionItem.hasDescriptionEntries ()
+                                                                                                      ? aUBLCollectionItem.getDescriptionAtIndex (0)
+                                                                                                                          .getValue ()
+                                                                                                      : null;
+      // BT-179 Charge amount collected on behalf of a third party
+      ifNotNull (convertSpecifiedFinancialAdjustment (aUBLCollectionLine.getTaxInclusiveLineExtensionAmount (), sReason),
+                 ret::addSpecifiedFinancialAdjustment);
+    }
+
     // BG-22 DOCUMENT TOTALS
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);

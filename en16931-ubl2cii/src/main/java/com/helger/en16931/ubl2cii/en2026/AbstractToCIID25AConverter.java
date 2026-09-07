@@ -49,6 +49,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.Tax
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.TaxSubtotalType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_25.TaxAmountType;
 import un.unece.uncefact.data.standard.cii.d25a.qdt.FormattedDateTimeType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.FinancialAdjustmentType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeDeliveryType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.LegalOrganizationType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.ReferencedDocumentType;
@@ -687,6 +688,30 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     ifNotNull (_convertPaymentPenaltyTerms (aUBLPaymenTerms), ret::setApplicableTradePaymentPenaltyTerms);
 
     return ret;
+  }
+
+  // BG-34 CHARGES ON BEHALF OF A THIRD PARTY.
+  // UBL carries the group as a line (cac:CollectionInvoiceLine respectively
+  // cac:CollectionCreditNoteLine), CII as ram:SpecifiedFinancialAdjustment. BT-179-1 (Line
+  // identifier) is UBL only bookkeeping and has no CII counterpart, so it is dropped here.
+  // The two collection line types of UBL are unrelated Java classes, so the already extracted
+  // values are handed over instead of the line itself.
+  @Nullable
+  protected static FinancialAdjustmentType convertSpecifiedFinancialAdjustment (final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLAmount,
+                                                                                @Nullable final String sDescription)
+  {
+    final FinancialAdjustmentType ret = new FinancialAdjustmentType ();
+    boolean bUse = false;
+
+    // BT-179 Charge amount collected on behalf of a third party
+    if (ifNotNull (convertAmount (aUBLAmount), ret::addActualAmount))
+      bUse = true;
+
+    // BT-180 Charges specification
+    if (ifNotEmpty (sDescription, x -> ret.addReason (convertText (x))))
+      bUse = true;
+
+    return bUse ? ret : null;
   }
 
   // BG-22 DOCUMENT TOTALS

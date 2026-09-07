@@ -302,6 +302,14 @@
         <ram:TotalPrepaidAmount>32</ram:TotalPrepaidAmount>
         <ram:DuePayableAmount>100</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+      <ram:SpecifiedFinancialAdjustment>
+        <ram:Reason>Copyright levy</ram:Reason>
+        <ram:ActualAmount>3.2</ram:ActualAmount>
+      </ram:SpecifiedFinancialAdjustment>
+      <ram:SpecifiedFinancialAdjustment>
+        <ram:Reason>Recycling fee</ram:Reason>
+        <ram:ActualAmount>1.75</ram:ActualAmount>
+      </ram:SpecifiedFinancialAdjustment>
       <ram:InvoiceReferencedDocument>
         <ram:IssuerAssignedID>PREV-INV-1</ram:IssuerAssignedID>
         <ram:FormattedIssueDateTime>

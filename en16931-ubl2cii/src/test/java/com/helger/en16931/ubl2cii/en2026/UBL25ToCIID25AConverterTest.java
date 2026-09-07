@@ -247,6 +247,31 @@ public final class UBL25ToCIID25AConverterTest
     assertNoXPath (e, sPT + "[3]/ram:ApplicableTradePaymentDiscountTerms");
   }
 
+  /** BG-34 charges on behalf of a third party, on both document types. */
+  @Test
+  public void testNewChargesOnBehalfOfThirdParty ()
+  {
+    final String sFA = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedFinancialAdjustment";
+
+    final Element eInv = convertAndValidate ("d25a-new-bg34-invoice-ubl.xml", true);
+    assertXPathCount (eInv, sFA, 2);
+    // BT-179 Charge amount collected on behalf of a third party
+    assertXPath (eInv, sFA + "[1]/ram:ActualAmount", "3.2");
+    // BT-180 Charges specification
+    assertXPath (eInv, sFA + "[1]/ram:Reason", "Copyright levy");
+    assertXPath (eInv, sFA + "[2]/ram:ActualAmount", "1.75");
+    assertXPath (eInv, sFA + "[2]/ram:Reason", "Recycling fee");
+
+    // The UBL collection lines must not become ordinary invoice lines
+    assertXPathCount (eInv, "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem", 1);
+
+    // The credit note reads cac:CollectionCreditNoteLine and produces the same CII
+    final Element eCN = convertAndValidate ("d25a-new-bg34-creditnote-ubl.xml", false);
+    assertXPathCount (eCN, sFA, 2);
+    assertXPath (eCN, sFA + "[1]/ram:ActualAmount", "3.2");
+    assertXPath (eCN, sFA + "[1]/ram:Reason", "Copyright levy");
+  }
+
   /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.
