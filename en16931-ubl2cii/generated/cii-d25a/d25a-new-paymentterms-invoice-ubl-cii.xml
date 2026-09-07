@@ -303,14 +303,22 @@
         <ram:DirectDebitMandateID>MANDATE-1</ram:DirectDebitMandateID>
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradePaymentTerms>
-        <ram:DueDateDateTime>
-          <udt:DateTimeString format="102">20260214</udt:DateTimeString>
-        </ram:DueDateDateTime>
+        <ram:ApplicableTradePaymentDiscountTerms>
+          <ram:BasisDateTime>
+            <udt:DateTimeString format="102">20260125</udt:DateTimeString>
+          </ram:BasisDateTime>
+          <ram:CalculationPercent>2.00</ram:CalculationPercent>
+          <ram:ActualDiscountAmount>2.64</ram:ActualDiscountAmount>
+        </ram:ApplicableTradePaymentDiscountTerms>
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradePaymentTerms>
-        <ram:DueDateDateTime>
-          <udt:DateTimeString format="102">20260214</udt:DateTimeString>
-        </ram:DueDateDateTime>
+        <ram:ApplicableTradePaymentPenaltyTerms>
+          <ram:BasisDateTime>
+            <udt:DateTimeString format="102">20260215</udt:DateTimeString>
+          </ram:BasisDateTime>
+          <ram:CalculationPercent>9.20</ram:CalculationPercent>
+          <ram:ActualPenaltyAmount>12.5</ram:ActualPenaltyAmount>
+        </ram:ApplicableTradePaymentPenaltyTerms>
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>100</ram:LineTotalAmount>

@@ -200,6 +200,54 @@ public final class UBL25ToCIID25AConverterTest
   }
 
   /**
+   * BG-33 payment terms, BG-35 early payment discount and BG-36 late payment penalty. UBL puts all
+   * three into <code>cac:PaymentTerms</code> with no explicit discriminator, CII has a separate
+   * container for each - so the interesting part is that they never get merged.
+   */
+  @Test
+  public void testNewPaymentTerms ()
+  {
+    final Element e = convertAndValidate ("d25a-new-paymentterms-invoice-ubl.xml", true);
+
+    final String sPT = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms";
+
+    // One CII container per UBL cac:PaymentTerms
+    assertXPathCount (e, sPT, 3);
+
+    // BG-33: BT-20 Payment term text
+    assertXPath (e, sPT + "[1]/ram:Description", "Net 30 days");
+    // BT-9 is 0..1, so it may appear on the first container only
+    assertXPath (e, sPT + "[1]/ram:DueDateDateTime/udt:DateTimeString", "20260214");
+    assertXPathCount (e, sPT + "/ram:DueDateDateTime", 1);
+
+    // BG-35: BT-170 Discount end date and BT-170-1 its format code
+    assertXPath (e, sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:BasisDateTime/udt:DateTimeString", "20260125");
+    assertXPath (e,
+                 sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:BasisDateTime/udt:DateTimeString/@format",
+                 "102");
+    // BT-171 Discount percentage
+    assertXPath (e, sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:CalculationPercent", "2.00");
+    // BT-172 Discount amount
+    assertXPath (e, sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:ActualDiscountAmount", "2.64");
+
+    // BG-36: BT-181 Penalty start date and BT-181-1 its format code
+    assertXPath (e, sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisDateTime/udt:DateTimeString", "20260215");
+    assertXPath (e,
+                 sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisDateTime/udt:DateTimeString/@format",
+                 "102");
+    // BT-182 Penalty yearly interest percentage
+    assertXPath (e, sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:CalculationPercent", "9.20");
+    // BT-183 Penalty amount
+    assertXPath (e, sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:ActualPenaltyAmount", "12.5");
+
+    // The three groups must never be merged into one container
+    assertNoXPath (e, sPT + "[1]/ram:ApplicableTradePaymentDiscountTerms");
+    assertNoXPath (e, sPT + "[1]/ram:ApplicableTradePaymentPenaltyTerms");
+    assertNoXPath (e, sPT + "[2]/ram:ApplicableTradePaymentPenaltyTerms");
+    assertNoXPath (e, sPT + "[3]/ram:ApplicableTradePaymentDiscountTerms");
+  }
+
+  /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.
    */

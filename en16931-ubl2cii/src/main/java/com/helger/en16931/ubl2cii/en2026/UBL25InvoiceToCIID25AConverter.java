@@ -473,10 +473,17 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
     // BT-20 Payment terms + BT-9 Payment due date
+    // One ram:SpecifiedTradePaymentTerms per cac:PaymentTerms, so that BG-33, BG-35 and BG-36 stay
+    // distinguishable. BT-9 is 0..1 and therefore goes to the first one only.
+    boolean bFirstPaymentTerms = true;
     for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
+    {
       ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms,
                                                                             aUBLPaymentMeans,
-                                                                            aUBLDoc.getDueDateValue ()));
+                                                                            aUBLDoc.getDueDateValue (),
+                                                                            bFirstPaymentTerms));
+      bFirstPaymentTerms = false;
+    }
 
     // BT-9: If no PaymentTerms exist but DueDate is present, create one for the due date
     if (!ret.hasSpecifiedTradePaymentTermsEntries () && aUBLDoc.getDueDateValue () != null)

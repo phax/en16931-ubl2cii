@@ -58,6 +58,8 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAddressType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeContactType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAllowanceChargeType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePartyType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentDiscountTermsType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentPenaltyTermsType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentTermsType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementHeaderMonetarySummationType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeTaxType;
@@ -602,25 +604,88 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     return ret;
   }
 
-  // BT-20 Payment terms + BT-9 Payment due date
+  // BG-35 EARLY PAYMENT DISCOUNT (BT-170, BT-170-1, BT-171, BT-172).
+  // UBL puts all of BG-33, BG-35 and BG-36 into cac:PaymentTerms and gives no explicit
+  // discriminator, so the group is recognised by the elements it uses.
+  @Nullable
+  private static TradePaymentDiscountTermsType _convertPaymentDiscountTerms (@NonNull final PaymentTermsType aUBLPaymentTerms)
+  {
+    final TradePaymentDiscountTermsType ret = new TradePaymentDiscountTermsType ();
+    boolean bUse = false;
+
+    // BT-170 Discount end date and BT-170-1 its format code
+    if (aUBLPaymentTerms.getSettlementPeriod () != null)
+      if (ifNotNull (aUBLPaymentTerms.getSettlementPeriod ().getEndDate (),
+                     x -> ret.setBasisDateTime (convertDateTime (x.getValueLocal ()))))
+        bUse = true;
+
+    // BT-171 Discount percentage
+    if (ifNotNull (aUBLPaymentTerms.getSettlementDiscountPercentValue (), ret::setCalculationPercent))
+      bUse = true;
+
+    // BT-172 Discount amount
+    if (ifNotNull (convertAmount (aUBLPaymentTerms.getSettlementDiscountAmount ()), ret::setActualDiscountAmount))
+      bUse = true;
+
+    return bUse ? ret : null;
+  }
+
+  // BG-36 LATE PAYMENT PENALTY (BT-181, BT-181-1, BT-182, BT-183)
+  @Nullable
+  private static TradePaymentPenaltyTermsType _convertPaymentPenaltyTerms (@NonNull final PaymentTermsType aUBLPaymentTerms)
+  {
+    final TradePaymentPenaltyTermsType ret = new TradePaymentPenaltyTermsType ();
+    boolean bUse = false;
+
+    // BT-181 Penalty start date and BT-181-1 its format code
+    if (aUBLPaymentTerms.getPenaltyPeriod () != null)
+      if (ifNotNull (aUBLPaymentTerms.getPenaltyPeriod ().getStartDate (),
+                     x -> ret.setBasisDateTime (convertDateTime (x.getValueLocal ()))))
+        bUse = true;
+
+    // BT-182 Penalty yearly interest percentage
+    if (aUBLPaymentTerms.getPenaltyInterestRate () != null)
+      if (ifNotNull (aUBLPaymentTerms.getPenaltyInterestRate ().getInterestRatePercentValue (),
+                     ret::setCalculationPercent))
+        bUse = true;
+
+    // BT-183 Penalty amount
+    if (ifNotNull (convertAmount (aUBLPaymentTerms.getPenaltyAmount ()), ret::setActualPenaltyAmount))
+      bUse = true;
+
+    return bUse ? ret : null;
+  }
+
+  // BG-33 PAYMENT TERMS: BT-20 Payment term text, plus BT-9 Payment due date, BG-35 and BG-36.
+  // Since 2026 cac:PaymentTerms is 0..n, so BT-9 - which is 0..1 - may only be written to one of
+  // them; bWithDueDate says which.
   @NonNull
   protected static TradePaymentTermsType convertSpecifiedTradePaymentTerms (@NonNull final PaymentTermsType aUBLPaymenTerms,
                                                                             @Nullable final PaymentMeansType aUBLPaymentMeans,
-                                                                            @Nullable final XMLOffsetDate aInvoiceDueDate)
+                                                                            @Nullable final XMLOffsetDate aInvoiceDueDate,
+                                                                            final boolean bWithDueDate)
   {
     final TradePaymentTermsType ret = new TradePaymentTermsType ();
+    // BT-20 Payment term text
     for (final var aNote : aUBLPaymenTerms.getNote ())
       ret.addDescription (convertText (aNote.getValue ()));
 
-    // Invoice - Payment due date BT-9
-    if (aInvoiceDueDate != null)
-      ret.setDueDateDateTime (convertDateTime (aInvoiceDueDate.toLocalDate ()));
-    else
+    if (bWithDueDate)
     {
-      // Credit Note - Payment due date BT-9
-      if (aUBLPaymentMeans != null && aUBLPaymentMeans.getPaymentDueDate () != null)
-        ret.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+      // BT-9 Payment due date and BT-9-1 its format code
+      if (aInvoiceDueDate != null)
+        ret.setDueDateDateTime (convertDateTime (aInvoiceDueDate.toLocalDate ()));
+      else
+        if (aUBLPaymentMeans != null && aUBLPaymentMeans.getPaymentDueDate () != null)
+          ret.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
     }
+
+    // BG-35 EARLY PAYMENT DISCOUNT
+    ifNotNull (_convertPaymentDiscountTerms (aUBLPaymenTerms), ret::setApplicableTradePaymentDiscountTerms);
+
+    // BG-36 LATE PAYMENT PENALTY
+    ifNotNull (_convertPaymentPenaltyTerms (aUBLPaymenTerms), ret::setApplicableTradePaymentPenaltyTerms);
+
     return ret;
   }
 
