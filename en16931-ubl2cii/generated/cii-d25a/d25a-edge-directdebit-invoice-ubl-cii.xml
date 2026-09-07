@@ -218,6 +218,7 @@
         <ram:Information>SEPA direct debit</ram:Information>
         <ram:PayerPartyDebtorFinancialAccount>
           <ram:IBANID>DEBTOR-12345</ram:IBANID>
+          <ram:AccountName>Buyer Account</ram:AccountName>
         </ram:PayerPartyDebtorFinancialAccount>
       </ram:SpecifiedTradeSettlementPaymentMeans>
       <ram:ApplicableTradeTax>

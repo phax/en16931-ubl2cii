@@ -155,6 +155,50 @@ public final class UBL25ToCIID25AConverterTest
                    "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:IncludedNote/ram:SubjectCode");
   }
 
+  /** The business terms added at header level in the 2026 edition. */
+  @Test
+  public void testNewHeaderTerms ()
+  {
+    final Element e = convertAndValidate ("d25a-new-header-invoice-ubl.xml", true);
+
+    // BT-2 + BT-166: CII writes both into one element, and BT-166-1 switches the UNTDID 2379
+    // format code from "102" to "208"
+    assertXPath (e, "rsm:ExchangedDocument/ram:IssueDateTime/udt:DateTimeString", "20260115120503+0100");
+    assertXPath (e, "rsm:ExchangedDocument/ram:IssueDateTime/udt:DateTimeString/@format", "208");
+
+    // BT-167 VAT accounting currency exchange rate
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceApplicableTradeCurrencyExchange/ram:ConversionRate",
+                 "1.1000");
+    // BT-167-1 Target currency code - the invoice currency BT-5
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceApplicableTradeCurrencyExchange/ram:TargetCurrencyCode",
+                 "EUR");
+    // BT-167-2 Source currency code - the VAT accounting currency BT-6
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceApplicableTradeCurrencyExchange/ram:SourceCurrencyCode",
+                 "USD");
+
+    // BT-197 Delivery note reference
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery/ram:DeliveryNoteReferencedDocument/ram:IssuerAssignedID",
+                 "DELNOTE-8");
+
+    // BT-202 Preceding invoice type code
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument[1]/ram:TypeCode",
+                 "380");
+
+    // BT-216 Debited account name
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayerPartyDebtorFinancialAccount/ram:AccountName",
+                 "Buyer Account");
+    // BT-215 Debited account payment service provider identifier
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayerSpecifiedDebtorFinancialInstitution/ram:BICID",
+                 "SPSBAT2SXXX");
+  }
+
   /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.

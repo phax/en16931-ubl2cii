@@ -18,6 +18,8 @@
 package com.helger.en16931.ubl2cii;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
@@ -38,9 +40,17 @@ public abstract class AbstractToCIIConverterBase
 {
   /**
    * The UNTDID 2379 date format used for all CII date elements. Both editions default to it; only
-   * BT-166 of the 2026 edition uses {@link EEN16931DateFormatCode#CCYYMMDDHHMMSSZHHMM} instead.
+   * BT-166 of the 2026 edition uses {@link #CII_DATE_TIME_FORMAT} instead.
    */
   protected static final EEN16931DateFormatCode CII_DATE_FORMAT = EEN16931DateFormatCode.CCYYMMDD;
+
+  /**
+   * The UNTDID 2379 date <em>and time</em> format. It is used for BT-2 exactly when BT-166 is
+   * present, because CII represents the two with a single element - see BT-2-1 and BT-166-1.
+   */
+  protected static final EEN16931DateFormatCode CII_DATE_TIME_FORMAT = EEN16931DateFormatCode.CCYYMMDDHHMMSSZHHMM;
+
+  private static final DateTimeFormatter CII_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern (CII_DATE_TIME_FORMAT.getJavaPattern ());
 
   protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
   {
@@ -64,5 +74,20 @@ public abstract class AbstractToCIIConverterBase
   protected static String createFormattedDateValue (@Nullable final LocalDate aLocalDate)
   {
     return CII_DATE_FORMAT.getAsString (aLocalDate);
+  }
+
+  /**
+   * Format a date and time the way the CII syntax expects it, in the UNTDID 2379 format
+   * {@link #CII_DATE_TIME_FORMAT}. The result carries the UTC offset, as in
+   * <code>20250115120503+0100</code>.
+   *
+   * @param aDateTime
+   *        The date and time to format. May be <code>null</code>.
+   * @return <code>null</code> if the provided date and time is <code>null</code>.
+   */
+  @Nullable
+  protected static String createFormattedDateTimeValue (@Nullable final OffsetDateTime aDateTime)
+  {
+    return aDateTime == null ? null : CII_DATE_TIME_FORMATTER.format (aDateTime);
   }
 }

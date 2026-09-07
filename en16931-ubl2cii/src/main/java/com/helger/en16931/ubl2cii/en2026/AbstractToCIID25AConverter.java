@@ -27,6 +27,7 @@ import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.xml.XMLOffsetDate;
+import com.helger.datetime.xml.XMLOffsetTime;
 import com.helger.en16931.basics.codelist.EN16931CodeLists;
 import com.helger.en16931.ubl2cii.AbstractToCIIConverterBase;
 
@@ -102,6 +103,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     if (aLocalDate == null)
       return null;
 
+    // BT-26-1/BT-218-1 and the other qdt:DateTimeString format codes - always "102"
     final FormattedDateTimeType ret = new FormattedDateTimeType ();
     final FormattedDateTimeType.DateTimeString aDTS = new FormattedDateTimeType.DateTimeString ();
     aDTS.setFormat (CII_DATE_FORMAT.getID ());
@@ -115,6 +117,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     if (aLocalDate == null)
       return null;
 
+    // BT-9-1/BT-72-1/BT-73-1/BT-74-1/BT-134-1/BT-135-1/BT-170-1/BT-181-1/BT-187-1 - the UNTDID
+    // 2379 format code of a udt:DateTimeString is "102" everywhere except for BT-166
     final un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType.DateTimeString aret = new un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType.DateTimeString ();
     aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
@@ -131,11 +135,35 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     return ret;
   }
 
+  // BT-2 Invoice issue date + BT-166 Invoice issue time.
+  // CII represents the two with a single element, and the UNTDID 2379 format code says which of
+  // them is present: "102" for the date alone (BT-2-1), "208" for date and time including the UTC
+  // offset (BT-166-1).
+  protected static un.unece.uncefact.data.standard.cii.d25a.udt.@Nullable DateTimeType convertDateTime (@Nullable final LocalDate aLocalDate,
+                                                                                                        @Nullable final XMLOffsetTime aTime)
+  {
+    if (aLocalDate == null)
+      return null;
+
+    // BT-166 absent - BT-2-1 format "102", date only
+    if (aTime == null)
+      return convertDateTime (aLocalDate);
+
+    // BT-166 present - BT-166-1 format "208", date and time
+    final un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType ret = new un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType ();
+    final un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType.DateTimeString aDTS = new un.unece.uncefact.data.standard.cii.d25a.udt.DateTimeType.DateTimeString ();
+    aDTS.setFormat (CII_DATE_TIME_FORMAT.getID ());
+    aDTS.setValue (createFormattedDateTimeValue (aTime.atDate (aLocalDate)));
+    ret.setDateTimeString (aDTS);
+    return ret;
+  }
+
   private static un.unece.uncefact.data.standard.cii.d25a.udt.DateType.@Nullable DateString createDateString (@Nullable final LocalDate aLocalDate)
   {
     if (aLocalDate == null)
       return null;
 
+    // BT-7-1 - the UNTDID 2379 format code of a udt:DateString is always "102"
     final un.unece.uncefact.data.standard.cii.d25a.udt.DateType.DateString aret = new un.unece.uncefact.data.standard.cii.d25a.udt.DateType.DateString ();
     aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
@@ -345,9 +373,10 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
         final IDType aID = convertID (aUBLPartyTaxScheme.getCompanyID ());
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
-          // BT-31-2/BT-48-2/BT-63-2 "VAT" -> "VA", and since EN 16931:2026 the national tax code
-          // BT-32-2 is the fixed value "LOC" -> "FC". The 2017 binding had no fixed value here and
-          // accepted anything except "VAT" for BT-32.
+          // BT-31-1/BT-48-1/BT-63-1: UBL BT-31-2/BT-48-2/BT-63-2 "VAT" becomes CII "VA", and
+          // BT-32-1: since EN 16931:2026 the national tax code BT-32-2 is the fixed value "LOC",
+          // which becomes CII "FC". The 2017 binding had no fixed value here and accepted anything
+          // except "VAT" for BT-32.
           final String sUBLTaxScheme = aUBLPartyTaxScheme.getTaxScheme ().getIDValue ();
           ifNotEmpty (NATIONAL_TAX_SCHEME.equals (sUBLTaxScheme) ? NATIONAL_TAX_SCHEME_CII
                                                                  : EN16931CodeLists.mapTaxSchemeCodeUBLToCII (sUBLTaxScheme),

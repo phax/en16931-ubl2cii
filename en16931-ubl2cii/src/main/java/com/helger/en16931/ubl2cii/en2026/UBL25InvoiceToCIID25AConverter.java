@@ -50,6 +50,7 @@ import un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.CreditorFinancialAccountType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.CreditorFinancialInstitutionType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.DebtorFinancialAccountType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.DebtorFinancialInstitutionType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.DocumentContextParameterType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.DocumentLineDocumentType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.ExchangedDocumentContextType;
@@ -70,6 +71,7 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.SupplyChainTradeTransactio
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAccountingAccountType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAllowanceChargeType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeCountryType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeCurrencyExchangeType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentTermsType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePriceType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeProductType;
@@ -80,6 +82,7 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeTaxType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.CodeType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.IDType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.QuantityType;
+import un.unece.uncefact.data.standard.cii.d25a.udt.RateType;
 
 /**
  * UBL 2.5 Invoice to CII D25A converter, following EN 16931:2026.
@@ -323,6 +326,33 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     // Tax currency code BT-6
     ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
 
+    // BT-167 VAT accounting currency exchange rate, BT-167-1 target and BT-167-2 source currency
+    if (aUBLDoc.getTaxExchangeRate () != null)
+    {
+      final var aUBLExchangeRate = aUBLDoc.getTaxExchangeRate ();
+      final TradeCurrencyExchangeType aTCET = new TradeCurrencyExchangeType ();
+      boolean bUseExchangeRate = false;
+
+      // BT-167 Exchange rate
+      if (ifNotNull (aUBLExchangeRate.getCalculationRateValue (), x -> {
+        final RateType aRate = new RateType ();
+        aRate.setValue (x);
+        aTCET.setConversionRate (aRate);
+      }))
+        bUseExchangeRate = true;
+
+      // BT-167-1 Target currency code - the invoice currency BT-5
+      if (ifNotEmpty (aUBLExchangeRate.getTargetCurrencyCodeValue (), aTCET::setTargetCurrencyCode))
+        bUseExchangeRate = true;
+
+      // BT-167-2 Source currency code - the VAT accounting currency BT-6
+      if (ifNotEmpty (aUBLExchangeRate.getSourceCurrencyCodeValue (), aTCET::setSourceCurrencyCode))
+        bUseExchangeRate = true;
+
+      if (bUseExchangeRate)
+        ret.setInvoiceApplicableTradeCurrencyExchange (aTCET);
+    }
+
     // BG-10 PAYEE
     ifNotNull (convertParty (aUBLDoc.getPayeeParty ()), ret::setPayeeTradeParty);
 
@@ -377,9 +407,20 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
         // BT-91 Debited account identifier
         if (aUBLMandate.getPayerFinancialAccount () != null)
         {
+          final var aUBLPayerAccount = aUBLMandate.getPayerFinancialAccount ();
           final DebtorFinancialAccountType aDFAT = new DebtorFinancialAccountType ();
-          ifNotEmpty (aUBLMandate.getPayerFinancialAccount ().getIDValue (), aDFAT::setIBANID);
+          ifNotEmpty (aUBLPayerAccount.getIDValue (), aDFAT::setIBANID);
+          // BT-216 Debited account name
+          ifNotEmpty (aUBLPayerAccount.getNameValue (), aDFAT::setAccountName);
           aCIIPM.setPayerPartyDebtorFinancialAccount (aDFAT);
+
+          // BT-215 Debited account payment service provider identifier
+          if (aUBLPayerAccount.getFinancialInstitutionBranch () != null)
+          {
+            final DebtorFinancialInstitutionType aDFIT = new DebtorFinancialInstitutionType ();
+            if (ifNotNull (convertID (aUBLPayerAccount.getFinancialInstitutionBranch ().getID ()), aDFIT::setBICID))
+              aCIIPM.setPayerSpecifiedDebtorFinancialInstitution (aDFIT);
+          }
         }
       }
 
@@ -492,7 +533,9 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
         final ReferencedDocumentType aIRD = new ReferencedDocumentType ();
         // BT-25 Preceding Invoice number
         ifNotEmpty (aUBLInvRef.getIDValue (), aIRD::setIssuerAssignedID);
-        // BT-26 Preceding Invoice issue date
+        // BT-202 Preceding invoice type code
+        ifNotEmpty (aUBLInvRef.getDocumentTypeCodeValue (), aIRD::setTypeCode);
+        // BT-26 Preceding Invoice issue date and BT-26-1 its format code
         if (aUBLInvRef.getIssueDate () != null)
           aIRD.setFormattedIssueDateTime (convertFormattedDateTime (aUBLInvRef.getIssueDateValueLocal ()));
         ret.addInvoiceReferencedDocument (aIRD);
@@ -551,8 +594,10 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
       // Invoice type code BT-3
       ifNotEmpty (aUBLDoc.getInvoiceTypeCodeValue (), aEDT::setTypeCode);
 
-      // IssueDate BT-2
-      ifNotNull (aUBLDoc.getIssueDate (), x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal ())));
+      // BT-2 Invoice issue date, BT-2-1 its format code, BT-166 Invoice issue time and BT-166-1
+      // its format code - all four are one CII element
+      ifNotNull (aUBLDoc.getIssueDate (),
+                 x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal (), aUBLDoc.getIssueTimeValue ())));
 
       // BG-1 INVOICE NOTE - BT-21 and BT-22
       for (final var aUBLAnnotation : aUBLDoc.getAnnotation ())
@@ -671,6 +716,15 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
           final ReferencedDocumentType aReceiptRDT = new ReferencedDocumentType ();
           aReceiptRDT.setIssuerAssignedID (aUBLDoc.getReceiptDocumentReferenceAtIndex (0).getIDValue ());
           aHTDT.setReceivingAdviceReferencedDocument (aReceiptRDT);
+        }
+
+        // BT-197 Delivery note reference - new in 2026, UBL 2.5 and CII D25A both have it
+        if (aUBLDoc.hasDeliveryNoteDocumentReferenceEntries ())
+        {
+          final ReferencedDocumentType aDeliveryNoteRDT = new ReferencedDocumentType ();
+          if (ifNotEmpty (aUBLDoc.getDeliveryNoteDocumentReferenceAtIndex (0).getIDValue (),
+                          aDeliveryNoteRDT::setIssuerAssignedID))
+            aHTDT.setDeliveryNoteReferencedDocument (aDeliveryNoteRDT);
         }
 
         aSCTT.setApplicableHeaderTradeDelivery (aHTDT);

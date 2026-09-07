@@ -12,7 +12,7 @@
     <ram:ID>D25A-NEW-HDR-INV-1</ram:ID>
     <ram:TypeCode>380</ram:TypeCode>
     <ram:IssueDateTime>
-      <udt:DateTimeString format="102">20260115</udt:DateTimeString>
+      <udt:DateTimeString format="208">20260115120503+0100</udt:DateTimeString>
     </ram:IssueDateTime>
     <ram:IncludedNote>
       <ram:Content>Header note</ram:Content>
@@ -206,6 +206,9 @@
       <ram:ReceivingAdviceReferencedDocument>
         <ram:IssuerAssignedID>RECEIPT-4</ram:IssuerAssignedID>
       </ram:ReceivingAdviceReferencedDocument>
+      <ram:DeliveryNoteReferencedDocument>
+        <ram:IssuerAssignedID>DELNOTE-8</ram:IssuerAssignedID>
+      </ram:DeliveryNoteReferencedDocument>
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:CreditorReferenceID>SEPA-CRED-1</ram:CreditorReferenceID>
@@ -220,12 +223,21 @@
           <ram:ID schemeID="0198">FN999999z</ram:ID>
         </ram:SpecifiedLegalOrganization>
       </ram:PayeeTradeParty>
+      <ram:InvoiceApplicableTradeCurrencyExchange>
+        <ram:SourceCurrencyCode>USD</ram:SourceCurrencyCode>
+        <ram:TargetCurrencyCode>EUR</ram:TargetCurrencyCode>
+        <ram:ConversionRate>1.1000</ram:ConversionRate>
+      </ram:InvoiceApplicableTradeCurrencyExchange>
       <ram:SpecifiedTradeSettlementPaymentMeans>
         <ram:TypeCode>59</ram:TypeCode>
         <ram:Information>SEPA direct debit</ram:Information>
         <ram:PayerPartyDebtorFinancialAccount>
           <ram:IBANID>AT022050302101023600</ram:IBANID>
+          <ram:AccountName>Buyer Account</ram:AccountName>
         </ram:PayerPartyDebtorFinancialAccount>
+        <ram:PayerSpecifiedDebtorFinancialInstitution>
+          <ram:BICID>SPSBAT2SXXX</ram:BICID>
+        </ram:PayerSpecifiedDebtorFinancialInstitution>
       </ram:SpecifiedTradeSettlementPaymentMeans>
       <ram:ApplicableTradeTax>
         <ram:CalculatedAmount>20</ram:CalculatedAmount>
@@ -303,6 +315,7 @@
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
       <ram:InvoiceReferencedDocument>
         <ram:IssuerAssignedID>PREV-INV-1</ram:IssuerAssignedID>
+        <ram:TypeCode>380</ram:TypeCode>
         <ram:FormattedIssueDateTime>
           <qdt:DateTimeString format="102">20251215</qdt:DateTimeString>
         </ram:FormattedIssueDateTime>
