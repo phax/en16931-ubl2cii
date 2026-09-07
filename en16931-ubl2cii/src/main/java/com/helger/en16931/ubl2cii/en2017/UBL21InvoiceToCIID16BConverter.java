@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.helger.en16931.ubl2cii;
+package com.helger.en16931.ubl2cii.en2017;
 
 import java.util.function.Supplier;
 
@@ -31,20 +31,21 @@ import com.helger.en16931.basics.codelist.EN16931CodeLists;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CommodityClassificationType;
-import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CreditNoteLineType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CustomerPartyType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.InvoiceLineType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.ItemPropertyType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.ItemType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PaymentMeansType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PaymentTermsType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PeriodType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.ProjectReferenceType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.SupplierPartyType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxCategoryType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSchemeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxSubtotalType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.TaxTotalType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_21.TaxAmountType;
-import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
+import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.CreditorFinancialAccountType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.CreditorFinancialInstitutionType;
@@ -59,6 +60,7 @@ import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentit
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeAgreementType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeDeliveryType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.LineTradeSettlementType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ProcuringProjectType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ProductCharacteristicType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ProductClassificationType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.ReferencedDocumentType;
@@ -79,26 +81,27 @@ import un.unece.uncefact.data.standard.unqualifieddatatype._100.CodeType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.QuantityType;
 
 /**
- * UBL 2.1 Credit Note to CII D16B converter.
+ * UBL 2.1 Invoice to CII D16B converter.
  *
+ * @author Vartika Rastogi
  * @author Philip Helger
  */
-public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BConverter
+public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConverter
 {
-  private UBL21CreditNoteToCIID16BConverter ()
+  private UBL21InvoiceToCIID16BConverter ()
   {}
 
-  // BG-25 CREDIT NOTE LINE
+  // BG-25 INVOICE LINE
   @NonNull
-  private static SupplyChainTradeLineItemType _convertCreditNoteLine (@NonNull final CreditNoteLineType aUBLLine)
+  private static SupplyChainTradeLineItemType _convertInvoiceLine (@NonNull final InvoiceLineType aUBLLine)
   {
     final SupplyChainTradeLineItemType ret = new SupplyChainTradeLineItemType ();
     final DocumentLineDocumentType aDLDT = new DocumentLineDocumentType ();
 
-    // BT-126
+    // BT-126 Invoice line identifier
     aDLDT.setLineID (aUBLLine.getIDValue ());
 
-    // BT-127
+    // BT-127 Invoice line note
     for (final var aUBLNote : aUBLLine.getNote ())
       aDLDT.addIncludedNote (convertNote (aUBLNote));
 
@@ -107,7 +110,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     // SpecifiedTradeProduct
     final TradeProductType aTPT = new TradeProductType ();
     final ItemType aUBLItem = aUBLLine.getItem ();
-    // BT-157/BT-157-1
+    // BT-157/BT-157-1 Item standard identifier
     if (aUBLItem.getStandardItemIdentification () != null)
       aTPT.setGlobalID (convertID (aUBLItem.getStandardItemIdentification ().getID ()));
 
@@ -119,14 +122,14 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     if (aUBLItem.getBuyersItemIdentification () != null)
       aTPT.setBuyerAssignedID (aUBLItem.getBuyersItemIdentification ().getIDValue ());
 
-    // BT-153
+    // BT-153 Item name
     aTPT.addName (convertText (aUBLItem.getNameValue ()));
 
-    // BT-154
+    // BT-154 Item description
     if (aUBLItem.hasDescriptionEntries ())
       aTPT.setDescription (aUBLItem.getDescriptionAtIndex (0).getValue ());
 
-    // BG-32 (BT-160/BT-161)
+    // BG-32 ITEM ATTRIBUTES (BT-160/BT-161)
     for (final ItemPropertyType aUBLAddItemProp : aUBLLine.getItem ().getAdditionalItemProperty ())
     {
       final ProductCharacteristicType aPCT = new ProductCharacteristicType ();
@@ -135,7 +138,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       aTPT.addApplicableProductCharacteristic (aPCT);
     }
 
-    // BT-158/BT-158-1/BT-158-2
+    // BT-158/BT-158-1/BT-158-2 Item classification identifier
     for (final CommodityClassificationType aUBLCC : aUBLLine.getItem ().getCommodityClassification ())
     {
       final ProductClassificationType aPCT = new ProductClassificationType ();
@@ -163,11 +166,11 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     ReferencedDocumentType aRDT = null;
     if (aUBLLine.hasOrderLineReferenceEntries ())
     {
-      final var aOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
-      if (StringHelper.isNotEmpty (aOrderLineRef.getLineIDValue ()))
+      final var aUBLOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
+      if (StringHelper.isNotEmpty (aUBLOrderLineRef.getLineIDValue ()))
       {
         aRDT = new ReferencedDocumentType ();
-        aRDT.setLineID (aOrderLineRef.getLineIDValue ());
+        aRDT.setLineID (aUBLOrderLineRef.getLineIDValue ());
       }
     }
 
@@ -239,15 +242,15 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       aLTAT.setNetPriceProductTradePrice (aNetPrice);
     ret.setSpecifiedLineTradeAgreement (aLTAT);
 
-    // BT-129/BT-130 Credited quantity
+    // BT-129/BT-130 Invoiced quantity and unit of measure
     final LineTradeDeliveryType aLTDT = new LineTradeDeliveryType ();
     final QuantityType aQuantity = new QuantityType ();
-    aQuantity.setUnitCode (aUBLLine.getCreditedQuantity ().getUnitCode ());
-    aQuantity.setValue (aUBLLine.getCreditedQuantity ().getValue ());
+    aQuantity.setUnitCode (aUBLLine.getInvoicedQuantity ().getUnitCode ());
+    aQuantity.setValue (aUBLLine.getInvoicedQuantity ().getValue ());
     aLTDT.setBilledQuantity (aQuantity);
     ret.setSpecifiedLineTradeDelivery (aLTDT);
 
-    // BG-30 (BT-151/BT-152)
+    // BG-30 LINE VAT INFORMATION (BT-151/BT-152)
     final LineTradeSettlementType aLineTradeSettlement = new LineTradeSettlementType ();
     for (final TaxCategoryType aUBLTaxCategory : aUBLLine.getItem ().getClassifiedTaxCategory ())
     {
@@ -281,11 +284,11 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     for (final AllowanceChargeType aUBLLineAC : aUBLLine.getAllowanceCharge ())
       aLineTradeSettlement.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLLineAC));
 
-    // BT-131
+    // BT-131 Invoice line net amount
     final TradeSettlementLineMonetarySummationType aLineMonetarySum = new TradeSettlementLineMonetarySummationType ();
     ifNotNull (convertAmount (aUBLLine.getLineExtensionAmount ()), aLineMonetarySum::addLineTotalAmount);
 
-    // BT-133
+    // BT-133 Invoice line Buyer accounting reference
     if (aUBLLine.getAccountingCostValue () != null)
     {
       final TradeAccountingAccountType aTAATL = new TradeAccountingAccountType ();
@@ -300,7 +303,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
   }
 
   @NonNull
-  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@NonNull final CreditNoteType aUBLDoc)
+  private static HeaderTradeSettlementType _createApplicableHeaderTradeSettlement (@NonNull final InvoiceType aUBLDoc)
   {
     final HeaderTradeSettlementType ret = new HeaderTradeSettlementType ();
 
@@ -395,7 +398,6 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     };
 
     // Value added tax point date BT-7
-    // Value added tax point date BT-7
     // EN 16931 rule CII-SR-461 requires at most one TaxPointDate across all
     // ApplicableTradeTax entries, so set it only on the first one.
     ifNotNull (aUBLDoc.getTaxPointDateValue (),
@@ -411,7 +413,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         ifNotEmpty (EN16931CodeLists.mapDueDateTypeCodeUBLToCII (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue ()),
                     x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
-      // BG-14 (BT-73/BT-74)
+      // BG-14 INVOICING PERIOD (BT-73/BT-74)
       if (aUBLPeriod.getStartDate () != null || aUBLPeriod.getEndDate () != null)
       {
         final SpecifiedPeriodType aSPT = new SpecifiedPeriodType ();
@@ -423,21 +425,21 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       }
     }
 
-    // BG-20/BG-21
+    // BG-20 DOCUMENT LEVEL ALLOWANCES / BG-21 DOCUMENT LEVEL CHARGES
     for (final AllowanceChargeType aUBLAllowanceCharge : aUBLDoc.getAllowanceCharge ())
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
     // BT-20 Payment terms + BT-9 Payment due date
     for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
-      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans, null));
+      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms,
+                                                                            aUBLPaymentMeans,
+                                                                            aUBLDoc.getDueDateValue ()));
 
-    // BT-9: If no PaymentTerms exist but PaymentDueDate is present, create one for the due date
-    if (!ret.hasSpecifiedTradePaymentTermsEntries () &&
-        aUBLPaymentMeans != null &&
-        aUBLPaymentMeans.getPaymentDueDate () != null)
+    // BT-9: If no PaymentTerms exist but DueDate is present, create one for the due date
+    if (!ret.hasSpecifiedTradePaymentTermsEntries () && aUBLDoc.getDueDateValue () != null)
     {
       final TradePaymentTermsType aTPT = new TradePaymentTermsType ();
-      aTPT.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+      aTPT.setDueDateDateTime (convertDateTime (aUBLDoc.getDueDateValue ().toLocalDate ()));
       ret.addSpecifiedTradePaymentTerms (aTPT);
     }
 
@@ -501,7 +503,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
                                                                                                                    aUBLTaxTotalAmounts));
 
-    // BT-19
+    // BT-19 Buyer accounting reference
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {
       final TradeAccountingAccountType aTAAT = new TradeAccountingAccountType ();
       aTAAT.setID (x);
@@ -512,16 +514,16 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
   }
 
   @Nullable
-  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@NonNull final CreditNoteType aUBLDoc,
+  public static CrossIndustryInvoiceType convertToCrossIndustryInvoice (@NonNull final InvoiceType aUBLDoc,
                                                                         @NonNull final ErrorList aErrorList)
   {
-    ValueEnforcer.notNull (aUBLDoc, "UBLCreditNote");
+    ValueEnforcer.notNull (aUBLDoc, "UBLInvoice");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
     final CrossIndustryInvoiceType aCIIInvoice = new CrossIndustryInvoiceType ();
 
     {
-      // BG-2
+      // BG-2 PROCESS CONTROL
       final ExchangedDocumentContextType aEDCT = new ExchangedDocumentContextType ();
       // BT-24
       ifNotEmpty (aUBLDoc.getCustomizationIDValue (), x -> {
@@ -545,12 +547,12 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       ifNotEmpty (aUBLDoc.getIDValue (), aEDT::setID);
 
       // Invoice type code BT-3
-      ifNotEmpty (aUBLDoc.getCreditNoteTypeCodeValue (), aEDT::setTypeCode);
+      ifNotEmpty (aUBLDoc.getInvoiceTypeCodeValue (), aEDT::setTypeCode);
 
       // IssueDate BT-2
       ifNotNull (aUBLDoc.getIssueDate (), x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal ())));
 
-      // BG-1
+      // BG-1 INVOICE NOTE
       for (final var aNote : aUBLDoc.getNote ())
         aEDT.addIncludedNote (convertNote (aNote));
 
@@ -560,9 +562,9 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     {
       final SupplyChainTradeTransactionType aSCTT = new SupplyChainTradeTransactionType ();
 
-      // BG-25
-      for (final var aLine : aUBLDoc.getCreditNoteLine ())
-        aSCTT.addIncludedSupplyChainTradeLineItem (_convertCreditNoteLine (aLine));
+      // BG-25 INVOICE LINE
+      for (final var aLine : aUBLDoc.getInvoiceLine ())
+        aSCTT.addIncludedSupplyChainTradeLineItem (_convertInvoiceLine (aLine));
 
       // ApplicableHeaderTradeAgreement
       {
@@ -582,7 +584,17 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
           aHTAT.setBuyerTradeParty (convertParty (aCustomerParty.getParty ()));
 
         // Project reference BT-11
-        // Not available in CreditNote
+        if (aUBLDoc.hasProjectReferenceEntries ())
+        {
+          final ProjectReferenceType aProjRef = aUBLDoc.getProjectReferenceAtIndex (0);
+          ifNotEmpty (aProjRef.getIDValue (), x -> {
+            final ProcuringProjectType aProcuringProject = new ProcuringProjectType ();
+            aProcuringProject.setID (x);
+            // Constant value according to EN
+            aProcuringProject.setName ("Project reference");
+            aHTAT.setSpecifiedProcuringProject (aProcuringProject);
+          });
+        }
 
         // Purchase order reference BT-13
         if (aUBLDoc.getOrderReference () != null)

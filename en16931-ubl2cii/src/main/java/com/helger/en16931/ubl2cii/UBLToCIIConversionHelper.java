@@ -32,6 +32,8 @@ import com.helger.base.state.ESuccess;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.SingleError;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.ubl2cii.en2017.UBL21CreditNoteToCIID16BConverter;
+import com.helger.en16931.ubl2cii.en2017.UBL21InvoiceToCIID16BConverter;
 import com.helger.ubl21.UBL21Marshaller;
 import com.helger.xml.XMLHelper;
 import com.helger.xml.sax.WrappedCollectingSAXErrorHandler;

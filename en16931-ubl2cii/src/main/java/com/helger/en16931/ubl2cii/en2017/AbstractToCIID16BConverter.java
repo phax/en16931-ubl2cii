@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.helger.en16931.ubl2cii;
+package com.helger.en16931.ubl2cii.en2017;
 
 import java.time.LocalDate;
-import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -27,9 +26,8 @@ import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.xml.XMLOffsetDate;
-import com.helger.en16931.basics.ConversionHelper;
-import com.helger.en16931.basics.EEN16931DateFormatCode;
 import com.helger.en16931.basics.codelist.EN16931CodeLists;
+import com.helger.en16931.ubl2cii.AbstractToCIIConverterBase;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
@@ -68,31 +66,12 @@ import un.unece.uncefact.data.standard.unqualifieddatatype._100.IndicatorType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.TextType;
 
 /**
- * Abstract base class to convert UBL to CII D16B
+ * Abstract base class to convert UBL 2.1 to CII D16B, following EN 16931:2017.
  *
  * @author Philip Helger
  */
-public abstract class AbstractToCIID16BConverter
+public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterBase
 {
-  /** The UNTDID 2379 date format all CII dates of the EN 16931:2017 binding use */
-  protected static final EEN16931DateFormatCode CII_DATE_FORMAT = EEN16931DateFormatCode.CCYYMMDD;
-
-  protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
-  {
-    return ConversionHelper.ifNotNull (aObj, aConsumer);
-  }
-
-  protected static boolean ifNotEmpty (@Nullable final String s, @NonNull final Consumer <? super String> aConsumer)
-  {
-    return ConversionHelper.ifNotEmpty (s, aConsumer);
-  }
-
-  @Nullable
-  protected static String createFormattedDateValue (@Nullable final LocalDate aLocalDate)
-  {
-    return CII_DATE_FORMAT.getAsString (aLocalDate);
-  }
-
   @Nullable
   protected static FormattedDateTimeType convertFormattedDateTime (@Nullable final LocalDate aLocalDate)
   {

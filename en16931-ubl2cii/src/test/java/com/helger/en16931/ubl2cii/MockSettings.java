@@ -31,13 +31,13 @@ import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.en16931.EN16931Validation;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
-final class MockSettings
+public final class MockSettings
 {
-  static final DVRCoordinate VID_CII_2017 = EN16931Validation.VID_CII_1316.getWithVersionLatestRelease ();
-  static final DVRCoordinate VID_UBL_INV_2017 = EN16931Validation.VID_UBL_INVOICE_1316.getWithVersionLatestRelease ();
-  static final DVRCoordinate VID_UBL_CN_2017 = EN16931Validation.VID_UBL_CREDIT_NOTE_1316.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_CII_2017 = EN16931Validation.VID_CII_1316.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_UBL_INV_2017 = EN16931Validation.VID_UBL_INVOICE_1316.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_UBL_CN_2017 = EN16931Validation.VID_UBL_CREDIT_NOTE_1316.getWithVersionLatestRelease ();
 
-  static final ValidationExecutorSetRegistry <IValidationSourceXML> VES_REGISTRY = new ValidationExecutorSetRegistry <> ();
+  public static final ValidationExecutorSetRegistry <IValidationSourceXML> VES_REGISTRY = new ValidationExecutorSetRegistry <> ();
   static
   {
     EN16931Validation.initEN16931 (VES_REGISTRY);
