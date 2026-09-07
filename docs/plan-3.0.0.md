@@ -1,6 +1,6 @@
 # Plan: en16931-ubl2cii 3.0.0
 
-Status: **A0-A6 done.** A3 absorbed A5 - see the log. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
+Status: **A0-A13 done** - all 284 mapping rows implemented. A3 absorbed A5, and the coverage guard of A16 was pulled forward into phase 4 to serve as its worklist. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
 
 ## 1. Goal
 
@@ -246,7 +246,7 @@ Taken from `en16931-basics` instead of being kept locally:
   - The table of section 4.8, all six.
   - **Done when:** each of the six is covered by an XPath assertion on a header test file.
 
-- [ ] **A7 — Carried-over rows: XPath assertions** · ~4 h
+- [x] **A7 — Carried-over rows: XPath assertions** · ~4 h
   - Assert the 182 carried-over rows against `d25a-full-invoice-ubl.xml` and
     `d25a-full-creditnote-ubl.xml`.
   - Includes the credit-note renames: `cac:CreditNoteLine`, `cbc:CreditedQuantity`,
@@ -256,7 +256,7 @@ Taken from `en16931-basics` instead of being kept locally:
 
 Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against each other.
 
-- [ ] **A8 — New header BTs** · 9 rows
+- [x] **A8 — New header BTs** · 9 rows
   - BT-166 / BT-166-1 (`ram:IssueDateTime` with `@format='208'`), BT-167 / 167-1 / 167-2
     (`ram:InvoiceApplicableTradeCurrencyExchange`), BT-197
     (`ram:DeliveryNoteReferencedDocument`), BT-202 (BG-3 preceding invoice type code),
@@ -264,7 +264,7 @@ Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against ea
   - **Note:** BT-2 + BT-166 collapse into *one* CII element. Writing BT-166 means switching the
     `@format` of `ram:IssueDateTime` from `102` to `208` and emitting date **and** time.
 
-- [ ] **A9 — BG-33 / BG-35 / BG-36 payment terms, discount, penalty** · 8 rows
+- [x] **A9 — BG-33 / BG-35 / BG-36 payment terms, discount, penalty** · 8 rows
   - BG-35: BT-170, BT-170-1, BT-171, BT-172 → `ram:ApplicableTradePaymentDiscountTerms`.
   - BG-36: BT-181, BT-181-1, BT-182, BT-183 → `ram:ApplicableTradePaymentPenaltyTerms`.
   - **Structural work:** UBL has one 0..n `cac:PaymentTerms` for all three groups and gives no
@@ -273,24 +273,24 @@ Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against ea
     `cac:PenaltyPeriod`/`cbc:PenaltyAmount`/`cac:PenaltyInterestRate` → BG-36, otherwise BG-33.
     This is the inverse of cii2ubl A9 and the one place where this direction is genuinely harder.
 
-- [ ] **A10 — BG-34 charges on behalf of a third party** · 3 rows
+- [x] **A10 — BG-34 charges on behalf of a third party** · 3 rows
   - UBL `cac:CollectionInvoiceLine` / `cac:CollectionCreditNoteLine` →
     CII `ram:SpecifiedFinancialAdjustment`.
   - BT-179 (`cbc:TaxInclusiveLineExtensionAmount`), BT-180 (`cac:Item/cbc:Description`).
     BT-179-1 is UBL-only — it is **dropped** in this direction, which is the correct inverse of
     cii2ubl synthesising it.
 
-- [ ] **A11 — New allowance / charge / VAT-breakdown BTs** · 10 rows
+- [x] **A11 — New allowance / charge / VAT-breakdown BTs** · 10 rows
   - BG-20: BT-173, BT-174, BT-213 · BG-21: BT-175, BT-176, BT-177, BT-177-1, BT-214
   - BG-23: BT-184 (`ram:CalculatedAmount/@currencyID`), BT-210
   - **Discriminator:** BT-105 and BT-177 share `cbc:AllowanceChargeReasonCode`; BT-177 is the one
     with `@listID='5153'`. Only that one gets `@listID`/`@listAgencyID` on the CII side — see 4.7.
 
-- [ ] **A12 — New line-level document references + BG-39** · 14 rows
+- [x] **A12 — New line-level document references + BG-39** · 14 rows
   - BG-25: BT-188, BT-200, BT-201, BT-189, BT-190, BT-191, BT-192, BT-198, BT-199
   - BG-39: BT-217, BT-218, BT-218-1, BT-219, BT-220 (from `cac:InvoiceLine/cac:BillingReference`)
 
-- [ ] **A13 — BG-37 / BG-38 line delivery + new item and tax BTs** · 19 rows
+- [x] **A13 — BG-37 / BG-38 line delivery + new item and tax BTs** · 19 rows
   - BG-37 (5): BT-185, BT-186, BT-186-1, BT-187, BT-187-1
   - BG-38 (7): BT-203 … BT-209
   - BG-28 (2): BT-193, BT-193-1 · BG-30 (2): BT-194, BT-195 · BG-31 (1): BT-196
@@ -362,4 +362,11 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 | A2 | 2026-09-07 | `[3.0.0 A2]` 6640114 | Only three members are genuinely edition-independent here, because A1 had already moved the facts of the standard to `en16931-basics` and this project has no settings API. 22 members in, 22 out. `generated/cii/` byte-identical. |
 | A3 | 2026-09-07 | `[3.0.0 A3]` 3fb0d97 | Merged with A5 - a hand-written skeleton would have been throwaway work *and* a bug source, per cii2ubl's own A3/A5 experience. 20 compile errors, every one a cardinality widening exactly as predicted in 4.6, no semantic surprise. The eight UBL-side ones collapse into one `getFirstValue` helper. |
 | A4 | 2026-09-07 | `[3.0.0 A4]` 048cd84 | All 16 corpus files already convert to XSD-valid CII D25A straight out of the A3 bulk port - the port itself needed no correction. `MockD25ASettings` mirrors cii2ubl's, with the CII namespace context. Negative-probed: a wrong expected value and a non-existent element both fail. 2026 output goes to `generated/cii-d25a/`, tracked like the 2017 one. |
-| A6 | 2026-09-07 | `[3.0.0 A6]` | All six applied. **XSD validity alone had hidden a real data loss:** before this item the whole of BG-1 was silently dropped, because the ported converter still read `cbc:Note` while a 2026 document carries `cac:Annotation`. That is the concrete case for D3 - the output was schema valid and simply missing two business terms. `BT-32-2` needs the local `LOC`/`FC` pair; `EEN16931TaxSchemeCode` of en16931-basics only knows `VAT`/`VA`, and cii2ubl holds the same constant locally. |
+| A6 | 2026-09-07 | `[3.0.0 A6]` 7cb2ab7 | All six applied. **XSD validity alone had hidden a real data loss:** before this item the whole of BG-1 was silently dropped, because the ported converter still read `cbc:Note` while a 2026 document carries `cac:Annotation`. That is the concrete case for D3 - the output was schema valid and simply missing two business terms. `BT-32-2` needs the local `LOC`/`FC` pair; `EEN16931TaxSchemeCode` of en16931-basics only knows `VAT`/`VA`, and cii2ubl holds the same constant locally. |
+| A8 | 2026-09-07 | `[3.0.0 A8]` 21cfbf6 | The CII-only `@format` codes and scheme identifiers were implemented all along but not traceable to a mapping row; naming them at their sites is what the coverage guard needs. |
+| A9 | 2026-09-07 | `[3.0.0 A9]` 0145770 | The one place this direction is harder than cii2ubl's: UBL has no discriminator between BG-33, BG-35 and BG-36, so they are told apart by the elements they use. **Found a latent bug** - `cac:PaymentTerms` became 0..n in 2026 and BT-9, which is 0..1, was written into every one of them. |
+| A10 | 2026-09-07 | `[3.0.0 A10]` 383db6b | BT-179-1 is dropped, the correct inverse of cii2ubl synthesising it. The two UBL collection line types are unrelated Java classes, so the helper takes extracted values. |
+| A11 | 2026-09-07 | `[3.0.0 A11]` 262f3e7 | The 4.7 `@listID` trap in reverse. BT-184 needed a judgment call the table does not make - see the commit. BT-193/BT-193-1 and BT-194/BT-195/BT-196 came along for free, as they did in cii2ubl. |
+| A12 | 2026-09-07 | `[3.0.0 A12]` 87068d8 | All nine new references share one shape, so one helper covers them - including dropping the `None` placeholder that the UBL binding prescribes for absent line references. |
+| A13 | 2026-09-07 | `[3.0.0 A13]` ac92543 | **Second source defect found** - BT-186/BT-186-1 of the line level BG-37 are mapped to the header delivery, recorded as finding 8. Coverage guard now reports 284 of 284. |
+| A7 | 2026-09-07 | `[3.0.0 A7]` | ~130 assertions across BG-2 to BG-32 on the two comprehensive files, plus the credit note renames. **All green on the first run** - the A3 bulk port lost nothing, which is the evidence D6's reasoning was right for the 2026 side too. |

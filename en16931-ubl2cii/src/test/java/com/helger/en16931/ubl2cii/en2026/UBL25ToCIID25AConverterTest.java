@@ -106,6 +106,310 @@ public final class UBL25ToCIID25AConverterTest
   }
 
   /**
+   * The business terms carried over unchanged from the 2017 binding, asserted on the comprehensive
+   * invoice. These are the 182 rows the A3 bulk port brought along; the point of asserting them is
+   * that the port did not silently lose any of them.
+   */
+  @Test
+  public void testFullInvoiceCarriedOverTerms ()
+  {
+    final Element e = convertAndValidate ("d25a-full-invoice-ubl.xml", true);
+
+    final String sAgr = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement";
+    final String sDel = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeDelivery";
+    final String sSet = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
+    final String sLine = "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[1]";
+
+    // --- BG-2 PROCESS CONTROL and the document header ------------------------------------------
+    // BT-24 / BT-23
+    assertXPath (e,
+                 "rsm:ExchangedDocumentContext/ram:GuidelineSpecifiedDocumentContextParameter/ram:ID",
+                 "urn:cen.eu:en16931:2026");
+    assertXPath (e,
+                 "rsm:ExchangedDocumentContext/ram:BusinessProcessSpecifiedDocumentContextParameter/ram:ID",
+                 "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0");
+    // BT-1 / BT-3 / BT-2
+    assertXPath (e, "rsm:ExchangedDocument/ram:ID", "D25A-FULL-INV-1");
+    assertXPath (e, "rsm:ExchangedDocument/ram:TypeCode", "380");
+    assertXPath (e, "rsm:ExchangedDocument/ram:IssueDateTime/udt:DateTimeString", "20260115");
+
+    // --- BG-4 SELLER, BG-5 SELLER POSTAL ADDRESS -----------------------------------------------
+    // BT-27 name, BT-28 trading name, BT-29/BT-29-1 identifier, BT-30/BT-30-1 legal registration
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:Name", "Seller Ltd");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:TradingBusinessName",
+                 "Seller Trading Name");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:GlobalID", "4035811234567");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:GlobalID/@schemeID", "0088");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID", "FN123456x");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID/@schemeID", "0198");
+    // BT-31 VAT identifier
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:SpecifiedTaxRegistration/ram:ID", "ATU12345678");
+    // BT-35 address line 1, BT-37 city, BT-38 post code, BT-40 country code
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:PostalTradeAddress/ram:LineOne", "Main Street 1");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CityName", "Vienna");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode", "1010");
+    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID", "AT");
+
+    // --- BG-7 BUYER, BG-8 BUYER POSTAL ADDRESS -------------------------------------------------
+    // BT-44 name, BT-48 VAT identifier, BT-50 address line 1, BT-52 city, BT-53 post code, BT-55
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:Name", "Buyer Ltd");
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration/ram:ID", "ATU87654321");
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:LineOne", "Buyer Street 2");
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CityName", "Salzburg");
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode", "5020");
+    assertXPath (e, sAgr + "/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID", "AT");
+
+    // --- BG-10 PAYEE ---------------------------------------------------------------------------
+    // BT-59 name, BT-60/BT-60-1 identifier, BT-61/BT-61-1 legal registration
+    assertXPath (e, sSet + "/ram:PayeeTradeParty/ram:Name", "Payee Ltd");
+    assertXPath (e, sSet + "/ram:PayeeTradeParty/ram:GlobalID", "4035822222222");
+    assertXPath (e, sSet + "/ram:PayeeTradeParty/ram:SpecifiedLegalOrganization/ram:ID", "FN999999z");
+
+    // --- BG-11 / BG-12 SELLER TAX REPRESENTATIVE PARTY AND ADDRESS -----------------------------
+    // BT-62 name, BT-63 VAT identifier, BT-64 address line 1, BT-66 city, BT-67 post code, BT-69
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:Name", "Tax Rep GmbH");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedTaxRegistration/ram:ID",
+                 "ATU11111111");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:LineOne",
+                 "Rep Street 3");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CityName", "Vienna");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode", "1020");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CountryID", "AT");
+
+    // --- Header references ---------------------------------------------------------------------
+    // BT-11 project, BT-12 contract, BT-13 purchase order, BT-14 sales order
+    assertXPath (e, sAgr + "/ram:SpecifiedProcuringProject/ram:ID", "PROJECT-7");
+    assertXPath (e, sAgr + "/ram:ContractReferencedDocument/ram:IssuerAssignedID", "CONTRACT-42");
+    assertXPath (e, sAgr + "/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID", "PO-2026-0001");
+    assertXPath (e, sAgr + "/ram:SellerOrderReferencedDocument/ram:IssuerAssignedID", "SO-2026-9");
+    // BT-17 tender or lot reference, written with the fixed type code "50" of BT-17-1
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='50']/ram:IssuerAssignedID", "TENDER-5");
+    // BT-18/BT-18-1/BT-18-2 invoiced object identifier
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='130']/ram:IssuerAssignedID", "METER-9");
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='130']/ram:ReferenceTypeCode", "AVE");
+    // BG-24 supporting document with BT-122, BT-122-1, BT-123 and BT-124
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:IssuerAssignedID", "DOC-916");
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:Name", "Supporting document");
+    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:URIID",
+                 "https://example.org/doc");
+    // BT-15 receiving advice, BT-16 despatch advice
+    assertXPath (e, sDel + "/ram:ReceivingAdviceReferencedDocument/ram:IssuerAssignedID", "RECEIPT-4");
+    assertXPath (e, sDel + "/ram:DespatchAdviceReferencedDocument/ram:IssuerAssignedID", "DESPATCH-3");
+
+    // --- BG-3 PRECEDING INVOICE REFERENCE, now 0..n ---------------------------------------------
+    assertXPathCount (e, sSet + "/ram:InvoiceReferencedDocument", 2);
+    // BT-25 number, BT-26 issue date
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument[1]/ram:IssuerAssignedID", "PREV-INV-1");
+    assertXPath (e,
+                 sSet + "/ram:InvoiceReferencedDocument[1]/ram:FormattedIssueDateTime/qdt:DateTimeString",
+                 "20251215");
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument[2]/ram:IssuerAssignedID", "PREV-INV-2");
+
+    // --- BG-13 DELIVERY INFORMATION and BG-15 DELIVER TO ADDRESS -------------------------------
+    // BT-70 party name, BT-71/BT-71-1 location identifier, BT-72 actual delivery date
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:Name", "Delivery Site");
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:GlobalID", "4035811111111");
+    assertXPath (e, sDel + "/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString",
+                 "20260112");
+    // BT-75 address line 1, BT-77 city, BT-78 post code, BT-80 country code
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:LineOne", "Delivery Road 7");
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:CityName", "Linz");
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:PostcodeCode", "4020");
+    assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:CountryID", "AT");
+
+    // --- BG-14 INVOICING PERIOD, BT-5, BT-6, BT-7, BT-19 ----------------------------------------
+    assertXPath (e, sSet + "/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString", "20260101");
+    assertXPath (e, sSet + "/ram:BillingSpecifiedPeriod/ram:EndDateTime/udt:DateTimeString", "20260131");
+    assertXPath (e, sSet + "/ram:InvoiceCurrencyCode", "EUR");
+    assertXPath (e, sSet + "/ram:TaxCurrencyCode", "USD");
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[1]/ram:TaxPointDate/udt:DateString", "20260110");
+    assertXPath (e, sSet + "/ram:ReceivableSpecifiedTradeAccountingAccount/ram:ID", "COST-CENTRE-1");
+
+    // --- BG-16 / BG-17 PAYMENT INSTRUCTIONS and CREDIT TRANSFER --------------------------------
+    // BT-81 payment means code, BT-82 payment means text, BT-83 remittance information
+    assertXPath (e, sSet + "/ram:SpecifiedTradeSettlementPaymentMeans/ram:TypeCode", "58");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeSettlementPaymentMeans/ram:Information", "SEPA credit transfer");
+    assertXPath (e, sSet + "/ram:PaymentReference", "REMIT-1");
+    // BT-84 account identifier, BT-85 account name, BT-86 provider identifier
+    assertXPath (e,
+                 sSet +
+                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:IBANID",
+                 "AT611904300234573201");
+    assertXPath (e,
+                 sSet +
+                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:AccountName",
+                 "Seller Account");
+    assertXPath (e,
+                 sSet +
+                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeeSpecifiedCreditorFinancialInstitution/ram:BICID",
+                 "GIBAATWWXXX");
+
+    // --- BG-20 / BG-21 document level allowances and charges -----------------------------------
+    // BT-92 amount, BT-93 base amount, BT-94 percentage, BT-95 category, BT-96 rate, BT-97 reason,
+    // BT-98 reason code
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:ChargeIndicator/udt:Indicator", "false");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:ActualAmount", "5");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:BasisAmount", "100");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:CalculationPercent", "5.00");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:CategoryTradeTax/ram:CategoryCode", "S");
+    assertXPath (e,
+                 sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:CategoryTradeTax/ram:RateApplicablePercent",
+                 "20");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:Reason", "Volume discount");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[1]/ram:ReasonCode", "95");
+    // BT-99 to BT-105 on the charge
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[2]/ram:ChargeIndicator/udt:Indicator", "true");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[2]/ram:ActualAmount", "15");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[2]/ram:Reason", "Freight");
+    assertXPath (e, sSet + "/ram:SpecifiedTradeAllowanceCharge[2]/ram:ReasonCode", "FC");
+
+    // --- BG-22 DOCUMENT TOTALS -----------------------------------------------------------------
+    final String sSum = sSet + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
+    // BT-106 to BT-115
+    assertXPath (e, sSum + "/ram:LineTotalAmount", "100");
+    assertXPath (e, sSum + "/ram:AllowanceTotalAmount", "5");
+    assertXPath (e, sSum + "/ram:ChargeTotalAmount", "15");
+    assertXPath (e, sSum + "/ram:TaxBasisTotalAmount", "110");
+    // BT-110 in BT-5 and BT-111 in BT-6, told apart by BT-110-1 / BT-111-1
+    assertXPath (e, sSum + "/ram:TaxTotalAmount[@currencyID='EUR']", "22");
+    assertXPath (e, sSum + "/ram:TaxTotalAmount[@currencyID='USD']", "24.2");
+    assertXPath (e, sSum + "/ram:GrandTotalAmount", "132");
+    assertXPath (e, sSum + "/ram:TotalPrepaidAmount", "32");
+    assertXPath (e, sSum + "/ram:DuePayableAmount", "100");
+
+    // --- BG-23 VAT BREAKDOWN -------------------------------------------------------------------
+    // BT-116 taxable amount, BT-117 tax amount, BT-118 category, BT-119 rate
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[1]/ram:BasisAmount", "100");
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[1]/ram:CalculatedAmount", "20");
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[1]/ram:CategoryCode", "S");
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[1]/ram:RateApplicablePercent", "20");
+    // BT-120 exemption reason text, BT-121 exemption reason code
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[2]/ram:ExemptionReason", "Reverse charge");
+    assertXPath (e, sSet + "/ram:ApplicableTradeTax[2]/ram:ExemptionReasonCode", "VATEX-EU-AE");
+
+    // --- BG-25 INVOICE LINE --------------------------------------------------------------------
+    // BT-126 identifier, BT-127 note, BT-129/BT-130 quantity, BT-131 net amount, BT-133 accounting
+    assertXPath (e, sLine + "/ram:AssociatedDocumentLineDocument/ram:LineID", "1");
+    assertXPath (e, sLine + "/ram:AssociatedDocumentLineDocument/ram:IncludedNote/ram:Content", "Line one note");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity", "4");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode", "C62");
+    assertXPath (e,
+                 sLine +
+                        "/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount",
+                 "100");
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:ReceivableSpecifiedTradeAccountingAccount/ram:ID",
+                 "LINE-COST-CENTRE");
+    // BT-128/BT-128-1 line object identifier
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument/ram:IssuerAssignedID",
+                 "OBJ-1");
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument/ram:ReferenceTypeCode",
+                 "AVE");
+
+    // --- BG-26 INVOICE LINE PERIOD -------------------------------------------------------------
+    // BT-134 start date, BT-135 end date
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString",
+                 "20260101");
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:EndDateTime/udt:DateTimeString",
+                 "20260131");
+
+    // --- BG-27 / BG-28 line allowances and charges ---------------------------------------------
+    final String sLineAC = sLine + "/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge";
+    // BT-136 to BT-140 on the allowance
+    assertXPath (e, sLineAC + "[1]/ram:ChargeIndicator/udt:Indicator", "false");
+    assertXPath (e, sLineAC + "[1]/ram:ActualAmount", "10");
+    assertXPath (e, sLineAC + "[1]/ram:BasisAmount", "100");
+    assertXPath (e, sLineAC + "[1]/ram:CalculationPercent", "10.00");
+    assertXPath (e, sLineAC + "[1]/ram:Reason", "Line discount");
+    assertXPath (e, sLineAC + "[1]/ram:ReasonCode", "95");
+    // BT-141 to BT-145 on the charge
+    assertXPath (e, sLineAC + "[2]/ram:ChargeIndicator/udt:Indicator", "true");
+    assertXPath (e, sLineAC + "[2]/ram:ActualAmount", "10");
+    assertXPath (e, sLineAC + "[2]/ram:Reason", "Line freight");
+    assertXPath (e, sLineAC + "[2]/ram:ReasonCode", "FC");
+
+    // --- BG-29 PRICE DETAILS -------------------------------------------------------------------
+    final String sPrice = sLine + "/ram:SpecifiedLineTradeAgreement";
+    // BT-146 net price, BT-147/BT-147-1 discount, BT-148 gross price, BT-149/BT-150 base quantity
+    assertXPath (e, sPrice + "/ram:NetPriceProductTradePrice/ram:ChargeAmount", "25");
+    assertXPath (e,
+                 sPrice + "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ActualAmount",
+                 "5");
+    assertXPath (e,
+                 sPrice +
+                         "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ChargeIndicator/udt:Indicator",
+                 "false");
+    assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:ChargeAmount", "30");
+    assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:BasisQuantity", "1");
+    assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:BasisQuantity/@unitCode", "C62");
+
+    // --- BG-30 LINE VAT INFORMATION ------------------------------------------------------------
+    // BT-151 category code, BT-151-1 tax code, BT-152 rate
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode", "S");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:TypeCode", "VAT");
+    assertXPath (e,
+                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent",
+                 "20");
+
+    // --- BG-31 ITEM INFORMATION ----------------------------------------------------------------
+    final String sItem = sLine + "/ram:SpecifiedTradeProduct";
+    // BT-153 name, BT-154 description, BT-155 seller identifier, BT-156 buyer identifier,
+    // BT-157/BT-157-1 standard identifier, BT-158/BT-158-1/BT-158-2 classification, BT-159 origin
+    assertXPath (e, sItem + "/ram:Name", "Widget");
+    assertXPath (e, sItem + "/ram:Description", "A round widget");
+    assertXPath (e, sItem + "/ram:SellerAssignedID", "SELLER-ART-1");
+    assertXPath (e, sItem + "/ram:BuyerAssignedID", "BUYER-ART-1");
+    assertXPath (e, sItem + "/ram:GlobalID", "1234567890128");
+    assertXPath (e, sItem + "/ram:GlobalID/@schemeID", "0160");
+    assertXPath (e, sItem + "/ram:DesignatedProductClassification/ram:ClassCode", "CLASS-1");
+    assertXPath (e, sItem + "/ram:DesignatedProductClassification/ram:ClassCode/@listID", "TST");
+    assertXPath (e, sItem + "/ram:DesignatedProductClassification/ram:ClassCode/@listVersionID", "1.0");
+    assertXPath (e, sItem + "/ram:OriginTradeCountry/ram:ID", "AT");
+
+    // --- BG-32 ITEM ATTRIBUTE ------------------------------------------------------------------
+    // BT-160 name, BT-161a value as text
+    assertXPathCount (e, sItem + "/ram:ApplicableProductCharacteristic", 2);
+    assertXPath (e, sItem + "/ram:ApplicableProductCharacteristic[1]/ram:Description", "Colour");
+    assertXPath (e, sItem + "/ram:ApplicableProductCharacteristic[1]/ram:Value", "Blue");
+    assertXPath (e, sItem + "/ram:ApplicableProductCharacteristic[2]/ram:Description", "Weight");
+    assertXPath (e, sItem + "/ram:ApplicableProductCharacteristic[2]/ram:Value", "2 kg");
+  }
+
+  /**
+   * The credit note renames of the carried-over rows: <code>cac:CreditNoteLine</code>,
+   * <code>cbc:CreditedQuantity</code> and <code>cbc:CreditNoteTypeCode</code> all have to land in
+   * exactly the same CII elements as their invoice counterparts.
+   */
+  @Test
+  public void testFullCreditNoteCarriedOverTerms ()
+  {
+    final Element e = convertAndValidate ("d25a-full-creditnote-ubl.xml", false);
+
+    final String sLine = "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[1]";
+
+    // BT-3 from cbc:CreditNoteTypeCode
+    assertXPath (e, "rsm:ExchangedDocument/ram:TypeCode", "381");
+    // BT-126 and BT-129/BT-130 from cac:CreditNoteLine / cbc:CreditedQuantity
+    assertXPath (e, sLine + "/ram:AssociatedDocumentLineDocument/ram:LineID", "1");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity", "4");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode", "C62");
+    // BT-153 item name and BT-146 net price, to show the line is fully converted
+    assertXPath (e, sLine + "/ram:SpecifiedTradeProduct/ram:Name", "Widget");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount", "25");
+    // BT-27 and BT-44, to show the header is fully converted
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:Name",
+                 "Seller Ltd");
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:Name",
+                 "Buyer Ltd");
+  }
+
+  /**
    * The six paths that really changed between the 2017 and the 2026 binding, on the invoice side.
    * Everything else that differs textually between the two mapping documents is base path notation.
    */
