@@ -276,21 +276,21 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       return null;
 
     final TradeAddressType ret = new TradeAddressType ();
-    // BT-35/BT-50/BT-64/BT-75 Address line 1
+    // BT-35/BT-50/BT-64/BT-75/BT-203 Address line 1
     ifNotEmpty (getFirstValue (aUBLAddress.getStreetName ()), ret::setLineOne);
-    // BT-36/BT-51/BT-65/BT-76 Address line 2
+    // BT-36/BT-51/BT-65/BT-76/BT-204 Address line 2
     ifNotEmpty (getFirstValue (aUBLAddress.getAdditionalStreetName ()), ret::setLineTwo);
-    // BT-162/BT-163/BT-164/BT-165 Address line 3
+    // BT-162/BT-163/BT-164/BT-165/BT-205 Address line 3
     if (aUBLAddress.hasAddressLineEntries ())
       ifNotEmpty (getFirstValue (aUBLAddress.getAddressLineAtIndex (0).getLine ()), ret::setLineThree);
-    // BT-37/BT-52/BT-66/BT-77 City
+    // BT-37/BT-52/BT-66/BT-77/BT-206 City
     ifNotEmpty (getFirstValue (aUBLAddress.getCityName ()), ret::setCityName);
-    // BT-38/BT-53/BT-67/BT-78 Post code
+    // BT-38/BT-53/BT-67/BT-78/BT-207 Post code
     ifNotEmpty (getFirstValue (aUBLAddress.getPostalZone ()), ret::setPostcodeCode);
-    // BT-39/BT-54/BT-68/BT-79 Country subdivision
+    // BT-39/BT-54/BT-68/BT-79/BT-208 Country subdivision
     ifNotEmpty (getFirstValue (aUBLAddress.getCountrySubentity ()),
                 x -> ret.addCountrySubDivisionName (convertText (x)));
-    // BT-40/BT-55/BT-69/BT-80 Country code
+    // BT-40/BT-55/BT-69/BT-80/BT-209 Country code
     if (aUBLAddress.getCountry () != null)
       ifNotEmpty (aUBLAddress.getCountry ().getIdentificationCodeValue (), ret::setCountryID);
     return ret;
@@ -447,7 +447,9 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     if (aUBLDocRef.getID () != null)
       ifNotEmpty (aUBLDocRef.getID ().getSchemeID (), aURDT::setReferenceTypeCode);
 
-    // Add DocumentTypeCode where possible
+    // BT-17-1 (fixed "50"), BT-18-2 (fixed "130") and BT-122-1 (fixed "916") all live in this one
+    // CII element and are what tells BT-17, BT-18 and BG-24 apart. BT-122-1-1 - the UBL document
+    // type list identifier - has no CII counterpart and is therefore dropped.
     if (EN16931CodeLists.isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
       aURDT.setTypeCode (aUBLDocRef.getDocumentTypeCodeValue ());
     else
@@ -527,55 +529,71 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     return bUse ? ret : null;
   }
 
+  /**
+   * Convert a UBL delivery into a CII ship-to trade party. Header level (BG-13 with BT-70, BT-71,
+   * BT-71-1 and BG-15) and line level (BG-37 with BT-185, BT-186, BT-186-1 and BG-38) have exactly
+   * the same shape, so both use this.
+   *
+   * @param aUBLDelivery
+   *        The UBL delivery to read. May be <code>null</code>.
+   * @return <code>null</code> if the delivery carries none of the business terms.
+   */
+  @Nullable
+  protected static TradePartyType convertShipToTradeParty (@Nullable final DeliveryType aUBLDelivery)
+  {
+    if (aUBLDelivery == null)
+      return null;
+
+    final TradePartyType ret = new TradePartyType ();
+    boolean bUse = false;
+
+    final LocationType aUBLLocation = aUBLDelivery.getDeliveryLocation ();
+    if (aUBLLocation != null)
+    {
+      // BT-71/BT-71-1 respectively BT-186/BT-186-1 Deliver to location identifier
+      final IDType aLocID = convertID (aUBLLocation.getID ());
+      if (aLocID != null)
+      {
+        if (StringHelper.isNotEmpty (aLocID.getSchemeID ()))
+          ret.addGlobalID (aLocID);
+        else
+          ret.addID (aLocID);
+        bUse = true;
+      }
+      // BG-15 respectively BG-38 DELIVER TO ADDRESS - BT-203 to BT-209 at line level
+      if (ifNotNull (convertAddress (aUBLLocation.getAddress ()), ret::setPostalTradeAddress))
+        bUse = true;
+    }
+
+    // BT-70 respectively BT-185 Deliver to party name
+    if (aUBLDelivery.getDeliveryParty () != null && aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
+      if (ifNotEmpty (aUBLDelivery.getDeliveryParty ().getPartyNameAtIndex (0).getNameValue (), ret::setName))
+        bUse = true;
+
+    return bUse ? ret : null;
+  }
+
+  // BT-72 respectively BT-187 Actual delivery date, with BT-72-1 respectively BT-187-1 as the
+  // UNTDID 2379 format code
+  @Nullable
+  protected static SupplyChainEventType convertActualDeliverySupplyChainEvent (@Nullable final DeliveryType aUBLDelivery)
+  {
+    if (aUBLDelivery == null || aUBLDelivery.getActualDeliveryDate () == null)
+      return null;
+
+    final SupplyChainEventType ret = new SupplyChainEventType ();
+    ret.setOccurrenceDateTime (convertDateTime (aUBLDelivery.getActualDeliveryDate ().getValueLocal ()));
+    return ret;
+  }
+
   // BG-13 DELIVERY INFORMATION
   @Nullable
   protected static HeaderTradeDeliveryType createApplicableHeaderTradeDelivery (@Nullable final DeliveryType aUBLDelivery)
   {
     // Object is mandatory
     final HeaderTradeDeliveryType ret = new HeaderTradeDeliveryType ();
-
-    if (aUBLDelivery != null)
-    {
-      final LocationType aUBLLocation = aUBLDelivery.getDeliveryLocation ();
-      final TradePartyType aTPTHT = new TradePartyType ();
-      boolean bUseShipToParty = false;
-
-      if (aUBLLocation != null)
-      {
-        // BT-71/BT-71-1 Deliver to location identifier
-        final IDType aLocID = convertID (aUBLLocation.getID ());
-        if (aLocID != null)
-        {
-          if (StringHelper.isNotEmpty (aLocID.getSchemeID ()))
-            aTPTHT.addGlobalID (aLocID);
-          else
-            aTPTHT.addID (aLocID);
-          bUseShipToParty = true;
-        }
-        // BG-15 DELIVER TO ADDRESS
-        if (ifNotNull (convertAddress (aUBLLocation.getAddress ()), aTPTHT::setPostalTradeAddress))
-          bUseShipToParty = true;
-      }
-
-      // BT-70 Deliver to party name
-      if (aUBLDelivery.getDeliveryParty () != null &&
-          aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
-      {
-        if (ifNotEmpty (aUBLDelivery.getDeliveryParty ().getPartyNameAtIndex (0).getNameValue (), aTPTHT::setName))
-          bUseShipToParty = true;
-      }
-
-      if (bUseShipToParty)
-        ret.setShipToTradeParty (aTPTHT);
-
-      // BT-72 Actual delivery date
-      if (aUBLDelivery.getActualDeliveryDate () != null)
-      {
-        final SupplyChainEventType aSCET = new SupplyChainEventType ();
-        aSCET.setOccurrenceDateTime (convertDateTime (aUBLDelivery.getActualDeliveryDate ().getValueLocal ()));
-        ret.setActualDeliverySupplyChainEvent (aSCET);
-      }
-    }
+    ifNotNull (convertShipToTradeParty (aUBLDelivery), ret::setShipToTradeParty);
+    ifNotNull (convertActualDeliverySupplyChainEvent (aUBLDelivery), ret::setActualDeliverySupplyChainEvent);
     return ret;
   }
 
@@ -588,7 +606,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
 
     final TradeTaxType ret = new TradeTaxType ();
-    // BT-118 VAT category code scheme
+    // BT-118-1 VAT tax type code - the fixed value "VAT"
     if (aUBLTaxScheme != null)
       ifNotEmpty (aUBLTaxScheme.getIDValue (), ret::setTypeCode);
     // BT-118 VAT category code
@@ -666,6 +684,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       final TaxSchemeType aUBLTaxSchene = aUBLTaxCategory.getTaxScheme ();
 
       final TradeTaxType aTradeTax = new TradeTaxType ();
+      // BT-95-1/BT-102-1 VAT tax code - the fixed value "VAT"
       if (aUBLTaxSchene != null)
         ifNotEmpty (aUBLTaxSchene.getIDValue (), aTradeTax::setTypeCode);
       ifNotEmpty (aUBLTaxCategory.getIDValue (), aTradeTax::setCategoryCode);
@@ -810,7 +829,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       ifNotNull (convertAmount (aUBLMonetaryTotal.getTaxExclusiveAmount ()), ret::addTaxBasisTotalAmount);
     }
 
-    // BT-110/BT-111 Invoice total VAT amount (in document/accounting currency)
+    // BT-110/BT-111 Invoice total VAT amount, with BT-110-1/BT-111-1 as the currency code that
+    // tells the two apart - BT-110 carries BT-5, BT-111 the VAT accounting currency BT-6
     // Skip zero values — cii2ubl creates a synthetic TaxTotal with value 0 when
     // CII has no TaxTotalAmount (because UBL mandates TaxTotal). Emitting it
     // back would produce an element that wasn't in the original CII.

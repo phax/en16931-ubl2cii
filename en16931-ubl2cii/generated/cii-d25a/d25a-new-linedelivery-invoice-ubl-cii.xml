@@ -38,7 +38,9 @@
           <ram:Value>Blue</ram:Value>
         </ram:ApplicableProductCharacteristic>
         <ram:ApplicableProductCharacteristic>
+          <ram:TypeCode>AAO</ram:TypeCode>
           <ram:Description>Humidity</ram:Description>
+          <ram:ValueMeasure unitCode="P1">65</ram:ValueMeasure>
         </ram:ApplicableProductCharacteristic>
         <ram:DesignatedProductClassification>
           <ram:ClassCode listID="TST" listVersionID="1.0">CLASS-1</ram:ClassCode>
@@ -64,12 +66,33 @@
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery>
         <ram:BilledQuantity unitCode="C62">4</ram:BilledQuantity>
+        <ram:ShipToTradeParty>
+          <ram:GlobalID schemeID="0088">4035813333333</ram:GlobalID>
+          <ram:Name>Line Delivery Site</ram:Name>
+          <ram:PostalTradeAddress>
+            <ram:PostcodeCode>6020</ram:PostcodeCode>
+            <ram:LineOne>Line Delivery Road 1</ram:LineOne>
+            <ram:LineTwo>Gate 5</ram:LineTwo>
+            <ram:LineThree>Dock C</ram:LineThree>
+            <ram:CityName>Innsbruck</ram:CityName>
+            <ram:CountryID>AT</ram:CountryID>
+            <ram:CountrySubDivisionName>Tirol</ram:CountrySubDivisionName>
+          </ram:PostalTradeAddress>
+        </ram:ShipToTradeParty>
+        <ram:ActualDeliverySupplyChainEvent>
+          <ram:OccurrenceDateTime>
+            <udt:DateTimeString format="102">20260113</udt:DateTimeString>
+          </ram:OccurrenceDateTime>
+        </ram:ActualDeliverySupplyChainEvent>
       </ram:SpecifiedLineTradeDelivery>
       <ram:SpecifiedLineTradeSettlement>
         <ram:ApplicableTradeTax>
           <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:ExemptionReason>Item exempt</ram:ExemptionReason>
           <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:ExemptionReasonCode>VATEX-EU-G</ram:ExemptionReasonCode>
           <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+          <ram:SupplyTypeCode>SUPPLY-L</ram:SupplyTypeCode>
         </ram:ApplicableTradeTax>
         <ram:BillingSpecifiedPeriod>
           <ram:StartDateTime>

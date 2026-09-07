@@ -363,6 +363,67 @@ public final class UBL25ToCIID25AConverterTest
                  "102");
   }
 
+  /** BG-37, BG-38 and the item and tax terms added in 2026. */
+  @Test
+  public void testNewLineDeliveryItemAndTax ()
+  {
+    final Element e = convertAndValidate ("d25a-new-linedelivery-invoice-ubl.xml", true);
+
+    final String sLine = "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[1]";
+    final String sShipTo = sLine + "/ram:SpecifiedLineTradeDelivery/ram:ShipToTradeParty";
+
+    // BG-37 INVOICE LINE DELIVERY INFORMATION
+    // BT-185 Invoice line deliver to party name
+    assertXPath (e, sShipTo + "/ram:Name", "Line Delivery Site");
+    // BT-186 Invoice line deliver to location identifier and BT-186-1 its scheme identifier.
+    // The source maps these two to the *header* ShipToTradeParty although BG-37 is line level,
+    // which cannot work for more than one line - see finding 8 of the mapping table.
+    assertXPath (e, sShipTo + "/ram:GlobalID", "4035813333333");
+    assertXPath (e, sShipTo + "/ram:GlobalID/@schemeID", "0088");
+    // BT-187 Invoice line actual delivery date and BT-187-1 its format code
+    assertXPath (e,
+                 sLine +
+                        "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString",
+                 "20260113");
+    assertXPath (e,
+                 sLine +
+                        "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString/@format",
+                 "102");
+
+    // BG-38 INVOICE LINE DELIVER TO ADDRESS - BT-203 to BT-209
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:LineOne", "Line Delivery Road 1");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:LineTwo", "Gate 5");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:LineThree", "Dock C");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:CityName", "Innsbruck");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:PostcodeCode", "6020");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:CountrySubDivisionName", "Tirol");
+    assertXPath (e, sShipTo + "/ram:PostalTradeAddress/ram:CountryID", "AT");
+
+    // BG-30 LINE VAT INFORMATION
+    final String sLineTax = sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax";
+    // BT-194 Invoiced item exemption reason text
+    assertXPath (e, sLineTax + "/ram:ExemptionReason", "Item exempt");
+    // BT-195 Invoiced item VAT exemption reason and specification code
+    assertXPath (e, sLineTax + "/ram:ExemptionReasonCode", "VATEX-EU-G");
+    // BT-196 Goods/services code
+    assertXPath (e, sLineTax + "/ram:SupplyTypeCode", "SUPPLY-L");
+
+    // BG-32 ITEM ATTRIBUTE - the first one uses BT-161a, the second BT-161b
+    final String sAttr = sLine + "/ram:SpecifiedTradeProduct/ram:ApplicableProductCharacteristic";
+    // BT-160 Item attribute name and BT-161a Item attribute value as text
+    assertXPath (e, sAttr + "[1]/ram:Description", "Colour");
+    assertXPath (e, sAttr + "[1]/ram:Value", "Blue");
+    // Exactly one of BT-161a and BT-161b per attribute - rule CII-SR-504
+    assertNoXPath (e, sAttr + "[1]/ram:ValueMeasure");
+    assertNoXPath (e, sAttr + "[1]/ram:TypeCode");
+    // BT-211 Item attribute code
+    assertXPath (e, sAttr + "[2]/ram:TypeCode", "AAO");
+    // BT-161b Item attribute value as a measure, with BT-212 as its unit of measure code
+    assertXPath (e, sAttr + "[2]/ram:ValueMeasure", "65");
+    assertXPath (e, sAttr + "[2]/ram:ValueMeasure/@unitCode", "P1");
+    assertNoXPath (e, sAttr + "[2]/ram:Value");
+  }
+
   /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.

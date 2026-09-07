@@ -81,6 +81,7 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementPaymentMean
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeTaxType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.CodeType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.IDType;
+import un.unece.uncefact.data.standard.cii.d25a.udt.MeasureType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.QuantityType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.RateType;
 
@@ -138,8 +139,30 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     for (final ItemPropertyType aUBLAddItemProp : aUBLLine.getItem ().getAdditionalItemProperty ())
     {
       final ProductCharacteristicType aPCT = new ProductCharacteristicType ();
+      // BT-160 Item attribute name
       ifNotNull (convertText (aUBLAddItemProp.getNameValue ()), aPCT::addDescription);
-      ifNotNull (convertText (aUBLAddItemProp.getValueValue ()), aPCT::addValue);
+      // BT-211 Item attribute code
+      ifNotEmpty (aUBLAddItemProp.getNameCodeValue (), x -> {
+        final CodeType aTypeCode = new CodeType ();
+        aTypeCode.setValue (x);
+        aPCT.setTypeCode (aTypeCode);
+      });
+      // BT-161 Item attribute value - exactly one of the two alternatives per attribute.
+      // BT-161b is the numeric one and carries BT-212 as its unit of measure code.
+      if (aUBLAddItemProp.getValueQuantity () != null)
+      {
+        // BT-161b
+        final MeasureType aValueMeasure = new MeasureType ();
+        aValueMeasure.setValue (aUBLAddItemProp.getValueQuantityValue ());
+        // BT-212 Item attribute value unit of measure code
+        ifNotEmpty (aUBLAddItemProp.getValueQuantity ().getUnitCode (), aValueMeasure::setUnitCode);
+        aPCT.setValueMeasure (aValueMeasure);
+      }
+      else
+      {
+        // BT-161a
+        ifNotNull (convertText (aUBLAddItemProp.getValueValue ()), aPCT::addValue);
+      }
       aTPT.addApplicableProductCharacteristic (aPCT);
     }
 
@@ -210,7 +233,8 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
         if (aUBLPriceAC.getBaseAmount () != null)
           aGrossPrice.addChargeAmount (convertAmount (aUBLPriceAC.getBaseAmount ()));
 
-        // BT-147 Item price discount
+        // BT-147 Item price discount, with BT-147-1 the indicator that identifies it as one -
+        // in the EN core only a discount is allowed here, never a charge
         if (aUBLPriceAC.getAmount () != null)
         {
           final TradeAllowanceChargeType aGrossPriceAC = new TradeAllowanceChargeType ();
@@ -263,6 +287,17 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     aQuantity.setValue (aUBLLine.getInvoicedQuantity ().getValue ());
     aLTDT.setBilledQuantity (aQuantity);
 
+    // BG-37 INVOICE LINE DELIVERY INFORMATION and BG-38 INVOICE LINE DELIVER TO ADDRESS:
+    // BT-185 party name, BT-186/BT-186-1 location identifier, BT-187/BT-187-1 actual delivery date
+    // and BT-203 to BT-209 for the address.
+    if (aUBLLine.hasDeliveryEntries ())
+    {
+      final var aUBLLineDeliveryForShipTo = aUBLLine.getDeliveryAtIndex (0);
+      ifNotNull (convertShipToTradeParty (aUBLLineDeliveryForShipTo), aLTDT::setShipToTradeParty);
+      ifNotNull (convertActualDeliverySupplyChainEvent (aUBLLineDeliveryForShipTo),
+                 aLTDT::setActualDeliverySupplyChainEvent);
+    }
+
     // BT-189 Invoice line despatch advice reference + BT-190 its line reference
     if (aUBLLine.hasDespatchLineReferenceEntries ())
     {
@@ -308,10 +343,21 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
       final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
 
       final TradeTaxType aTradeTax = new TradeTaxType ();
+      // BT-151-1 VAT tax code
       if (aUBLTaxScheme != null)
         ifNotEmpty (aUBLTaxCategory.getTaxScheme ().getIDValue (), aTradeTax::setTypeCode);
+      // BT-151 Invoiced item VAT category code
       ifNotEmpty (aUBLTaxCategory.getIDValue (), aTradeTax::setCategoryCode);
+      // BT-152 Invoiced item VAT rate
       ifNotNull (aUBLTaxCategory.getPercentValue (), aTradeTax::setRateApplicablePercent);
+      // BT-194 Invoiced item exemption reason text
+      if (aUBLTaxCategory.hasTaxExemptionReasonEntries ())
+        ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue (), aTradeTax::setExemptionReason);
+      // BT-195 Invoiced item VAT exemption reason and specification code
+      ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonCodeValue (), aTradeTax::setExemptionReasonCode);
+      // BT-196 Goods/services code - read from cac:ClassifiedTaxCategory of BG-31, written to the
+      // line VAT information of BG-30
+      ifNotEmpty (aUBLTaxCategory.getSupplyTypeCodeValue (), aTradeTax::setSupplyTypeCode);
       aLineTradeSettlement.addApplicableTradeTax (aTradeTax);
     }
 
@@ -579,7 +625,8 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     }
 
     // BG-19: BT-90 Bank assigned creditor identifier
-    // In UBL this is on the Seller or Payee PartyIdentification with @schemeID="SEPA"
+    // In UBL this is on the Seller or the Payee PartyIdentification, identified by BT-90-1
+    // @schemeID="SEPA"; CII has one dedicated element with no scheme identifier at all
     // Check both parties since it may be on either one
     {
       boolean bFound = false;
@@ -777,6 +824,7 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
         {
           final ReferencedDocumentType aOrigRDT = new ReferencedDocumentType ();
           ifNotEmpty (aUBLOrigRef.getIDValue (), aOrigRDT::setIssuerAssignedID);
+          // BT-17-1 Tender or lot reference type code - the fixed value "50"
           aOrigRDT.setTypeCode (EN16931CodeLists.DOCUMENT_TYPE_CODE_ORIGINATOR_DOCUMENT);
           aHTAT.addAdditionalReferencedDocument (aOrigRDT);
         }
