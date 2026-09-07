@@ -318,6 +318,51 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e, sTT + "[2]/ram:ExemptionReasonCode", "VATEX-EU-AE");
   }
 
+  /** The line level document references added in 2026, and BG-39. */
+  @Test
+  public void testNewLineReferences ()
+  {
+    final Element e = convertAndValidate ("d25a-new-lineref-invoice-ubl.xml", true);
+
+    final String sLine = "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem[1]";
+    final String sAgr = sLine + "/ram:SpecifiedLineTradeAgreement";
+    final String sDel = sLine + "/ram:SpecifiedLineTradeDelivery";
+    final String sSet = sLine + "/ram:SpecifiedLineTradeSettlement";
+
+    // BT-188 Invoice line purchase order reference + BT-132 its line reference
+    assertXPath (e, sAgr + "/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID", "LINE-PO-1");
+    assertXPath (e, sAgr + "/ram:BuyerOrderReferencedDocument/ram:LineID", "PO-LINE-5");
+    // BT-200 Invoice line sales order reference + BT-201 its line reference
+    assertXPath (e, sAgr + "/ram:SellerOrderReferencedDocument/ram:IssuerAssignedID", "LINE-SO-1");
+    assertXPath (e, sAgr + "/ram:SellerOrderReferencedDocument/ram:LineID", "SO-LINE-9");
+
+    // BT-189 Invoice line despatch advice reference + BT-190 its line reference
+    assertXPath (e, sDel + "/ram:DespatchAdviceReferencedDocument/ram:IssuerAssignedID", "LINE-DESP-1");
+    assertXPath (e, sDel + "/ram:DespatchAdviceReferencedDocument/ram:LineID", "DESP-LINE-2");
+    // BT-191 Invoice line receiving advice reference + BT-192 its line reference
+    assertXPath (e, sDel + "/ram:ReceivingAdviceReferencedDocument/ram:IssuerAssignedID", "LINE-RECV-1");
+    assertXPath (e, sDel + "/ram:ReceivingAdviceReferencedDocument/ram:LineID", "RECV-LINE-3");
+    // BT-198 Invoice line delivery note reference + BT-199 its line reference
+    assertXPath (e, sDel + "/ram:DeliveryNoteReferencedDocument/ram:IssuerAssignedID", "LINE-DELN-1");
+    assertXPath (e, sDel + "/ram:DeliveryNoteReferencedDocument/ram:LineID", "DELN-LINE-4");
+
+    // BG-39 LINE-LEVEL PRECEDING INVOICE REFERENCE
+    // BT-217 Line-level preceding invoice reference
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument/ram:IssuerAssignedID", "LINE-PREV-INV-1");
+    // BT-219 Line-level preceding invoice type code
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument/ram:TypeCode", "380");
+    // BT-220 Line-level preceding invoice line reference
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument/ram:LineID", "PREV-LINE-7");
+    // BT-218 Line-level preceding invoice issue date and BT-218-1 its format code. The source
+    // mapped this to cbc:IssueTime, which cannot hold a date - see finding 7 of the mapping table.
+    assertXPath (e,
+                 sSet + "/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString",
+                 "20251210");
+    assertXPath (e,
+                 sSet + "/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString/@format",
+                 "102");
+  }
+
   /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.

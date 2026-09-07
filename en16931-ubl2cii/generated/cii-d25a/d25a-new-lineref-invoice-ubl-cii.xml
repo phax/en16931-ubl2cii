@@ -49,7 +49,12 @@
         </ram:OriginTradeCountry>
       </ram:SpecifiedTradeProduct>
       <ram:SpecifiedLineTradeAgreement>
+        <ram:SellerOrderReferencedDocument>
+          <ram:IssuerAssignedID>LINE-SO-1</ram:IssuerAssignedID>
+          <ram:LineID>SO-LINE-9</ram:LineID>
+        </ram:SellerOrderReferencedDocument>
         <ram:BuyerOrderReferencedDocument>
+          <ram:IssuerAssignedID>LINE-PO-1</ram:IssuerAssignedID>
           <ram:LineID>PO-LINE-5</ram:LineID>
         </ram:BuyerOrderReferencedDocument>
         <ram:GrossPriceProductTradePrice>
@@ -68,6 +73,18 @@
       </ram:SpecifiedLineTradeAgreement>
       <ram:SpecifiedLineTradeDelivery>
         <ram:BilledQuantity unitCode="C62">4</ram:BilledQuantity>
+        <ram:DespatchAdviceReferencedDocument>
+          <ram:IssuerAssignedID>LINE-DESP-1</ram:IssuerAssignedID>
+          <ram:LineID>DESP-LINE-2</ram:LineID>
+        </ram:DespatchAdviceReferencedDocument>
+        <ram:ReceivingAdviceReferencedDocument>
+          <ram:IssuerAssignedID>LINE-RECV-1</ram:IssuerAssignedID>
+          <ram:LineID>RECV-LINE-3</ram:LineID>
+        </ram:ReceivingAdviceReferencedDocument>
+        <ram:DeliveryNoteReferencedDocument>
+          <ram:IssuerAssignedID>LINE-DELN-1</ram:IssuerAssignedID>
+          <ram:LineID>DELN-LINE-4</ram:LineID>
+        </ram:DeliveryNoteReferencedDocument>
       </ram:SpecifiedLineTradeDelivery>
       <ram:SpecifiedLineTradeSettlement>
         <ram:ApplicableTradeTax>
@@ -105,6 +122,14 @@
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
           <ram:LineTotalAmount>100</ram:LineTotalAmount>
         </ram:SpecifiedTradeSettlementLineMonetarySummation>
+        <ram:InvoiceReferencedDocument>
+          <ram:IssuerAssignedID>LINE-PREV-INV-1</ram:IssuerAssignedID>
+          <ram:LineID>PREV-LINE-7</ram:LineID>
+          <ram:TypeCode>380</ram:TypeCode>
+          <ram:FormattedIssueDateTime>
+            <qdt:DateTimeString format="102">20251210</qdt:DateTimeString>
+          </ram:FormattedIssueDateTime>
+        </ram:InvoiceReferencedDocument>
         <ram:AdditionalReferencedDocument>
           <ram:IssuerAssignedID>OBJ-1</ram:IssuerAssignedID>
           <ram:TypeCode>130</ram:TypeCode>

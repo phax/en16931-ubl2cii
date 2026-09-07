@@ -166,16 +166,23 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
 
     ret.setSpecifiedTradeProduct (aTPT);
 
-    // BT-132 Referenced purchase order line reference
+    // BT-188 Invoice line purchase order reference + BT-132 its line reference, and
+    // BT-200 Invoice line sales order reference + BT-201 its line reference
     ReferencedDocumentType aRDT = null;
+    ReferencedDocumentType aSellerOrderRDT = null;
     if (aUBLLine.hasOrderLineReferenceEntries ())
     {
-      final var aOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
-      if (StringHelper.isNotEmpty (aOrderLineRef.getLineIDValue ()))
-      {
-        aRDT = new ReferencedDocumentType ();
-        aRDT.setLineID (aOrderLineRef.getLineIDValue ());
-      }
+      final var aUBLOrderLineRef = aUBLLine.getOrderLineReferenceAtIndex (0);
+      final var aUBLOrderRef = aUBLOrderLineRef.getOrderReference ();
+
+      // BT-188 + BT-132
+      aRDT = createLineReferencedDocument (aUBLOrderRef == null ? null : aUBLOrderRef.getIDValue (),
+                                           aUBLOrderLineRef.getLineIDValue ());
+
+      // BT-200 + BT-201
+      aSellerOrderRDT = createLineReferencedDocument (aUBLOrderRef == null ? null
+                                                                          : aUBLOrderRef.getSalesOrderIDValue (),
+                                                      aUBLOrderLineRef.getSalesOrderLineIDValue ());
     }
 
     // BG-29 PRICE DETAILS
@@ -240,6 +247,8 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     final LineTradeAgreementType aLTAT = new LineTradeAgreementType ();
     if (aRDT != null)
       aLTAT.setBuyerOrderReferencedDocument (aRDT);
+    if (aSellerOrderRDT != null)
+      aLTAT.setSellerOrderReferencedDocument (aSellerOrderRDT);
     if (aGrossPrice != null)
       aLTAT.setGrossPriceProductTradePrice (aGrossPrice);
     if (aNetPrice != null)
@@ -252,6 +261,43 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     aQuantity.setUnitCode (aUBLLine.getCreditedQuantity ().getUnitCode ());
     aQuantity.setValue (aUBLLine.getCreditedQuantity ().getValue ());
     aLTDT.setBilledQuantity (aQuantity);
+
+    // BT-189 Invoice line despatch advice reference + BT-190 its line reference
+    if (aUBLLine.hasDespatchLineReferenceEntries ())
+    {
+      final var aUBLDespatchLineRef = aUBLLine.getDespatchLineReferenceAtIndex (0);
+      final var aUBLDespatchDocRef = aUBLDespatchLineRef.getDocumentReference ();
+      ifNotNull (createLineReferencedDocument (aUBLDespatchDocRef == null ? null : aUBLDespatchDocRef.getIDValue (),
+                                               aUBLDespatchLineRef.getLineIDValue ()),
+                 aLTDT::setDespatchAdviceReferencedDocument);
+    }
+
+    // BT-191 Invoice line receiving advice reference + BT-192 its line reference
+    if (aUBLLine.hasReceiptLineReferenceEntries ())
+    {
+      final var aUBLReceiptLineRef = aUBLLine.getReceiptLineReferenceAtIndex (0);
+      final var aUBLReceiptDocRef = aUBLReceiptLineRef.getDocumentReference ();
+      ifNotNull (createLineReferencedDocument (aUBLReceiptDocRef == null ? null : aUBLReceiptDocRef.getIDValue (),
+                                               aUBLReceiptLineRef.getLineIDValue ()),
+                 aLTDT::setReceivingAdviceReferencedDocument);
+    }
+
+    // BT-198 Invoice line delivery note reference + BT-199 its line reference
+    if (aUBLLine.hasDeliveryEntries ())
+    {
+      final var aUBLLineDelivery = aUBLLine.getDeliveryAtIndex (0);
+      final String sDeliveryNoteID = aUBLLineDelivery.hasDeliveryNoteDocumentReferenceEntries ()
+                                                                                                ? aUBLLineDelivery.getDeliveryNoteDocumentReferenceAtIndex (0)
+                                                                                                                  .getIDValue ()
+                                                                                                : null;
+      final String sDeliveryNoteLineID = aUBLLineDelivery.hasDeliveryNoteLineReferenceEntries ()
+                                                                                                ? aUBLLineDelivery.getDeliveryNoteLineReferenceAtIndex (0)
+                                                                                                                  .getLineIDValue ()
+                                                                                                : null;
+      ifNotNull (createLineReferencedDocument (sDeliveryNoteID, sDeliveryNoteLineID),
+                 aLTDT::setDeliveryNoteReferencedDocument);
+    }
+
     ret.setSpecifiedLineTradeDelivery (aLTDT);
 
     // BG-30 (BT-151/BT-152)
@@ -280,9 +326,30 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
       aLineTradeSettlement.setBillingSpecifiedPeriod (aLineSPT);
     }
 
-    // BT-128/BT-128-1 Invoice line object identifier
+    // BT-128/BT-128-1/BT-128-2 Invoice line object identifier
     for (final var aUBLLineDocRef : aUBLLine.getDocumentReference ())
       aLineTradeSettlement.addAdditionalReferencedDocument (convertAdditionalReferencedDocument (aUBLLineDocRef));
+
+    // BG-39 LINE-LEVEL PRECEDING INVOICE REFERENCE
+    for (final var aUBLLineBillingRef : aUBLLine.getBillingReference ())
+    {
+      final var aUBLLineInvRef = aUBLLineBillingRef.getInvoiceDocumentReference ();
+      if (aUBLLineInvRef != null)
+      {
+        final ReferencedDocumentType aLineIRD = new ReferencedDocumentType ();
+        // BT-217 Line-level preceding invoice reference
+        ifNotEmpty (aUBLLineInvRef.getIDValue (), aLineIRD::setIssuerAssignedID);
+        // BT-219 Line-level preceding invoice type code
+        ifNotEmpty (aUBLLineInvRef.getDocumentTypeCodeValue (), aLineIRD::setTypeCode);
+        // BT-220 Line-level preceding invoice line reference
+        if (aUBLLineBillingRef.hasBillingReferenceLineEntries ())
+          ifNotEmpty (aUBLLineBillingRef.getBillingReferenceLineAtIndex (0).getIDValue (), aLineIRD::setLineID);
+        // BT-218 Line-level preceding invoice issue date and BT-218-1 its format code
+        if (aUBLLineInvRef.getIssueDate () != null)
+          aLineIRD.setFormattedIssueDateTime (convertFormattedDateTime (aUBLLineInvRef.getIssueDateValueLocal ()));
+        aLineTradeSettlement.addInvoiceReferencedDocument (aLineIRD);
+      }
+    }
 
     // BG-27 INVOICE LINE ALLOWANCES / BG-28 INVOICE LINE CHARGES
     for (final AllowanceChargeType aUBLLineAC : aUBLLine.getAllowanceCharge ())
