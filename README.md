@@ -79,14 +79,22 @@ v3.0.0 - 2026-09-07
 * Added `--en-version 2017|2026` to the command line client; without it the edition is detected per file
 * Now using [en16931-basics](https://github.com/phax/en16931-basics) for the code lists, the UNTDID 2379 date formats and the BT-24 based edition detection
 * Fixed BT-9 (Payment due date) being written into every `cac:PaymentTerms` instead of only the first one, which became visible when `cac:PaymentTerms` turned 0..n in the 2026 binding
-* Fixed BT-90 (Bank assigned creditor identifier) also being written as a party identifier BT-29/BT-46/BT-60. The two share the UBL element `cac:PartyIdentification/cbc:ID` and are told apart by `@schemeID="SEPA"` only, so the resulting `ram:GlobalID schemeID="SEPA"` violated BR-CL-10. Affects both editions
+* Fixed BT-90 (Bank assigned creditor identifier) also being written as a party identifier BT-29/BT-46/BT-60.
+  The two share the UBL element `cac:PartyIdentification/cbc:ID` and are told apart by `@schemeID="SEPA"` only, so the resulting `ram:GlobalID schemeID="SEPA"` violated BR-CL-10.
+  Affects both editions
 * Added round trip tests in the UBL to CII to UBL direction for both editions - `en2017.UBL21RoundTripTest` and `en2026.UBL25RoundTripTest` - which is the direction that can detect a business term dropped by this library
 * Added hand written coverage documents to the test corpus for the 17 business terms of the 2017 mapping and the 8 of the 2026 mapping that no sample document contained
-* Now using `EEN16931TaxSchemeCode.LOC` and the new discriminator constants of [en16931-basics](https://github.com/phax/en16931-basics) 1.0.1 instead of local copies. BT-32-1 falls out of `EN16931CodeLists.mapTaxSchemeCodeUBLToCII` now, so the local `NATIONAL_TAX_SCHEME`, `NATIONAL_TAX_SCHEME_CII` and `NON_VAT_TAX_CODE_LIST_ID` constants are gone
+* Now using `EEN16931TaxSchemeCode.LOC` and the new discriminator constants of [en16931-basics](https://github.com/phax/en16931-basics) 1.0.1 instead of local copies.
+  BT-32-1 falls out of `EN16931CodeLists.mapTaxSchemeCodeUBLToCII` now, so the local `NATIONAL_TAX_SCHEME`, `NATIONAL_TAX_SCHEME_CII` and `NON_VAT_TAX_CODE_LIST_ID` constants are gone
 * Requires en16931-cii2ubl 4.0.1 for the tests, which contains the mirror image of the BT-90 fix
-* Fixed BT-11-1 (Project name) being written as the hard coded string `Project reference`. The binding says to repeat the BT-11 value there, because CII makes the name mandatory as soon as `ram:SpecifiedProcuringProject` exists and UBL has no counterpart for it. Affects both editions
-* BT-13 (Purchase order reference) is no longer read from a `cac:OrderReference/cbc:ID` that carries the placeholder. `cbc:ID` is mandatory there, so a document with only BT-14 has no BT-13 value to read. Affects both editions
-* The placeholder for a line reference that the UBL binding requires but the document does not have is now `EN16931CodeLists.MISSING_VALUE_PLACEHOLDER` of en16931-basics, and it is recognised on BT-188 and BT-200 as well as on the line identifiers. en16931-cii2ubl 4.0.1 writes the same `None`, so a BT-190, BT-192 or BT-199 that the source CII never had is no longer invented by a round trip
+* Fixed BT-11-1 (Project name) being written as the hard coded string `Project reference`.
+  The binding says to repeat the BT-11 value there, because CII makes the name mandatory as soon as `ram:SpecifiedProcuringProject` exists and UBL has no counterpart for it.
+  Affects both editions
+* BT-13 (Purchase order reference) is no longer read from a `cac:OrderReference/cbc:ID` that carries the placeholder.
+  `cbc:ID` is mandatory there, so a document with only BT-14 has no BT-13 value to read.
+  Affects both editions
+* The placeholder for a line reference that the UBL binding requires but the document does not have is now `EN16931CodeLists.MISSING_VALUE_PLACEHOLDER` of en16931-basics, and it is recognised on BT-188 and BT-200 as well as on the line identifiers.
+  en16931-cii2ubl 4.0.1 writes the same `None`, so a BT-190, BT-192 or BT-199 that the source CII never had is no longer invented by a round trip
 
 v2.2.0 - 2026-04-22
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw
