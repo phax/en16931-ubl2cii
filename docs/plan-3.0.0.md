@@ -309,7 +309,7 @@ Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against ea
   - **Done when:** unit tests cover both prefixes, the XRechnung `#compliant#` suffix form, a
     missing BT-24, an unknown identifier and an unsupported document element.
 
-- [ ] **A15 — CLI rework** · ~2 h
+- [x] **A15 — CLI rework** · ~2 h
   - Default: auto-detect. `--en-version 2017|2026` forces and skips detection.
   - Wire `CIID25ACrossIndustryInvoiceTypeMarshaller` for the 2026 output path.
   - Error text when detection fails:
@@ -371,3 +371,4 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 | A13 | 2026-09-07 | `[3.0.0 A13]` ac92543 | **Second source defect found** - BT-186/BT-186-1 of the line level BG-37 are mapped to the header delivery, recorded as finding 8. Coverage guard now reports 284 of 284. |
 | A7 | 2026-09-07 | `[3.0.0 A7]` | ~130 assertions across BG-2 to BG-32 on the two comprehensive files, plus the credit note renames. **All green on the first run** - the A3 bulk port lost nothing, which is the evidence D6's reasoning was right for the 2026 side too. |
 | A14 | 2026-09-07 | `[3.0.0 A14]` | Routes on two axes - the document type from the document element, the edition from BT-24. `en16931-basics` already reads BT-24 from UBL as well as CII, so nothing had to be written for the detection itself. The common return type is `Serializable`, because the two `CrossIndustryInvoiceType` classes are unrelated - hence `writeCII` picks the marshaller. |
+| A15 | 2026-09-07 | `[3.0.0 A15]` | Verified end to end against the fat JAR, not just the library: three files in one invocation produce D16B for the 2017 one and D25A for the two 2026 ones, a legacy ZUGFeRD BT-24 fails with the documented message, `--en-version 2017` converts it, and a bogus value is rejected by name. No `--ubl` alias was needed - this project never had a target version option. |
