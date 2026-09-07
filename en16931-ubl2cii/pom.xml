@@ -57,8 +57,16 @@
       <artifactId>ph-ubl21</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.helger.ubl</groupId>
+      <artifactId>ph-ubl25</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.helger.cii</groupId>
       <artifactId>ph-cii-d16b</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.helger.cii</groupId>
+      <artifactId>ph-cii-d25a</artifactId>
     </dependency>
 
     <dependency>

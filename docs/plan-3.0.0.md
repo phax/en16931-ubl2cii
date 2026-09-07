@@ -1,6 +1,6 @@
 # Plan: en16931-ubl2cii 3.0.0
 
-Status: **not started.** · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
+Status: **A0-A3 done.** A3 absorbed A5 - see the log. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
 
 ## 1. Goal
 
@@ -188,13 +188,13 @@ Taken from `en16931-basics` instead of being kept locally:
 
 ### Phase 1 — Prepare and restructure
 
-- [ ] **A0 — Establish the regression baseline** · ~30 min
+- [x] **A0 — Establish the regression baseline** · ~30 min
   - Remove `generated/` from `.gitignore`, run `mvn clean test`, and commit
     `en16931-ubl2cii/generated/` as it stands today.
   - **Done when:** `git status --short en16931-ubl2cii/generated/` is empty after a full test run.
   - **Why first:** `git diff` on that folder is the proof that A1–A2 do not change 2017 behaviour (D6).
 
-- [ ] **A1 — Bump to 3.0.0-SNAPSHOT and adopt `en16931-basics`** · ~2 h
+- [x] **A1 — Bump to 3.0.0-SNAPSHOT and adopt `en16931-basics`** · ~2 h
   - `3.0.0-SNAPSHOT` in the parent pom and both module poms; add `en16931-basics` 1.0.0 to
     `dependencyManagement` and to the core module.
   - Replace the seven items of the table in section 5.
@@ -203,7 +203,7 @@ Taken from `en16931-basics` instead of being kept locally:
     exception to watch for: `mapDueDateTypeCodeUBLToCII` must produce the same three pairs
     (`3→5`, `35→29`, `432→72`) as the deleted local method.
 
-- [ ] **A2 — Split the base class and introduce `.en2017`** · ~3 h
+- [x] **A2 — Split the base class and introduce `.en2017`** · ~3 h
   - Create `AbstractToCIIConverterBase` with the edition-independent remainder.
   - Move the rest to `en2017.AbstractToCIID16BConverter`.
   - Move `UBL21InvoiceToCIID16BConverter` and `UBL21CreditNoteToCIID16BConverter` to `.en2017`.
@@ -213,13 +213,14 @@ Taken from `en16931-basics` instead of being kept locally:
 
 ### Phase 2 — 2026 skeleton and test harness
 
-- [ ] **A3 — `.en2026` scaffolding + typed base port** · ~4 h
+- [x] **A3 — `.en2026` scaffolding + full bulk port** · done · **absorbed A5**
   - Add `ph-cii-d25a` and `ph-ubl25` to the core module pom.
-  - Port `AbstractToCIID16BConverter` to `en2026.AbstractToCIID25AConverter` (UBL 2.5 read side,
-    D25A write side).
-  - Create the two concrete converters producing only BT-1, BT-2, BT-3, BT-5, BT-24 — enough for a
-    schema-valid CII D25A skeleton.
-  - **Done when:** compiles; the two `d25a-minimal-*-ubl.xml` files yield an XSD-valid CII D25A.
+  - Bulk-port all three sources to `.en2026` by package swap and let the compiler enumerate the API
+    deltas of section 4.6.
+  - **Changed from the original plan:** the plan had A3 hand-write a five-BT skeleton and A5 do the
+    bulk port later. cii2ubl recorded that its equivalent skeleton shipped a wrong BT-27 mapping
+    that A5 then had to correct, so the skeleton is not just throwaway work, it is a source of
+    bugs. Porting everything at once and validating it with the A4 harness is strictly better.
 
 - [ ] **A4 — Test corpus + harness** · ~4 h
   - Copy `../en16931-cii2ubl/en16931-cii2ubl/generated/toubl25/*.xml` into
@@ -236,14 +237,10 @@ Taken from `en16931-basics` instead of being kept locally:
 
 ### Phase 3 — Port the 182 carried-over rows
 
-- [ ] **A5 — Bulk port both concrete converters** · ~4 h
-  - Transform `UBL21InvoiceToCIID16BConverter` and `UBL21CreditNoteToCIID16BConverter` by package
-    swap (UBL `_21` → `_25`, CII `_100` → `d25a`) and let the compiler enumerate the API deltas of
-    section 4.6.
+- [x] **A5 — Bulk port both concrete converters** · **done as part of A3**
   - **Why not hand-port:** the 2017 converters carry accumulated fixes (BT-27/BT-28 party names,
     BT-110/BT-111 zero suppression, BT-149/BT-150 gross vs net base quantity, the BT-9 fallback);
     a hand-port risks reintroducing every one of them.
-  - **Done when:** compiles and the full corpus converts to XSD-valid CII D25A.
 
 - [ ] **A6 — Apply the six real 2026 path changes** · ~3 h
   - The table of section 4.8, all six.
@@ -360,4 +357,7 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 
 | Item | Session date | Commit | Notes |
 |------|--------------|--------|-------|
-| — | | | |
+| A0 | 2026-09-07 | `[3.0.0 A0]` f94febf | `generated/cii/` turned out to be tracked already; the baseline was green from the start. `.gitignore` hid every *future* file below `generated/`, so new output would have been silently dropped - narrowed to `**/generated/roundtrip/`. |
+| A1 | 2026-09-07 | `[3.0.0 A1]` d18f96f | Pure substitution, verified against the enums behind `EN16931CodeLists`: `3->5`, `35->29`, `432->72` and `VAT->VA` are unchanged. `generated/cii/` byte-identical. |
+| A2 | 2026-09-07 | `[3.0.0 A2]` 6640114 | Only three members are genuinely edition-independent here, because A1 had already moved the facts of the standard to `en16931-basics` and this project has no settings API. 22 members in, 22 out. `generated/cii/` byte-identical. |
+| A3 | 2026-09-07 | `[3.0.0 A3]` | Merged with A5 - a hand-written skeleton would have been throwaway work *and* a bug source, per cii2ubl's own A3/A5 experience. 20 compile errors, every one a cardinality widening exactly as predicted in 4.6, no semantic surprise. The eight UBL-side ones collapse into one `getFirstValue` helper. |
