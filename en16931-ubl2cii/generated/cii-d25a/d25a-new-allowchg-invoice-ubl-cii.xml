@@ -245,8 +245,10 @@
         <ram:ExemptionReason>Reverse charge</ram:ExemptionReason>
         <ram:BasisAmount>50</ram:BasisAmount>
         <ram:CategoryCode>AE</ram:CategoryCode>
+        <ram:CurrencyCode>USD</ram:CurrencyCode>
         <ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode>
         <ram:RateApplicablePercent>0</ram:RateApplicablePercent>
+        <ram:SupplyTypeCode>SUPPLY-C</ram:SupplyTypeCode>
       </ram:ApplicableTradeTax>
       <ram:BillingSpecifiedPeriod>
         <ram:StartDateTime>
@@ -267,8 +269,11 @@
         <ram:Reason>Volume discount</ram:Reason>
         <ram:CategoryTradeTax>
           <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:ExemptionReason>Intra-community supply</ram:ExemptionReason>
           <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:ExemptionReasonCode>VATEX-EU-IC</ram:ExemptionReasonCode>
           <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+          <ram:SupplyTypeCode>SUPPLY-A</ram:SupplyTypeCode>
         </ram:CategoryTradeTax>
       </ram:SpecifiedTradeAllowanceCharge>
       <ram:SpecifiedTradeAllowanceCharge>
@@ -277,12 +282,15 @@
         </ram:ChargeIndicator>
         <ram:BasisAmount>100</ram:BasisAmount>
         <ram:ActualAmount>15</ram:ActualAmount>
-        <ram:ReasonCode>ENV</ram:ReasonCode>
+        <ram:ReasonCode listID="5153" listAgencyID="6">ENV</ram:ReasonCode>
         <ram:Reason>Environmental tax</ram:Reason>
         <ram:CategoryTradeTax>
           <ram:TypeCode>VAT</ram:TypeCode>
+          <ram:ExemptionReason>Not subject to VAT</ram:ExemptionReason>
           <ram:CategoryCode>S</ram:CategoryCode>
+          <ram:ExemptionReasonCode>VATEX-EU-O</ram:ExemptionReasonCode>
           <ram:RateApplicablePercent>20</ram:RateApplicablePercent>
+          <ram:SupplyTypeCode>SUPPLY-B</ram:SupplyTypeCode>
         </ram:CategoryTradeTax>
       </ram:SpecifiedTradeAllowanceCharge>
       <ram:SpecifiedTradePaymentTerms>

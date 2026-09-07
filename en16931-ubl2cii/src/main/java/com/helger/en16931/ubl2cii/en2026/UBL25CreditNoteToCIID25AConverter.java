@@ -429,7 +429,8 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     // BG-23 VAT BREAKDOWN
     for (final TaxTotalType aUBLTaxTotal : aUBLDoc.getTaxTotal ())
       for (final TaxSubtotalType aUBLTaxSubtotal : aUBLTaxTotal.getTaxSubtotal ())
-        ret.addApplicableTradeTax (convertApplicableTradeTax (aUBLTaxSubtotal));
+        ret.addApplicableTradeTax (convertApplicableTradeTax (aUBLTaxSubtotal,
+                                                              aUBLDoc.getDocumentCurrencyCodeValue ()));
 
     final Supplier <TradeTaxType> fGetOrCreateTradeTax = () -> {
       if (ret.hasApplicableTradeTaxEntries ())

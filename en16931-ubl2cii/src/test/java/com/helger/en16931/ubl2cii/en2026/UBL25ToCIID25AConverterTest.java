@@ -272,6 +272,52 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (eCN, sFA + "[1]/ram:Reason", "Copyright levy");
   }
 
+  /** The business terms added to BG-20, BG-21 and BG-23 in the 2026 edition. */
+  @Test
+  public void testNewAllowanceChargeAndVATBreakdown ()
+  {
+    final Element e = convertAndValidate ("d25a-new-allowchg-invoice-ubl.xml", true);
+
+    final String sAC = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge";
+    final String sTT = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax";
+
+    // BG-20 DOCUMENT LEVEL ALLOWANCE - ChargeIndicator false
+    assertXPath (e, sAC + "[1]/ram:ChargeIndicator/udt:Indicator", "false");
+    // BT-173 Document level allowance exemption reason text
+    assertXPath (e, sAC + "[1]/ram:CategoryTradeTax/ram:ExemptionReason", "Intra-community supply");
+    // BT-174 Document level allowance VAT exemption reason and specification code
+    assertXPath (e, sAC + "[1]/ram:CategoryTradeTax/ram:ExemptionReasonCode", "VATEX-EU-IC");
+    // BT-213 Document level allowance goods/services code
+    assertXPath (e, sAC + "[1]/ram:CategoryTradeTax/ram:SupplyTypeCode", "SUPPLY-A");
+    // BT-98 Document level allowance reason code - no list identifier, it is not a non-VAT tax
+    assertXPath (e, sAC + "[1]/ram:ReasonCode", "95");
+    assertNoXPath (e, sAC + "[1]/ram:ReasonCode/@listID");
+
+    // BG-21 DOCUMENT LEVEL CHARGE - ChargeIndicator true
+    assertXPath (e, sAC + "[2]/ram:ChargeIndicator/udt:Indicator", "true");
+    // BT-175 Document level charge or tax exemption reason text
+    assertXPath (e, sAC + "[2]/ram:CategoryTradeTax/ram:ExemptionReason", "Not subject to VAT");
+    // BT-176 VAT exemption reason and specification code of the document level charge or tax
+    assertXPath (e, sAC + "[2]/ram:CategoryTradeTax/ram:ExemptionReasonCode", "VATEX-EU-O");
+    // BT-214 Document level charge goods/services code
+    assertXPath (e, sAC + "[2]/ram:CategoryTradeTax/ram:SupplyTypeCode", "SUPPLY-B");
+    // BT-177 Document level non-VAT tax code, and BT-177-1 the list identifier that identifies it
+    // as one. This is the only place a list identifier may be propagated.
+    assertXPath (e, sAC + "[2]/ram:ReasonCode", "ENV");
+    assertXPath (e, sAC + "[2]/ram:ReasonCode/@listID", "5153");
+    assertXPath (e, sAC + "[2]/ram:ReasonCode/@listAgencyID", "6");
+
+    // BG-23 VAT BREAKDOWN
+    // BT-184 VAT breakdown currency - written only where it differs from BT-5
+    assertNoXPath (e, sTT + "[1]/ram:CurrencyCode");
+    assertXPath (e, sTT + "[2]/ram:CurrencyCode", "USD");
+    // BT-210 VAT breakdown goods/services code
+    assertXPath (e, sTT + "[2]/ram:SupplyTypeCode", "SUPPLY-C");
+    // BT-120/BT-121 stay where they were
+    assertXPath (e, sTT + "[2]/ram:ExemptionReason", "Reverse charge");
+    assertXPath (e, sTT + "[2]/ram:ExemptionReasonCode", "VATEX-EU-AE");
+  }
+
   /**
    * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
    * since UBL 2.2, so the 2017 workarounds are gone.

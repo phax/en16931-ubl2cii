@@ -48,6 +48,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.Tax
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.TaxSchemeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.TaxSubtotalType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_25.TaxAmountType;
+import un.unece.uncefact.data.standard.cii.d25a.qdt.AllowanceChargeReasonCodeType;
 import un.unece.uncefact.data.standard.cii.d25a.qdt.FormattedDateTimeType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.FinancialAdjustmentType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeDeliveryType;
@@ -80,6 +81,12 @@ import un.unece.uncefact.data.standard.cii.d25a.udt.TextType;
  */
 public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterBase
 {
+  /**
+   * BT-177-1/BT-193-1 Non-VAT tax code list identifier. In the EN core only UNTDID 5153 is
+   * permitted, and its presence is what distinguishes BT-177/BT-193 from BT-105/BT-145.
+   */
+  public static final String NON_VAT_TAX_CODE_LIST_ID = "5153";
+
   /** BT-32-2 National tax code - a fixed value in the UBL binding since EN 16931:2026 */
   public static final String NATIONAL_TAX_SCHEME = "LOC";
   /** BT-32-1 National tax registration scheme identifier of the CII binding, UNTDID 1153 */
@@ -540,7 +547,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
 
   // BG-23 VAT BREAKDOWN
   @NonNull
-  protected static TradeTaxType convertApplicableTradeTax (@NonNull final TaxSubtotalType aUBLTaxSubtotal)
+  protected static TradeTaxType convertApplicableTradeTax (@NonNull final TaxSubtotalType aUBLTaxSubtotal,
+                                                           @Nullable final String sInvoiceCurrencyCode)
   {
     final TaxCategoryType aUBLTaxCategory = aUBLTaxSubtotal.getTaxCategory ();
     final TaxSchemeType aUBLTaxScheme = aUBLTaxCategory.getTaxScheme ();
@@ -563,6 +571,19 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue (), ret::setExemptionReason);
     // BT-121 VAT exemption reason code
     ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonCodeValue (), ret::setExemptionReasonCode);
+    // BT-184 VAT breakdown currency.
+    // UBL requires @currencyID on every amount, CII has ram:CurrencyCode as 0..1 to express that a
+    // breakdown line is in the VAT accounting currency BT-6 rather than the invoice currency BT-5.
+    // It is therefore written only when it actually differs from BT-5 - writing it always would
+    // add an element to every breakdown that carries no information.
+    if (aUBLTaxSubtotal.getTaxAmount () != null)
+    {
+      final String sCurrencyID = aUBLTaxSubtotal.getTaxAmount ().getCurrencyID ();
+      if (StringHelper.isNotEmpty (sCurrencyID) && !sCurrencyID.equals (sInvoiceCurrencyCode))
+        ret.setCurrencyCode (sCurrencyID);
+    }
+    // BT-210 VAT breakdown goods/services code
+    ifNotEmpty (aUBLTaxCategory.getSupplyTypeCodeValue (), ret::setSupplyTypeCode);
     return ret;
   }
 
@@ -578,8 +599,24 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
 
     // BT-92/BT-99/BT-136/BT-141 Amount
     ret.addActualAmount (convertAmount (aUBLAllowanceCharge.getAmount ()));
-    // BT-98/BT-105/BT-140/BT-145 Reason code
-    ifNotEmpty (aUBLAllowanceCharge.getAllowanceChargeReasonCodeValue (), ret::setReasonCode);
+    // BT-98/BT-105/BT-140/BT-145 Reason code, and BT-177/BT-193 non-VAT tax code.
+    // The two share cbc:AllowanceChargeReasonCode and are told apart by @listID = "5153"
+    // (BT-177-1 respectively BT-193-1). The list identifier may only be propagated for that fixed
+    // value: the CII schema declares a default on @listID, so a blanket copy would put a bogus
+    // list identifier on every BT-98/BT-105/BT-140/BT-145 and destroy the discriminator.
+    if (aUBLAllowanceCharge.getAllowanceChargeReasonCode () != null)
+      ifNotEmpty (aUBLAllowanceCharge.getAllowanceChargeReasonCodeValue (), x -> {
+        final AllowanceChargeReasonCodeType aReasonCode = new AllowanceChargeReasonCodeType ();
+        aReasonCode.setValue (x);
+        final var aUBLReasonCode = aUBLAllowanceCharge.getAllowanceChargeReasonCode ();
+        if (NON_VAT_TAX_CODE_LIST_ID.equals (aUBLReasonCode.getListID ()))
+        {
+          // BT-177-1/BT-193-1 Non-VAT tax code list identifier
+          aReasonCode.setListID (aUBLReasonCode.getListID ());
+          ifNotEmpty (aUBLReasonCode.getListAgencyID (), aReasonCode::setListAgencyID);
+        }
+        ret.setReasonCode (aReasonCode);
+      });
     // BT-97/BT-104/BT-139/BT-144 Reason
     if (aUBLAllowanceCharge.hasAllowanceChargeReasonEntries ())
       ret.setReason (aUBLAllowanceCharge.getAllowanceChargeReason ().get (0).getValue ());
@@ -599,6 +636,13 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
         ifNotEmpty (aUBLTaxSchene.getIDValue (), aTradeTax::setTypeCode);
       ifNotEmpty (aUBLTaxCategory.getIDValue (), aTradeTax::setCategoryCode);
       ifNotNull (aUBLTaxCategory.getPercentValue (), aTradeTax::setRateApplicablePercent);
+      // BT-173/BT-175/BT-194 Exemption reason text
+      if (aUBLTaxCategory.hasTaxExemptionReasonEntries ())
+        ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonAtIndex (0).getValue (), aTradeTax::setExemptionReason);
+      // BT-174/BT-176/BT-195 VAT exemption reason and specification code
+      ifNotEmpty (aUBLTaxCategory.getTaxExemptionReasonCodeValue (), aTradeTax::setExemptionReasonCode);
+      // BT-213/BT-214/BT-196 Goods/services code
+      ifNotEmpty (aUBLTaxCategory.getSupplyTypeCodeValue (), aTradeTax::setSupplyTypeCode);
       ret.addCategoryTradeTax (aTradeTax);
     }
 

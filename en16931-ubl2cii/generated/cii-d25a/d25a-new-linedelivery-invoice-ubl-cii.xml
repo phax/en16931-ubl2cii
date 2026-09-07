@@ -95,7 +95,7 @@
           </ram:ChargeIndicator>
           <ram:BasisAmount>100</ram:BasisAmount>
           <ram:ActualAmount>10</ram:ActualAmount>
-          <ram:ReasonCode>ENV</ram:ReasonCode>
+          <ram:ReasonCode listID="5153" listAgencyID="6">ENV</ram:ReasonCode>
           <ram:Reason>Line environmental tax</ram:Reason>
         </ram:SpecifiedTradeAllowanceCharge>
         <ram:SpecifiedTradeSettlementLineMonetarySummation>
