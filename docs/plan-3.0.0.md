@@ -1,6 +1,6 @@
 # Plan: en16931-ubl2cii 3.0.0
 
-Status: **A0-A3 done.** A3 absorbed A5 - see the log. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
+Status: **A0-A4 done.** A3 absorbed A5 - see the log. · Created 2026-09-07 · Version: 3.0.0-SNAPSHOT · Branch: `master`
 
 ## 1. Goal
 
@@ -222,7 +222,7 @@ Taken from `en16931-basics` instead of being kept locally:
     that A5 then had to correct, so the skeleton is not just throwaway work, it is a source of
     bugs. Porting everything at once and validating it with the A4 harness is strictly better.
 
-- [ ] **A4 — Test corpus + harness** · ~4 h
+- [x] **A4 — Test corpus + harness** · ~4 h
   - Copy `../en16931-cii2ubl/en16931-cii2ubl/generated/toubl25/*.xml` into
     `src/test/resources/external/ubl25/inv/` and `.../cn/`, and
     `../en16931-cii2ubl/en16931-cii2ubl/src/test/resources/external/cii-d25a/*.xml` into
@@ -360,4 +360,5 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 | A0 | 2026-09-07 | `[3.0.0 A0]` f94febf | `generated/cii/` turned out to be tracked already; the baseline was green from the start. `.gitignore` hid every *future* file below `generated/`, so new output would have been silently dropped - narrowed to `**/generated/roundtrip/`. |
 | A1 | 2026-09-07 | `[3.0.0 A1]` d18f96f | Pure substitution, verified against the enums behind `EN16931CodeLists`: `3->5`, `35->29`, `432->72` and `VAT->VA` are unchanged. `generated/cii/` byte-identical. |
 | A2 | 2026-09-07 | `[3.0.0 A2]` 6640114 | Only three members are genuinely edition-independent here, because A1 had already moved the facts of the standard to `en16931-basics` and this project has no settings API. 22 members in, 22 out. `generated/cii/` byte-identical. |
-| A3 | 2026-09-07 | `[3.0.0 A3]` | Merged with A5 - a hand-written skeleton would have been throwaway work *and* a bug source, per cii2ubl's own A3/A5 experience. 20 compile errors, every one a cardinality widening exactly as predicted in 4.6, no semantic surprise. The eight UBL-side ones collapse into one `getFirstValue` helper. |
+| A3 | 2026-09-07 | `[3.0.0 A3]` 3fb0d97 | Merged with A5 - a hand-written skeleton would have been throwaway work *and* a bug source, per cii2ubl's own A3/A5 experience. 20 compile errors, every one a cardinality widening exactly as predicted in 4.6, no semantic surprise. The eight UBL-side ones collapse into one `getFirstValue` helper. |
+| A4 | 2026-09-07 | `[3.0.0 A4]` | All 16 corpus files already convert to XSD-valid CII D25A straight out of the A3 bulk port - the port itself needed no correction. `MockD25ASettings` mirrors cii2ubl's, with the CII namespace context. Negative-probed: a wrong expected value and a non-existent element both fail. 2026 output goes to `generated/cii-d25a/`, tracked like the 2017 one. |
