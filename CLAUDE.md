@@ -183,9 +183,10 @@ BT-63. cii2ubl emits only one of each pair, so the other form would always be re
 - **`cac:PaymentTerms` is 0..n since 2026**, so anything 0..1 inside it — BT-9 in particular —
   belongs on the first one only.
 - **`cac:PartyIdentification/cbc:ID` is BT-29/BT-46/BT-60 *and* BT-90**, told apart only by
-  `@schemeID="SEPA"` (`AbstractToCIIConverterBase.BT_90_SCHEME_ID`). BT-90 has a dedicated CII
+  `@schemeID="SEPA"` (`EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID`). BT-90 has a dedicated CII
   element, so it must be skipped in the party identifier loop — writing it as `ram:GlobalID` too
-  violates BR-CL-10, because `SEPA` is not an ISO 6523 ICD code.
+  violates BR-CL-10, because `SEPA` is not an ISO 6523 ICD code. en16931-cii2ubl has the mirror of
+  this in `isUsableGlobalID`, since 4.0.1.
 - **BT-90 lives inside BG-19 DIRECT DEBIT.** en16931-cii2ubl maps `ram:CreditorReferenceID` back to
   UBL only when the payment means is a direct debit, which is what the EN 16931 model prescribes. A
   CII document carrying it next to a credit transfer therefore loses it — that is the data being

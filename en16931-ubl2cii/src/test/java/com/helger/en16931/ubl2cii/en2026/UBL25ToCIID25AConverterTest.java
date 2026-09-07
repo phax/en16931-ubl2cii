@@ -110,6 +110,30 @@ public final class UBL25ToCIID25AConverterTest
    * invoice. These are the 182 rows the A3 bulk port brought along; the point of asserting them is
    * that the port did not silently lose any of them.
    */
+  /**
+   * BT-90 shares <code>cac:PartyIdentification/cbc:ID</code> with the party identifiers BT-29,
+   * BT-46 and BT-60 and is told apart by <code>@schemeID="SEPA"</code> alone. CII has a dedicated
+   * element for it, so it must not become a party identifier as well - the scheme identifier of one
+   * of those must be an ISO 6523 ICD code, which BR-CL-10 enforces for the 2017 binding and no
+   * Schematron enforces for 2026 yet.
+   */
+  @Test
+  public void testBT90IsNotAPartyIdentifier ()
+  {
+    final Element e = convertAndValidate ("d25a-coverage-invoice-ubl.xml", true);
+
+    final String sAgr = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement";
+    final String sSet = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
+
+    // BT-90 Bank assigned creditor identifier - one dedicated element, no scheme identifier
+    assertXPath (e, sSet + "/ram:CreditorReferenceID", "DE98ZZZ09999999999");
+    assertNoXPath (e, sSet + "/ram:CreditorReferenceID/@schemeID");
+
+    // and nowhere else - neither as BT-29 nor with the scheme identifier of BT-90-1
+    assertNoXPath (e, sAgr + "/ram:SellerTradeParty/ram:ID");
+    assertNoXPath (e, sAgr + "/ram:SellerTradeParty/ram:GlobalID");
+  }
+
   @Test
   public void testFullInvoiceCarriedOverTerms ()
   {

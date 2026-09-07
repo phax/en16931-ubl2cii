@@ -605,7 +605,7 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
         if (bFound || aUBLParty == null)
           continue;
         for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
-          if (aUBLPartyID.getID () != null && BT_90_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+          if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
           {
             if (ifNotEmpty (aUBLPartyID.getID ().getValue (), ret::setCreditorReferenceID))
               bFound = true;

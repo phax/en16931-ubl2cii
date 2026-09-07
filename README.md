@@ -82,6 +82,8 @@ v3.0.0 - work in progress
 * Fixed BT-90 (Bank assigned creditor identifier) also being written as a party identifier BT-29/BT-46/BT-60. The two share the UBL element `cac:PartyIdentification/cbc:ID` and are told apart by `@schemeID="SEPA"` only, so the resulting `ram:GlobalID schemeID="SEPA"` violated BR-CL-10. Affects both editions
 * Added round trip tests in the UBL to CII to UBL direction for both editions - `en2017.UBL21RoundTripTest` and `en2026.UBL25RoundTripTest` - which is the direction that can detect a business term dropped by this library
 * Added hand written coverage documents to the test corpus for the 17 business terms of the 2017 mapping and the 8 of the 2026 mapping that no sample document contained
+* Now using `EEN16931TaxSchemeCode.LOC` and the new discriminator constants of [en16931-basics](https://github.com/phax/en16931-basics) 1.0.1 instead of local copies. BT-32-1 falls out of `EN16931CodeLists.mapTaxSchemeCodeUBLToCII` now, so the local `NATIONAL_TAX_SCHEME`, `NATIONAL_TAX_SCHEME_CII` and `NON_VAT_TAX_CODE_LIST_ID` constants are gone
+* Requires en16931-cii2ubl 4.0.1 for the tests, which contains the mirror image of the BT-90 fix
 
 v2.2.0 - 2026-04-22
 * Added mapping of BT-23 (Business process type) for Invoice and CreditNote converters. See [#1](https://github.com/phax/en16931-ubl2cii/pull/1) - thx @Loulouw

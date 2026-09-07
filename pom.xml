@@ -56,7 +56,7 @@
   </developers>
 
   <properties>
-    <cii2ubl.version>4.0.0</cii2ubl.version>
+    <cii2ubl.version>4.0.1-SNAPSHOT</cii2ubl.version>
     <phive-rules.version>4.5.6</phive-rules.version>
     <picocli.version>4.7.7</picocli.version>
   </properties>
@@ -88,7 +88,7 @@
       <dependency>
         <groupId>com.helger</groupId>
         <artifactId>en16931-basics</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
       </dependency>
 
       <dependency>

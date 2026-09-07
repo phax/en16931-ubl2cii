@@ -82,17 +82,6 @@ import un.unece.uncefact.data.standard.cii.d25a.udt.TextType;
 public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterBase
 {
   /**
-   * BT-177-1/BT-193-1 Non-VAT tax code list identifier. In the EN core only UNTDID 5153 is
-   * permitted, and its presence is what distinguishes BT-177/BT-193 from BT-105/BT-145.
-   */
-  public static final String NON_VAT_TAX_CODE_LIST_ID = "5153";
-
-  /** BT-32-2 National tax code - a fixed value in the UBL binding since EN 16931:2026 */
-  public static final String NATIONAL_TAX_SCHEME = "LOC";
-  /** BT-32-1 National tax registration scheme identifier of the CII binding, UNTDID 1153 */
-  public static final String NATIONAL_TAX_SCHEME_CII = "FC";
-
-  /**
    * Read the value of the first entry of a UBL element that widened from 0..1 to 0..n between UBL
    * 2.1 and UBL 2.5. Every business term affected by that widening stayed 0..1 in the semantic
    * model, so only the first entry can carry one.
@@ -311,7 +300,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       // BT-90 shares this UBL element and is told apart by its scheme identifier only. It has a
       // dedicated CII element of its own, so it must not become a party identifier here - its
       // scheme identifier is not an ISO 6523 ICD code and would violate BR-CL-10.
-      if (aUBLPartyID.getID () != null && BT_90_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+      if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
         continue;
 
       final IDType aCIIID = convertID (aUBLPartyID.getID ());
@@ -391,11 +380,9 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
           // BT-31-1/BT-48-1/BT-63-1: UBL BT-31-2/BT-48-2/BT-63-2 "VAT" becomes CII "VA", and
           // BT-32-1: since EN 16931:2026 the national tax code BT-32-2 is the fixed value "LOC",
           // which becomes CII "FC". The 2017 binding had no fixed value here and accepted anything
-          // except "VAT" for BT-32.
+          // except "VAT" for BT-32, and an unknown code is passed through unchanged.
           final String sUBLTaxScheme = aUBLPartyTaxScheme.getTaxScheme ().getIDValue ();
-          ifNotEmpty (NATIONAL_TAX_SCHEME.equals (sUBLTaxScheme) ? NATIONAL_TAX_SCHEME_CII : EN16931CodeLists
-                                                                                                             .mapTaxSchemeCodeUBLToCII (sUBLTaxScheme),
-                      aID::setSchemeID);
+          ifNotEmpty (EN16931CodeLists.mapTaxSchemeCodeUBLToCII (sUBLTaxScheme), aID::setSchemeID);
         }
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
@@ -666,7 +653,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
         final AllowanceChargeReasonCodeType aReasonCode = new AllowanceChargeReasonCodeType ();
         aReasonCode.setValue (x);
         final var aUBLReasonCode = aUBLAllowanceCharge.getAllowanceChargeReasonCode ();
-        if (NON_VAT_TAX_CODE_LIST_ID.equals (aUBLReasonCode.getListID ()))
+        if (EN16931CodeLists.NON_VAT_TAX_CODE_LIST_ID.equals (aUBLReasonCode.getListID ()))
         {
           // BT-177-1/BT-193-1 Non-VAT tax code list identifier
           aReasonCode.setListID (aUBLReasonCode.getListID ());
