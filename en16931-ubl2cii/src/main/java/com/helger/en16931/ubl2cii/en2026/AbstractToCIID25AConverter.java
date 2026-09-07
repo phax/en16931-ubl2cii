@@ -57,8 +57,8 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.ReferencedDocumentType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.SupplyChainEventType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TaxRegistrationType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAddressType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeContactType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAllowanceChargeType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeContactType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePartyType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentDiscountTermsType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentPenaltyTermsType;
@@ -354,8 +354,7 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
         aTPT.setSpecifiedLegalOrganization (aLOT);
 
       // BT-33 Seller additional legal information
-      ifNotEmpty (getFirstValue (aUBLLegalEntity.getCompanyLegalForm ()),
-                  x -> aTPT.addDescription (convertText (x)));
+      ifNotEmpty (getFirstValue (aUBLLegalEntity.getCompanyLegalForm ()), x -> aTPT.addDescription (convertText (x)));
     }
     else
     {
@@ -388,8 +387,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
           // which becomes CII "FC". The 2017 binding had no fixed value here and accepted anything
           // except "VAT" for BT-32.
           final String sUBLTaxScheme = aUBLPartyTaxScheme.getTaxScheme ().getIDValue ();
-          ifNotEmpty (NATIONAL_TAX_SCHEME.equals (sUBLTaxScheme) ? NATIONAL_TAX_SCHEME_CII
-                                                                 : EN16931CodeLists.mapTaxSchemeCodeUBLToCII (sUBLTaxScheme),
+          ifNotEmpty (NATIONAL_TAX_SCHEME.equals (sUBLTaxScheme) ? NATIONAL_TAX_SCHEME_CII : EN16931CodeLists
+                                                                                                             .mapTaxSchemeCodeUBLToCII (sUBLTaxScheme),
                       aID::setSchemeID);
         }
         aTaxReg.setID (aID);

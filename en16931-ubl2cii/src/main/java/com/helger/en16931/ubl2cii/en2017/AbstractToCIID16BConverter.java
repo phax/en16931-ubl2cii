@@ -52,8 +52,8 @@ import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentit
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainEventType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TaxRegistrationType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAddressType;
-import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeContactType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAllowanceChargeType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeContactType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePartyType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePaymentTermsType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeSettlementHeaderMonetarySummationType;
@@ -451,8 +451,7 @@ public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterB
       }
 
       // BT-70 Deliver to party name
-      if (aUBLDelivery.getDeliveryParty () != null &&
-          aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
+      if (aUBLDelivery.getDeliveryParty () != null && aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
       {
         if (ifNotEmpty (aUBLDelivery.getDeliveryParty ().getPartyNameAtIndex (0).getNameValue (), aTPTHT::setName))
           bUseShipToParty = true;

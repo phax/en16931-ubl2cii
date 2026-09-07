@@ -47,38 +47,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.Tax
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_25.TaxAmountType;
 import oasis.names.specification.ubl.schema.xsd.invoice_25.InvoiceType;
 import un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.CreditorFinancialAccountType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.CreditorFinancialInstitutionType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.DebtorFinancialAccountType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.DebtorFinancialInstitutionType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.DocumentContextParameterType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.DocumentLineDocumentType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ExchangedDocumentContextType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ExchangedDocumentType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeAgreementType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeDeliveryType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeSettlementType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeAgreementType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeDeliveryType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeSettlementType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ProcuringProjectType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ProductCharacteristicType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ProductClassificationType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.ReferencedDocumentType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.SpecifiedPeriodType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.SupplyChainTradeLineItemType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.SupplyChainTradeTransactionType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAccountingAccountType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeAllowanceChargeType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeCountryType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeCurrencyExchangeType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePaymentTermsType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradePriceType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeProductType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementFinancialCardType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementLineMonetarySummationType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementPaymentMeansType;
-import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeTaxType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.*;
 import un.unece.uncefact.data.standard.cii.d25a.udt.CodeType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.IDType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.MeasureType;
@@ -88,7 +57,6 @@ import un.unece.uncefact.data.standard.cii.d25a.udt.RateType;
 /**
  * UBL 2.5 Invoice to CII D25A converter, following EN 16931:2026.
  *
- * @author Vartika Rastogi
  * @author Philip Helger
  * @since 3.0.0
  */
@@ -204,8 +172,8 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
                                            aUBLOrderLineRef.getLineIDValue ());
 
       // BT-200 + BT-201
-      aSellerOrderRDT = createLineReferencedDocument (aUBLOrderRef == null ? null
-                                                                          : aUBLOrderRef.getSalesOrderIDValue (),
+      aSellerOrderRDT = createLineReferencedDocument (aUBLOrderRef == null ? null : aUBLOrderRef
+                                                                                                .getSalesOrderIDValue (),
                                                       aUBLOrderLineRef.getSalesOrderLineIDValue ());
     }
 
@@ -322,14 +290,12 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     if (aUBLLine.hasDeliveryEntries ())
     {
       final var aUBLLineDelivery = aUBLLine.getDeliveryAtIndex (0);
-      final String sDeliveryNoteID = aUBLLineDelivery.hasDeliveryNoteDocumentReferenceEntries ()
-                                                                                                ? aUBLLineDelivery.getDeliveryNoteDocumentReferenceAtIndex (0)
-                                                                                                                  .getIDValue ()
-                                                                                                : null;
-      final String sDeliveryNoteLineID = aUBLLineDelivery.hasDeliveryNoteLineReferenceEntries ()
-                                                                                                ? aUBLLineDelivery.getDeliveryNoteLineReferenceAtIndex (0)
-                                                                                                                  .getLineIDValue ()
-                                                                                                : null;
+      final String sDeliveryNoteID = aUBLLineDelivery.hasDeliveryNoteDocumentReferenceEntries () ? aUBLLineDelivery.getDeliveryNoteDocumentReferenceAtIndex (0)
+                                                                                                                   .getIDValue ()
+                                                                                                 : null;
+      final String sDeliveryNoteLineID = aUBLLineDelivery.hasDeliveryNoteLineReferenceEntries () ? aUBLLineDelivery.getDeliveryNoteLineReferenceAtIndex (0)
+                                                                                                                   .getLineIDValue ()
+                                                                                                 : null;
       ifNotNull (createLineReferencedDocument (sDeliveryNoteID, sDeliveryNoteLineID),
                  aLTDT::setDeliveryNoteReferencedDocument);
     }
@@ -630,9 +596,11 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     // Check both parties since it may be on either one
     {
       boolean bFound = false;
-      for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PartyType [] {
-          aUBLDoc.getPayeeParty (),
-          aUBLDoc.getAccountingSupplierParty () != null ? aUBLDoc.getAccountingSupplierParty ().getParty () : null })
+      for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PartyType [] { aUBLDoc.getPayeeParty (),
+                                                                                                                          aUBLDoc.getAccountingSupplierParty () !=
+                                                                                                                                                    null ? aUBLDoc.getAccountingSupplierParty ()
+                                                                                                                                                                  .getParty ()
+                                                                                                                                                         : null })
       {
         if (bFound || aUBLParty == null)
           continue;
@@ -670,12 +638,12 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
       // BT-180 Charges specification
       final ItemType aUBLCollectionItem = aUBLCollectionLine.getItem ();
       final String sReason = aUBLCollectionItem != null && aUBLCollectionItem.hasDescriptionEntries ()
-                                                                                                      ? aUBLCollectionItem.getDescriptionAtIndex (0)
-                                                                                                                          .getValue ()
-                                                                                                      : null;
+                                                                                                       ? aUBLCollectionItem.getDescriptionAtIndex (0)
+                                                                                                                           .getValue ()
+                                                                                                       : null;
       // BT-179 Charge amount collected on behalf of a third party
-      ifNotNull (convertSpecifiedFinancialAdjustment (aUBLCollectionLine.getTaxInclusiveLineExtensionAmount (), sReason),
-                 ret::addSpecifiedFinancialAdjustment);
+      ifNotNull (convertSpecifiedFinancialAdjustment (aUBLCollectionLine.getTaxInclusiveLineExtensionAmount (),
+                                                      sReason), ret::addSpecifiedFinancialAdjustment);
     }
 
     // BG-22 DOCUMENT TOTALS
