@@ -300,7 +300,7 @@ Same slicing as cii2ubl A8–A13, so the two projects can be reviewed against ea
 
 ### Phase 5 — Detection, CLI, comprehensive tests, docs
 
-- [ ] **A14 — `UBLToCIIDispatcher` + facade** · ~3 h
+- [x] **A14 — `UBLToCIIDispatcher` + facade** · ~3 h
   - Two-axis routing: the EN 16931 edition from BT-24 via `EEN16931Edition.detect`, and the
     document kind from the document element via `EEN16931SyntaxKind.getFromNodeOrNull`.
   - Explicit edition override; a clear `ErrorList` entry when detection fails, never a silent guess.
@@ -370,3 +370,4 @@ the `@listID` and BT-218 traps are already known rather than having to be discov
 | A12 | 2026-09-07 | `[3.0.0 A12]` 87068d8 | All nine new references share one shape, so one helper covers them - including dropping the `None` placeholder that the UBL binding prescribes for absent line references. |
 | A13 | 2026-09-07 | `[3.0.0 A13]` ac92543 | **Second source defect found** - BT-186/BT-186-1 of the line level BG-37 are mapped to the header delivery, recorded as finding 8. Coverage guard now reports 284 of 284. |
 | A7 | 2026-09-07 | `[3.0.0 A7]` | ~130 assertions across BG-2 to BG-32 on the two comprehensive files, plus the credit note renames. **All green on the first run** - the A3 bulk port lost nothing, which is the evidence D6's reasoning was right for the 2026 side too. |
+| A14 | 2026-09-07 | `[3.0.0 A14]` | Routes on two axes - the document type from the document element, the edition from BT-24. `en16931-basics` already reads BT-24 from UBL as well as CII, so nothing had to be written for the detection itself. The common return type is `Serializable`, because the two `CrossIndustryInvoiceType` classes are unrelated - hence `writeCII` picks the marshaller. |
