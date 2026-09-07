@@ -72,7 +72,7 @@ The EN 16931 edition is taken from BT-24 of each source file. Use `--en-version 
 
 # News and noteworthy
 
-v3.0.0 - work in progress
+v3.0.0 - 2026-09-07
 * Added support for **EN 16931:2026** - UBL 2.5 to CII D25A - covering all 284 rows of the syntax mapping
 * The converters moved into edition specific sub-packages `com.helger.en16931.ubl2cii.en2017` and `.en2026` - this is a breaking change for existing imports
 * Added `UBLToCIIDispatcher`, which determines the document type from the document element and the EN 16931 edition from BT-24
