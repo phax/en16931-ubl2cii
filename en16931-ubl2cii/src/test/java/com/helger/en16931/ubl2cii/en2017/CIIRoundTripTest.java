@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.helger.en16931.ubl2cii;
+package com.helger.en16931.ubl2cii.en2017;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.ubl2cii.MockSettings;
 import com.helger.en16931.cii2ubl.en2017.CIID16BToUBL21Converter;
 import com.helger.io.file.FileOperationManager;
 import com.helger.io.file.FilenameHelper;

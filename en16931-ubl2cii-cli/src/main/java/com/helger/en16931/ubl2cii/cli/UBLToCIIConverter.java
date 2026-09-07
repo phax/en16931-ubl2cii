@@ -19,6 +19,7 @@ package com.helger.en16931.ubl2cii.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,27 +31,30 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import com.helger.base.state.ESuccess;
-import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
+import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.CommonsArrayList;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.diagnostics.error.IError;
 import com.helger.diagnostics.error.list.ErrorList;
-import com.helger.en16931.ubl2cii.UBLToCIIConversionHelper;
+import com.helger.en16931.basics.EEN16931Edition;
+import com.helger.en16931.ubl2cii.UBLToCIIDispatcher;
 import com.helger.en16931.ubl2cii.UBLToCIIVersion;
 import com.helger.io.file.FileHelper;
 import com.helger.io.file.FileSystemIterator;
 import com.helger.io.file.FileSystemRecursiveIterator;
 import com.helger.io.file.FilenameHelper;
+import com.helger.xml.serialize.read.DOMReader;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 
 /**
  * Main command line client
@@ -61,6 +65,13 @@ import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryIn
 public class UBLToCIIConverter implements Callable <Integer>
 {
   private static final Logger LOGGER = LoggerFactory.getLogger (UBLToCIIConverter.class);
+
+  @Option (names = "--en-version",
+           paramLabel = "edition",
+           description = "The EN 16931 edition to use: '2017' (UBL 2.1 to CII D16B) or '2026' " +
+                         "(UBL 2.5 to CII D25A). If omitted, the edition is determined from BT-24 " +
+                         "of each source file.")
+  private String m_sENVersion;
 
   @Option (names = { "-t",
                      "--target" }, paramLabel = "directory", defaultValue = ".", description = "The target directory for result output (default: '${DEFAULT-VALUE}')")
@@ -180,6 +191,29 @@ public class UBLToCIIConverter implements Callable <Integer>
     return ret;
   }
 
+  /**
+   * Determine the EN 16931 edition to force from <code>--en-version</code>.
+   *
+   * @return <code>null</code> if the option was not given, meaning the edition is detected per
+   *         source file from BT-24.
+   * @throws IllegalArgumentException
+   *         if the provided value names no known edition.
+   */
+  @Nullable
+  private EEN16931Edition _determineForcedEdition ()
+  {
+    if (StringHelper.isEmpty (m_sENVersion))
+      return null;
+
+    final EEN16931Edition ret = EEN16931Edition.getFromIDOrNull (m_sENVersion.trim ());
+    if (ret == null)
+      throw new IllegalArgumentException ("The value '" +
+                                          m_sENVersion +
+                                          "' of --en-version is unknown. Use '2017' or '2026'.");
+    _verboseLog ( () -> "Forcing the EN 16931 edition " + ret.getID ());
+    return ret;
+  }
+
   private static void _log (@NonNull final IError aError)
   {
     final String sMsg = "  " + aError.getAsString (Locale.US);
@@ -199,6 +233,7 @@ public class UBLToCIIConverter implements Callable <Integer>
       System.setProperty ("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 
     m_sOutputDir = _normalizeOutputDirectory (m_sOutputDir);
+    final EEN16931Edition eForcedEdition = _determineForcedEdition ();
     final List <File> m_aSourceFiles = _normalizeInputFiles (m_aSourceFilenames);
 
     for (final File f : m_aSourceFiles)
@@ -207,10 +242,18 @@ public class UBLToCIIConverter implements Callable <Integer>
 
       LOGGER.info ("Converting UBL file '" + f.getAbsolutePath () + "' to CII");
 
-      // Perform the main conversion
+      // Read once into XML - the correct JAXB model is exactly what is not known yet
       final ErrorList aErrorList = new ErrorList ();
-      final CrossIndustryInvoiceType aCII = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (FileHelper.getInputStream (f),
-                                                                                                      aErrorList);
+      final Document aUBLDoc = DOMReader.readXMLDOM (f);
+      final Serializable aCII;
+      if (aUBLDoc == null)
+      {
+        aCII = null;
+        LOGGER.error ("The file '" + f.getAbsolutePath () + "' is not well formed XML");
+      }
+      else
+        aCII = UBLToCIIDispatcher.convertUBLtoCII (aUBLDoc, eForcedEdition, aErrorList);
+
       if (aErrorList.containsAtLeastOneError () || aCII == null)
       {
         LOGGER.error ("Failed to convert UBL file '" + f.getAbsolutePath () + "' to CII:");
@@ -222,14 +265,17 @@ public class UBLToCIIConverter implements Callable <Integer>
         for (final IError aError : aErrorList)
           _log (aError);
 
-        final boolean bFormattedOutput = true;
-        final ESuccess eSuccess = new CIID16BCrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (bFormattedOutput)
-                                                                                  .write (aCII, aDestFile);
-
+        final ESuccess eSuccess = UBLToCIIDispatcher.writeCII (aCII,
+                                                               FileHelper.getOutputStream (aDestFile),
+                                                               aErrorList);
         if (eSuccess.isSuccess ())
           LOGGER.info ("Successfully wrote CII file '" + aDestFile.getAbsolutePath () + "'");
         else
+        {
           LOGGER.error ("Failed to write CII file '" + aDestFile.getAbsolutePath () + "'");
+          for (final IError aError : aErrorList)
+            _log (aError);
+        }
       }
     }
 

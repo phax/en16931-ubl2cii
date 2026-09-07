@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic EN 16931:2026 invoice. Unlike the rest of this corpus it is not the output of
+  en16931-cii2ubl, because the CII D25A originals do not contain BT-8, BT-87, BT-88, BT-90, BT-114
+  and BG-24 with BT-125. Without this file no round trip would ever exercise them.
+-->
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID>urn:cen.eu:en16931:2026</cbc:CustomizationID>
+  <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+  <cbc:ID>D25A-COV-INV-1</cbc:ID>
+  <cbc:IssueDate>2026-01-15</cbc:IssueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+  <!-- BG-14 with BT-8 Value added tax point date code -->
+  <cac:InvoicePeriod>
+    <cbc:StartDate>2026-01-01</cbc:StartDate>
+    <cbc:EndDate>2026-01-31</cbc:EndDate>
+    <cbc:DescriptionCode>3</cbc:DescriptionCode>
+  </cac:InvoicePeriod>
+  <!-- BG-24 with BT-122, BT-123 and BT-125 with BT-125-1 and BT-125-2 -->
+  <cac:AdditionalDocumentReference>
+    <cbc:ID>ATTACH-1</cbc:ID>
+    <cbc:DocumentDescription>Timesheet of January 2026</cbc:DocumentDescription>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="timesheet.pdf">RXhhbXBsZSBhdHRhY2htZW50</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+  <!-- BG-24 with BT-124 External document location -->
+  <cac:AdditionalDocumentReference>
+    <cbc:ID>ATTACH-2</cbc:ID>
+    <cbc:DocumentDescription>Terms and conditions</cbc:DocumentDescription>
+    <cac:Attachment>
+      <cac:ExternalReference>
+        <cbc:URI>https://www.example.org/terms.pdf</cbc:URI>
+      </cac:ExternalReference>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <!-- BT-90 Bank assigned creditor identifier with BT-90-1 -->
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="SEPA">DE98ZZZ09999999999</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Seller Ltd</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Buyer Ltd</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <!-- BG-19 DIRECT DEBIT with BT-89 and BT-91. BT-90 above only survives a round trip inside
+       BG-19, because that is where EN 16931 defines it. -->
+  <cac:PaymentMeans>
+    <cbc:PaymentMeansCode name="SEPA direct debit">59</cbc:PaymentMeansCode>
+    <cac:PaymentMandate>
+      <cbc:ID>MANDATE-1</cbc:ID>
+      <cac:PayerFinancialAccount>
+        <cbc:ID>DE75512108001245126199</cbc:ID>
+      </cac:PayerFinancialAccount>
+    </cac:PaymentMandate>
+  </cac:PaymentMeans>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="EUR">20</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="EUR">100</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="EUR">20</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>20</cbc:Percent>
+        <cac:TaxScheme>
+          <cbc:ID>VAT</cbc:ID>
+        </cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="EUR">100</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="EUR">100</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="EUR">120</cbc:TaxInclusiveAmount>
+    <!-- BT-114 Rounding amount -->
+    <cbc:PayableRoundingAmount currencyID="EUR">0.30</cbc:PayableRoundingAmount>
+    <cbc:PayableAmount currencyID="EUR">120.30</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="C62">4</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="EUR">100</cbc:LineExtensionAmount>
+    <cac:Item>
+      <cbc:Name>Test item</cbc:Name>
+      <cac:ClassifiedTaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>20</cbc:Percent>
+        <cac:TaxScheme>
+          <cbc:ID>VAT</cbc:ID>
+        </cac:TaxScheme>
+      </cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="EUR">25</cbc:PriceAmount>
+    </cac:Price>
+  </cac:InvoiceLine>
+</Invoice>

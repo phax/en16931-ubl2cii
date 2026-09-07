@@ -15,11 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.helger.en16931.ubl2cii;
+package com.helger.en16931.ubl2cii.en2017;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -28,6 +26,8 @@ import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.xml.XMLOffsetDate;
+import com.helger.en16931.basics.codelist.EN16931CodeLists;
+import com.helger.en16931.ubl2cii.AbstractToCIIConverterBase;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
@@ -52,8 +52,8 @@ import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentit
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainEventType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TaxRegistrationType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAddressType;
-import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeContactType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeAllowanceChargeType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeContactType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePartyType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePaymentTermsType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradeSettlementHeaderMonetarySummationType;
@@ -66,76 +66,12 @@ import un.unece.uncefact.data.standard.unqualifieddatatype._100.IndicatorType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.TextType;
 
 /**
- * Abstract base class to convert UBL to CII D16B
+ * Abstract base class to convert UBL 2.1 to CII D16B, following EN 16931:2017.
  *
  * @author Philip Helger
  */
-public abstract class AbstractToCIID16BConverter
+public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterBase
 {
-  private static final String CII_DATE_FORMAT = "102";
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern ("yyyyMMdd");
-
-  protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
-  {
-    if (aObj == null)
-      return false;
-    aConsumer.accept (aObj);
-    return true;
-  }
-
-  protected static boolean ifNotEmpty (@Nullable final String s, @NonNull final Consumer <? super String> aConsumer)
-  {
-    if (StringHelper.isEmpty (s))
-      return false;
-    aConsumer.accept (s);
-    return true;
-  }
-
-  // BT-8: Reverse mapping of DueDateTypeCode from UBL to CII.
-  // UBL uses a subset of UNTDID 2005; CII uses the full code list.
-  // See cii2ubl AbstractCIIToUBLConverter.mapDueDateTypeCode for the forward mapping.
-  @Nullable
-  protected static String mapDueDateTypeCodeToCII (@Nullable final String s)
-  {
-    if ("3".equals (s))
-      return "5";
-    if ("35".equals (s))
-      return "29";
-    if ("432".equals (s))
-      return "72";
-    return s;
-  }
-
-  protected static boolean isOriginatorDocumentReferenceTypeCode (@Nullable final String s)
-  {
-    // BT-17
-    return "50".equals (s);
-  }
-
-  protected static boolean isValidDocumentReferenceTypeCode (@Nullable final String s)
-  {
-    // BT-17 or BT-18
-    // Value 916 from BT-122 should not lead to a DocumentTypeCode
-    return isOriginatorDocumentReferenceTypeCode (s) || "130".equals (s);
-  }
-
-  @Nullable
-  private static String _getAsVAIfNecessary (@Nullable final String s)
-  {
-    if ("VAT".equals (s))
-      return "VA";
-    return s;
-  }
-
-  @Nullable
-  protected static String createFormattedDateValue (@Nullable final LocalDate aLocalDate)
-  {
-    if (aLocalDate == null)
-      return null;
-
-    return DATE_FORMATTER.format (aLocalDate);
-  }
-
   @Nullable
   protected static FormattedDateTimeType convertFormattedDateTime (@Nullable final LocalDate aLocalDate)
   {
@@ -144,7 +80,7 @@ public abstract class AbstractToCIID16BConverter
 
     final FormattedDateTimeType ret = new FormattedDateTimeType ();
     final FormattedDateTimeType.DateTimeString aDTS = new FormattedDateTimeType.DateTimeString ();
-    aDTS.setFormat (CII_DATE_FORMAT);
+    aDTS.setFormat (CII_DATE_FORMAT.getID ());
     aDTS.setValue (createFormattedDateValue (aLocalDate));
     ret.setDateTimeString (aDTS);
     return ret;
@@ -156,7 +92,7 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.DateTimeString aret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.DateTimeString ();
-    aret.setFormat (CII_DATE_FORMAT);
+    aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
     return aret;
   }
@@ -177,7 +113,7 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString aret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString ();
-    aret.setFormat (CII_DATE_FORMAT);
+    aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
     return aret;
   }
@@ -305,6 +241,12 @@ public abstract class AbstractToCIID16BConverter
     // If the UBL ID has a schemeID, use CII GlobalID; otherwise use CII ID
     for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
     {
+      // BT-90 shares this UBL element and is told apart by its scheme identifier only. It has a
+      // dedicated CII element of its own, so it must not become a party identifier here - its
+      // scheme identifier is not an ISO 6523 ICD code and would violate BR-CL-10.
+      if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+        continue;
+
       final IDType aCIIID = convertID (aUBLPartyID.getID ());
       if (aCIIID != null)
       {
@@ -380,7 +322,8 @@ public abstract class AbstractToCIID16BConverter
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
           // MUST use "VA" scheme
-          ifNotEmpty (_getAsVAIfNecessary (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()), aID::setSchemeID);
+          ifNotEmpty (EN16931CodeLists.mapTaxSchemeCodeUBLToCII (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()),
+                      aID::setSchemeID);
         }
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
@@ -438,10 +381,10 @@ public abstract class AbstractToCIID16BConverter
       ifNotEmpty (aUBLDocRef.getID ().getSchemeID (), aURDT::setReferenceTypeCode);
 
     // Add DocumentTypeCode where possible
-    if (isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
+    if (EN16931CodeLists.isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
       aURDT.setTypeCode (aUBLDocRef.getDocumentTypeCodeValue ());
     else
-      aURDT.setTypeCode ("916");
+      aURDT.setTypeCode (EN16931CodeLists.DOCUMENT_TYPE_CODE_SUPPORTING_DOCUMENT);
 
     // BT-26 Preceding Invoice issue date / document issue date
     if (aUBLDocRef.getIssueDate () != null)
@@ -514,8 +457,7 @@ public abstract class AbstractToCIID16BConverter
       }
 
       // BT-70 Deliver to party name
-      if (aUBLDelivery.getDeliveryParty () != null &&
-          aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
+      if (aUBLDelivery.getDeliveryParty () != null && aUBLDelivery.getDeliveryParty ().hasPartyNameEntries ())
       {
         if (ifNotEmpty (aUBLDelivery.getDeliveryParty ().getPartyNameAtIndex (0).getNameValue (), aTPTHT::setName))
           bUseShipToParty = true;

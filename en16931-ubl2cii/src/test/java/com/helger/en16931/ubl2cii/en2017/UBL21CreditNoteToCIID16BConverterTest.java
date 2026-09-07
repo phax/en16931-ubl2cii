@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.helger.en16931.ubl2cii;
+package com.helger.en16931.ubl2cii.en2017;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -31,6 +31,7 @@ import com.helger.base.state.ESuccess;
 import com.helger.base.string.StringImplode;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.ubl2cii.MockSettings;
 import com.helger.io.file.FilenameHelper;
 import com.helger.io.resource.FileSystemResource;
 import com.helger.phive.api.execute.ValidationExecutionManager;
@@ -40,39 +41,39 @@ import com.helger.phive.api.validity.IValidityDeterminator;
 import com.helger.phive.xml.source.ValidationSourceXML;
 import com.helger.ubl21.UBL21Marshaller;
 
-import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
+import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 
 /**
- * Test class for class {@link UBL21InvoiceToCIID16BConverter}.
+ * Test class for class {@link UBL21CreditNoteToCIID16BConverter}.
  *
  * @author Philip Helger
  */
-public final class UBL21InvoiceToCIID16BConverterTest
+public final class UBL21CreditNoteToCIID16BConverterTest
 {
-  private static final Logger LOGGER = LoggerFactory.getLogger (UBL21InvoiceToCIID16BConverterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger (UBL21CreditNoteToCIID16BConverterTest.class);
 
   @Test
   public void testConvertAndValidateAllInvoices ()
   {
-    for (final File aFile : MockSettings.getAllTestFilesUBL21Invoice ())
+    for (final File aFile : MockSettings.getAllTestFilesUBL21CreditNote ())
     {
       LOGGER.info ("Converting " + aFile.toString () + " to CII D16B");
 
       // Read as UBL
       final ErrorList aErrorList = new ErrorList ();
-      final InvoiceType aUBLInvoice = UBL21Marshaller.invoice ().setCollectErrors (aErrorList).read (aFile);
+      final CreditNoteType aUBLCreditNote = UBL21Marshaller.creditNote ().setCollectErrors (aErrorList).read (aFile);
       assertTrue ("Errors: " + aErrorList.toString (), aErrorList.containsNoError ());
-      assertNotNull (aUBLInvoice);
+      assertNotNull (aUBLCreditNote);
 
       // Main conversion
-      final CrossIndustryInvoiceType aCrossIndustryInvoice = UBL21InvoiceToCIID16BConverter.convertToCrossIndustryInvoice (aUBLInvoice,
-                                                                                                                           aErrorList);
+      final CrossIndustryInvoiceType aCrossIndustryInvoice = UBL21CreditNoteToCIID16BConverter.convertToCrossIndustryInvoice (aUBLCreditNote,
+                                                                                                                              aErrorList);
       assertTrue ("Errors: " + aErrorList.toString (), aErrorList.containsNoError ());
       assertNotNull (aCrossIndustryInvoice);
 
       // Save converted file
-      final File aDestFile = new File ("generated/cii/inv-" +
+      final File aDestFile = new File ("generated/cii/cn-" +
                                        FilenameHelper.getBaseName (aFile.getName ()) +
                                        "-cii.xml");
       final ESuccess eSuccess = new CIID16BCrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (true)

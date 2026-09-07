@@ -19,6 +19,7 @@ package com.helger.en16931.ubl2cii;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -30,9 +31,15 @@ import com.helger.annotation.concurrent.Immutable;
 import com.helger.base.enforce.ValueEnforcer;
 import com.helger.base.state.ESuccess;
 import com.helger.cii.d16b.CIID16BCrossIndustryInvoiceTypeMarshaller;
+import com.helger.cii.d25a.CIID25ACrossIndustryInvoiceTypeMarshaller;
 import com.helger.diagnostics.error.SingleError;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.ubl2cii.en2017.UBL21CreditNoteToCIID16BConverter;
+import com.helger.en16931.ubl2cii.en2017.UBL21InvoiceToCIID16BConverter;
+import com.helger.en16931.ubl2cii.en2026.UBL25CreditNoteToCIID25AConverter;
+import com.helger.en16931.ubl2cii.en2026.UBL25InvoiceToCIID25AConverter;
 import com.helger.ubl21.UBL21Marshaller;
+import com.helger.ubl25.UBL25Marshaller;
 import com.helger.xml.XMLHelper;
 import com.helger.xml.sax.WrappedCollectingSAXErrorHandler;
 import com.helger.xml.serialize.read.DOMReader;
@@ -185,5 +192,109 @@ public final class UBLToCIIConversionHelper
     return new CIID16BCrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (true)
                                                            .setCollectErrors (aErrorList)
                                                            .write (aCrossIndustryInvoice, aOS);
+  }
+
+  public static un.unece.uncefact.data.standard.cii.d25a.@Nullable CrossIndustryInvoiceType convertUBL25InvoiceToCIID25A (@NonNull @WillNotClose final InputStream aIS,
+                                                                 @NonNull final ErrorList aErrorList)
+  {
+    ValueEnforcer.notNull (aIS, "InputStream");
+    ValueEnforcer.notNull (aErrorList, "ErrorList");
+
+    // Read UBL 2.5
+    final oasis.names.specification.ubl.schema.xsd.invoice_25.InvoiceType aUBLInvoice = UBL25Marshaller.invoice ().setCollectErrors (aErrorList).read (aIS);
+    if (aUBLInvoice == null)
+      return null;
+
+    // Main conversion
+    return UBL25InvoiceToCIID25AConverter.convertToCrossIndustryInvoice (aUBLInvoice, aErrorList);
+  }
+
+  @NonNull
+  public static ESuccess convertUBL25InvoiceToCIID25A (@NonNull @WillNotClose final InputStream aIS,
+                                                       @NonNull @WillClose final OutputStream aOS,
+                                                       @NonNull final ErrorList aErrorList)
+  {
+    ValueEnforcer.notNull (aIS, "InputStream");
+    ValueEnforcer.notNull (aOS, "OutputStream");
+    ValueEnforcer.notNull (aErrorList, "ErrorList");
+
+    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25InvoiceToCIID25A (aIS, aErrorList);
+    if (aCrossIndustryInvoice == null)
+      return ESuccess.FAILURE;
+
+    // Write CII D25A XML
+    return new CIID25ACrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (true)
+                                                           .setCollectErrors (aErrorList)
+                                                           .write (aCrossIndustryInvoice, aOS);
+  }
+
+  public static un.unece.uncefact.data.standard.cii.d25a.@Nullable CrossIndustryInvoiceType convertUBL25CreditNoteToCIID25A (@NonNull @WillNotClose final InputStream aIS,
+                                                                    @NonNull final ErrorList aErrorList)
+  {
+    ValueEnforcer.notNull (aIS, "InputStream");
+    ValueEnforcer.notNull (aErrorList, "ErrorList");
+
+    // Read UBL 2.5
+    final oasis.names.specification.ubl.schema.xsd.creditnote_25.CreditNoteType aUBLCreditNote = UBL25Marshaller.creditNote ().setCollectErrors (aErrorList).read (aIS);
+    if (aUBLCreditNote == null)
+      return null;
+
+    // Main conversion
+    return UBL25CreditNoteToCIID25AConverter.convertToCrossIndustryInvoice (aUBLCreditNote, aErrorList);
+  }
+
+  @NonNull
+  public static ESuccess convertUBL25CreditNoteToCIID25A (@NonNull @WillNotClose final InputStream aIS,
+                                                          @NonNull @WillClose final OutputStream aOS,
+                                                          @NonNull final ErrorList aErrorList)
+  {
+    ValueEnforcer.notNull (aIS, "InputStream");
+    ValueEnforcer.notNull (aOS, "OutputStream");
+    ValueEnforcer.notNull (aErrorList, "ErrorList");
+
+    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25CreditNoteToCIID25A (aIS, aErrorList);
+    if (aCrossIndustryInvoice == null)
+      return ESuccess.FAILURE;
+
+    // Write CII D25A XML
+    return new CIID25ACrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (true)
+                                                           .setCollectErrors (aErrorList)
+                                                           .write (aCrossIndustryInvoice, aOS);
+  }
+
+  /**
+   * Convert a UBL document to CII, detecting the EN 16931 edition from BT-24 and the document type
+   * from the document element. This is the edition independent entry point; the methods above are
+   * the shortcuts for a known edition.
+   *
+   * @param aIS
+   *        The UBL document to read. May not be <code>null</code> and is not closed.
+   * @param aOS
+   *        The stream to write the CII document to. May not be <code>null</code> and is closed.
+   * @param aErrorList
+   *        The error list to be filled. May not be <code>null</code>.
+   * @return {@link ESuccess#FAILURE} if the edition cannot be determined, the document type is
+   *         neither Invoice nor Credit Note, or the conversion fails.
+   */
+  @NonNull
+  public static ESuccess convertUBLAutoDetectToCII (@NonNull @WillNotClose final InputStream aIS,
+                                                    @NonNull @WillClose final OutputStream aOS,
+                                                    @NonNull final ErrorList aErrorList)
+  {
+    ValueEnforcer.notNull (aIS, "InputStream");
+    ValueEnforcer.notNull (aOS, "OutputStream");
+    ValueEnforcer.notNull (aErrorList, "ErrorList");
+
+    // Read exactly once into XML - the correct JAXB model is what is not known yet
+    final Document aDoc = DOMReader.readXMLDOM (aIS,
+                                                new DOMReaderSettings ().setErrorHandler (new WrappedCollectingSAXErrorHandler (aErrorList)));
+    if (aDoc == null || aDoc.getDocumentElement () == null)
+      return ESuccess.FAILURE;
+
+    final Serializable aCII = UBLToCIIDispatcher.convertUBLtoCII (aDoc, null, aErrorList);
+    if (aCII == null)
+      return ESuccess.FAILURE;
+
+    return UBLToCIIDispatcher.writeCII (aCII, aOS, aErrorList);
   }
 }

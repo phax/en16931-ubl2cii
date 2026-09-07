@@ -2,7 +2,7 @@
 .idea/
 .settings/
 bin/
-generated/
+**/generated/roundtrip/
 target/
 
 .classpath
