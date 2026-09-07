@@ -18,7 +18,6 @@
 package com.helger.en16931.ubl2cii;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
@@ -28,6 +27,9 @@ import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.xml.XMLOffsetDate;
+import com.helger.en16931.basics.ConversionHelper;
+import com.helger.en16931.basics.EEN16931DateFormatCode;
+import com.helger.en16931.basics.codelist.EN16931CodeLists;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
@@ -72,68 +74,23 @@ import un.unece.uncefact.data.standard.unqualifieddatatype._100.TextType;
  */
 public abstract class AbstractToCIID16BConverter
 {
-  private static final String CII_DATE_FORMAT = "102";
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern ("yyyyMMdd");
+  /** The UNTDID 2379 date format all CII dates of the EN 16931:2017 binding use */
+  protected static final EEN16931DateFormatCode CII_DATE_FORMAT = EEN16931DateFormatCode.CCYYMMDD;
 
   protected static <T> boolean ifNotNull (@Nullable final T aObj, @NonNull final Consumer <? super T> aConsumer)
   {
-    if (aObj == null)
-      return false;
-    aConsumer.accept (aObj);
-    return true;
+    return ConversionHelper.ifNotNull (aObj, aConsumer);
   }
 
   protected static boolean ifNotEmpty (@Nullable final String s, @NonNull final Consumer <? super String> aConsumer)
   {
-    if (StringHelper.isEmpty (s))
-      return false;
-    aConsumer.accept (s);
-    return true;
-  }
-
-  // BT-8: Reverse mapping of DueDateTypeCode from UBL to CII.
-  // UBL uses a subset of UNTDID 2005; CII uses the full code list.
-  // See cii2ubl AbstractCIIToUBLConverter.mapDueDateTypeCode for the forward mapping.
-  @Nullable
-  protected static String mapDueDateTypeCodeToCII (@Nullable final String s)
-  {
-    if ("3".equals (s))
-      return "5";
-    if ("35".equals (s))
-      return "29";
-    if ("432".equals (s))
-      return "72";
-    return s;
-  }
-
-  protected static boolean isOriginatorDocumentReferenceTypeCode (@Nullable final String s)
-  {
-    // BT-17
-    return "50".equals (s);
-  }
-
-  protected static boolean isValidDocumentReferenceTypeCode (@Nullable final String s)
-  {
-    // BT-17 or BT-18
-    // Value 916 from BT-122 should not lead to a DocumentTypeCode
-    return isOriginatorDocumentReferenceTypeCode (s) || "130".equals (s);
-  }
-
-  @Nullable
-  private static String _getAsVAIfNecessary (@Nullable final String s)
-  {
-    if ("VAT".equals (s))
-      return "VA";
-    return s;
+    return ConversionHelper.ifNotEmpty (s, aConsumer);
   }
 
   @Nullable
   protected static String createFormattedDateValue (@Nullable final LocalDate aLocalDate)
   {
-    if (aLocalDate == null)
-      return null;
-
-    return DATE_FORMATTER.format (aLocalDate);
+    return CII_DATE_FORMAT.getAsString (aLocalDate);
   }
 
   @Nullable
@@ -144,7 +101,7 @@ public abstract class AbstractToCIID16BConverter
 
     final FormattedDateTimeType ret = new FormattedDateTimeType ();
     final FormattedDateTimeType.DateTimeString aDTS = new FormattedDateTimeType.DateTimeString ();
-    aDTS.setFormat (CII_DATE_FORMAT);
+    aDTS.setFormat (CII_DATE_FORMAT.getID ());
     aDTS.setValue (createFormattedDateValue (aLocalDate));
     ret.setDateTimeString (aDTS);
     return ret;
@@ -156,7 +113,7 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.DateTimeString aret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateTimeType.DateTimeString ();
-    aret.setFormat (CII_DATE_FORMAT);
+    aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
     return aret;
   }
@@ -177,7 +134,7 @@ public abstract class AbstractToCIID16BConverter
       return null;
 
     final un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString aret = new un.unece.uncefact.data.standard.unqualifieddatatype._100.DateType.DateString ();
-    aret.setFormat (CII_DATE_FORMAT);
+    aret.setFormat (CII_DATE_FORMAT.getID ());
     aret.setValue (createFormattedDateValue (aLocalDate));
     return aret;
   }
@@ -380,7 +337,8 @@ public abstract class AbstractToCIID16BConverter
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
           // MUST use "VA" scheme
-          ifNotEmpty (_getAsVAIfNecessary (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()), aID::setSchemeID);
+          ifNotEmpty (EN16931CodeLists.mapTaxSchemeCodeUBLToCII (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()),
+                      aID::setSchemeID);
         }
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);
@@ -438,10 +396,10 @@ public abstract class AbstractToCIID16BConverter
       ifNotEmpty (aUBLDocRef.getID ().getSchemeID (), aURDT::setReferenceTypeCode);
 
     // Add DocumentTypeCode where possible
-    if (isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
+    if (EN16931CodeLists.isValidDocumentReferenceTypeCode (aUBLDocRef.getDocumentTypeCodeValue ()))
       aURDT.setTypeCode (aUBLDocRef.getDocumentTypeCodeValue ());
     else
-      aURDT.setTypeCode ("916");
+      aURDT.setTypeCode (EN16931CodeLists.DOCUMENT_TYPE_CODE_SUPPORTING_DOCUMENT);
 
     // BT-26 Preceding Invoice issue date / document issue date
     if (aUBLDocRef.getIssueDate () != null)

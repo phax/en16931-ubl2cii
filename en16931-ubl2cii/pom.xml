@@ -21,7 +21,7 @@
   <parent>
     <groupId>com.helger</groupId>
     <artifactId>en16931-ubl2cii-parent-pom</artifactId>
-    <version>2.2.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>en16931-ubl2cii</artifactId>
@@ -48,6 +48,10 @@
   </developers>
 
   <dependencies>
+    <dependency>
+      <groupId>com.helger</groupId>
+      <artifactId>en16931-basics</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.helger.ubl</groupId>
       <artifactId>ph-ubl21</artifactId>

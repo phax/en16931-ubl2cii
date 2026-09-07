@@ -27,6 +27,7 @@ import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.CommonsArrayList;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.diagnostics.error.list.ErrorList;
+import com.helger.en16931.basics.codelist.EN16931CodeLists;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.CommodityClassificationType;
@@ -407,7 +408,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
       // Value added tax point date code BT-8
       // BT-8 Value added tax point date code (reverse-mapped to CII code list)
       if (aUBLPeriod.hasDescriptionCodeEntries ())
-        ifNotEmpty (mapDueDateTypeCodeToCII (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue ()),
+        ifNotEmpty (EN16931CodeLists.mapDueDateTypeCodeUBLToCII (aUBLPeriod.getDescriptionCodeAtIndex (0).getValue ()),
                     x -> fGetOrCreateTradeTax.get ().setDueDateTypeCode (x));
 
       // BG-14 (BT-73/BT-74)
@@ -619,7 +620,7 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         {
           final ReferencedDocumentType aOrigRDT = new ReferencedDocumentType ();
           ifNotEmpty (aUBLOrigRef.getIDValue (), aOrigRDT::setIssuerAssignedID);
-          aOrigRDT.setTypeCode ("50");
+          aOrigRDT.setTypeCode (EN16931CodeLists.DOCUMENT_TYPE_CODE_ORIGINATOR_DOCUMENT);
           aHTAT.addAdditionalReferencedDocument (aOrigRDT);
         }
 
