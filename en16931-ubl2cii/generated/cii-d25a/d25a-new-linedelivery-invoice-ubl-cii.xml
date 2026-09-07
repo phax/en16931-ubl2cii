@@ -14,6 +14,10 @@
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">20260115</udt:DateTimeString>
     </ram:IssueDateTime>
+    <ram:IncludedNote>
+      <ram:Content>Header note</ram:Content>
+      <ram:SubjectCode>AAI</ram:SubjectCode>
+    </ram:IncludedNote>
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
     <ram:IncludedSupplyChainTradeLineItem>
@@ -108,6 +112,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReferenceID schemeID="ADE">BUYER-REF-4711</ram:BuyerReferenceID>
       <ram:SellerTradeParty>
         <ram:GlobalID schemeID="0088">4035811234567</ram:GlobalID>
         <ram:Name>Seller Ltd</ram:Name>

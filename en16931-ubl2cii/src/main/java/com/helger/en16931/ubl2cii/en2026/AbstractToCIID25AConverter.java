@@ -32,6 +32,7 @@ import com.helger.en16931.ubl2cii.AbstractToCIIConverterBase;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.AllowanceChargeType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.AnnotationType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.AttachmentType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.DeliveryType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.DocumentReferenceType;
@@ -75,6 +76,11 @@ import un.unece.uncefact.data.standard.cii.d25a.udt.TextType;
  */
 public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterBase
 {
+  /** BT-32-2 National tax code - a fixed value in the UBL binding since EN 16931:2026 */
+  public static final String NATIONAL_TAX_SCHEME = "LOC";
+  /** BT-32-1 National tax registration scheme identifier of the CII binding, UNTDID 1153 */
+  public static final String NATIONAL_TAX_SCHEME_CII = "FC";
+
   /**
    * Read the value of the first entry of a UBL element that widened from 0..1 to 0..n between UBL
    * 2.1 and UBL 2.5. Every business term affected by that widening stayed 0..1 in the semantic
@@ -190,34 +196,37 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
   }
 
   // BG-1: BT-21 Invoice note subject code + BT-22 Invoice note
-  // The cii2ubl converter encodes the subject code as a "#code#" prefix in the
-  // UBL Note value. This method parses it back out.
+  // Since UBL 2.5 the subject code has an element of its own, so the "#code#" prefix hack of the
+  // EN 16931:2017 binding is gone.
+  protected static un.unece.uncefact.data.standard.cii.d25a.rabie.@Nullable NoteType convertAnnotation (@Nullable final AnnotationType aUBLAnnotation)
+  {
+    if (aUBLAnnotation == null)
+      return null;
+
+    final un.unece.uncefact.data.standard.cii.d25a.rabie.NoteType ret = new un.unece.uncefact.data.standard.cii.d25a.rabie.NoteType ();
+
+    // BT-21 Invoice note subject code
+    ifNotEmpty (aUBLAnnotation.getSubjectCodeValue (), x -> {
+      final CodeType aSubjectCode = new CodeType ();
+      aSubjectCode.setValue (x);
+      ret.addSubjectCode (aSubjectCode);
+    });
+
+    // BT-22 Invoice note
+    ifNotEmpty (getFirstValue (aUBLAnnotation.getAnnotationContent ()), x -> ret.addContent (convertText (x)));
+
+    return ret.hasNoSubjectCodeEntries () && ret.hasNoContentEntries () ? null : ret;
+  }
+
+  // BT-127 Invoice line note. Unlike BG-1 this stayed a plain cbc:Note in 2026, because it has no
+  // subject code counterpart.
   protected static un.unece.uncefact.data.standard.cii.d25a.rabie.@Nullable NoteType convertNote (final oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_25.@Nullable NoteType aUBLNote)
   {
     if (aUBLNote == null || aUBLNote.getValue () == null)
       return null;
 
     final un.unece.uncefact.data.standard.cii.d25a.rabie.NoteType ret = new un.unece.uncefact.data.standard.cii.d25a.rabie.NoteType ();
-
-    String sValue = aUBLNote.getValue ();
-
-    // BT-21 Subject code: parse "#code#" prefix
-    if (sValue.length () >= 3 && sValue.charAt (0) == '#')
-    {
-      final int nEnd = sValue.indexOf ('#', 1);
-      if (nEnd > 1)
-      {
-        final CodeType aSubjectCode = new CodeType ();
-        aSubjectCode.setValue (sValue.substring (1, nEnd));
-        ret.addSubjectCode (aSubjectCode);
-        sValue = sValue.substring (nEnd + 1);
-      }
-    }
-
-    // BT-22 Note content
-    final TextType aTT = new TextType ();
-    aTT.setValue (sValue);
-    ret.addContent (aTT);
+    ret.addContent (convertText (aUBLNote.getValue ()));
     return ret;
   }
 
@@ -336,8 +345,12 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
         final IDType aID = convertID (aUBLPartyTaxScheme.getCompanyID ());
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
-          // MUST use "VA" scheme
-          ifNotEmpty (EN16931CodeLists.mapTaxSchemeCodeUBLToCII (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()),
+          // BT-31-2/BT-48-2/BT-63-2 "VAT" -> "VA", and since EN 16931:2026 the national tax code
+          // BT-32-2 is the fixed value "LOC" -> "FC". The 2017 binding had no fixed value here and
+          // accepted anything except "VAT" for BT-32.
+          final String sUBLTaxScheme = aUBLPartyTaxScheme.getTaxScheme ().getIDValue ();
+          ifNotEmpty (NATIONAL_TAX_SCHEME.equals (sUBLTaxScheme) ? NATIONAL_TAX_SCHEME_CII
+                                                                 : EN16931CodeLists.mapTaxSchemeCodeUBLToCII (sUBLTaxScheme),
                       aID::setSchemeID);
         }
         aTaxReg.setID (aID);

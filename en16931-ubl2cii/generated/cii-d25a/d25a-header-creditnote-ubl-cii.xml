@@ -14,6 +14,13 @@
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">20260115</udt:DateTimeString>
     </ram:IssueDateTime>
+    <ram:IncludedNote>
+      <ram:Content>Payment within 30 days</ram:Content>
+      <ram:SubjectCode>AAI</ram:SubjectCode>
+    </ram:IncludedNote>
+    <ram:IncludedNote>
+      <ram:Content>Second note without a subject code</ram:Content>
+    </ram:IncludedNote>
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
     <ram:IncludedSupplyChainTradeLineItem>
@@ -46,6 +53,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReferenceID schemeID="ADE">BUYER-REF-4711</ram:BuyerReferenceID>
       <ram:SellerTradeParty>
         <ram:GlobalID schemeID="0088">4035811234567</ram:GlobalID>
         <ram:Name>Seller Ltd</ram:Name>
@@ -79,7 +87,7 @@
           <ram:ID schemeID="VA">ATU12345678</ram:ID>
         </ram:SpecifiedTaxRegistration>
         <ram:SpecifiedTaxRegistration>
-          <ram:ID schemeID="LOC">FC-987654</ram:ID>
+          <ram:ID schemeID="FC">FC-987654</ram:ID>
         </ram:SpecifiedTaxRegistration>
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
@@ -98,6 +106,10 @@
       <ram:ContractReferencedDocument>
         <ram:IssuerAssignedID>CONTRACT-42</ram:IssuerAssignedID>
       </ram:ContractReferencedDocument>
+      <ram:SpecifiedProcuringProject>
+        <ram:ID>PROJECT-7</ram:ID>
+        <ram:Name>Project reference</ram:Name>
+      </ram:SpecifiedProcuringProject>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery />
     <ram:ApplicableHeaderTradeSettlement>
@@ -117,6 +129,11 @@
           <udt:DateTimeString format="102">20260131</udt:DateTimeString>
         </ram:EndDateTime>
       </ram:BillingSpecifiedPeriod>
+      <ram:SpecifiedTradePaymentTerms>
+        <ram:DueDateDateTime>
+          <udt:DateTimeString format="102">20260214</udt:DateTimeString>
+        </ram:DueDateDateTime>
+      </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>100</ram:LineTotalAmount>
         <ram:TaxBasisTotalAmount>100</ram:TaxBasisTotalAmount>

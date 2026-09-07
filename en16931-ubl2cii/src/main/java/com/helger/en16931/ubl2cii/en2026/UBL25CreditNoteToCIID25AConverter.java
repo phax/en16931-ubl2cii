@@ -38,6 +38,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.Ite
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PaymentMeansType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PaymentTermsType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PeriodType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.ProjectReferenceType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.SupplierPartyType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.TaxCategoryType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.TaxSchemeType;
@@ -59,6 +60,7 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.HeaderTradeSettlementType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeAgreementType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeDeliveryType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.LineTradeSettlementType;
+import un.unece.uncefact.data.standard.cii.d25a.rabie.ProcuringProjectType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.ProductCharacteristicType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.ProductClassificationType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.ReferencedDocumentType;
@@ -76,6 +78,7 @@ import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementLineMonetar
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeSettlementPaymentMeansType;
 import un.unece.uncefact.data.standard.cii.d25a.rabie.TradeTaxType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.CodeType;
+import un.unece.uncefact.data.standard.cii.d25a.udt.IDType;
 import un.unece.uncefact.data.standard.cii.d25a.udt.QuantityType;
 
 /**
@@ -428,17 +431,19 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     for (final AllowanceChargeType aUBLAllowanceCharge : aUBLDoc.getAllowanceCharge ())
       ret.addSpecifiedTradeAllowanceCharge (convertSpecifiedTradeAllowanceCharge (aUBLAllowanceCharge));
 
-    // BT-20 Payment terms + BT-9 Payment due date
+    // BT-20 Payment terms + BT-9 Payment due date.
+    // Since UBL 2.2 the credit note has a native cbc:DueDate, so it is read the same way as on the
+    // invoice and no longer from cac:PaymentMeans/cbc:PaymentDueDate.
     for (final PaymentTermsType aUBLPaymentTerms : aUBLDoc.getPaymentTerms ())
-      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms, aUBLPaymentMeans, null));
+      ret.addSpecifiedTradePaymentTerms (convertSpecifiedTradePaymentTerms (aUBLPaymentTerms,
+                                                                            aUBLPaymentMeans,
+                                                                            aUBLDoc.getDueDateValue ()));
 
-    // BT-9: If no PaymentTerms exist but PaymentDueDate is present, create one for the due date
-    if (!ret.hasSpecifiedTradePaymentTermsEntries () &&
-        aUBLPaymentMeans != null &&
-        aUBLPaymentMeans.getPaymentDueDate () != null)
+    // BT-9: If no PaymentTerms exist but DueDate is present, create one for the due date
+    if (!ret.hasSpecifiedTradePaymentTermsEntries () && aUBLDoc.getDueDateValue () != null)
     {
       final TradePaymentTermsType aTPT = new TradePaymentTermsType ();
-      aTPT.setDueDateDateTime (convertDateTime (aUBLPaymentMeans.getPaymentDueDate ().getValueLocal ()));
+      aTPT.setDueDateDateTime (convertDateTime (aUBLDoc.getDueDateValue ().toLocalDate ()));
       ret.addSpecifiedTradePaymentTerms (aTPT);
     }
 
@@ -551,9 +556,9 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
       // IssueDate BT-2
       ifNotNull (aUBLDoc.getIssueDate (), x -> aEDT.setIssueDateTime (convertDateTime (x.getValueLocal ())));
 
-      // BG-1
-      for (final var aNote : aUBLDoc.getNote ())
-        aEDT.addIncludedNote (convertNote (aNote));
+      // BG-1 CREDIT NOTE NOTE - BT-21 and BT-22
+      for (final var aUBLAnnotation : aUBLDoc.getAnnotation ())
+        ifNotNull (convertAnnotation (aUBLAnnotation), aEDT::addIncludedNote);
 
       aCIIInvoice.setExchangedDocument (aEDT);
     }
@@ -569,8 +574,17 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
       {
         final HeaderTradeAgreementType aHTAT = new HeaderTradeAgreementType ();
 
-        // Buyer reference (BT-10)
-        ifNotEmpty (aUBLDoc.getBuyerReferenceValue (), aHTAT::setBuyerReference);
+        // BT-10 Buyer reference and BT-10-1 its scheme identifier.
+        // Since UBL 2.5 this is cac:BuyerAssignedReference (0..n) instead of cbc:BuyerReference,
+        // and CII D25A has ram:BuyerReferenceID instead of ram:BuyerReference.
+        for (final var aUBLBuyerRef : aUBLDoc.getBuyerAssignedReference ())
+          ifNotEmpty (getFirstValue (aUBLBuyerRef.getBuyerReference ()), x -> {
+            final IDType aID = new IDType ();
+            aID.setValue (x);
+            // BT-10-1 Buyer reference Scheme identifier
+            ifNotEmpty (aUBLBuyerRef.getBuyerReferenceCodeValue (), aID::setSchemeID);
+            aHTAT.addBuyerReferenceID (aID);
+          });
 
         // BG-4 SELLER
         final SupplierPartyType aSupplierParty = aUBLDoc.getAccountingSupplierParty ();
@@ -582,8 +596,20 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
         if (aCustomerParty != null)
           aHTAT.setBuyerTradeParty (convertParty (aCustomerParty.getParty ()));
 
-        // Project reference BT-11
-        // Not available in CreditNote
+        // Project reference BT-11 and BT-11-1.
+        // Since UBL 2.2 the credit note has a native cac:ProjectReference, so it is no longer
+        // squeezed into cac:AdditionalDocumentReference.
+        if (aUBLDoc.hasProjectReferenceEntries ())
+        {
+          final ProjectReferenceType aProjRef = aUBLDoc.getProjectReferenceAtIndex (0);
+          ifNotEmpty (aProjRef.getIDValue (), x -> {
+            final ProcuringProjectType aProcuringProject = new ProcuringProjectType ();
+            aProcuringProject.setID (x);
+            // BT-11-1 Project name is mandatory in CII as soon as the container is used
+            aProcuringProject.setName ("Project reference");
+            aHTAT.setSpecifiedProcuringProject (aProcuringProject);
+          });
+        }
 
         // Purchase order reference BT-13
         if (aUBLDoc.getOrderReference () != null)

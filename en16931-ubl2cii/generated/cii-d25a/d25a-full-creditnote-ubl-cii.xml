@@ -14,6 +14,10 @@
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">20260115</udt:DateTimeString>
     </ram:IssueDateTime>
+    <ram:IncludedNote>
+      <ram:Content>Header note</ram:Content>
+      <ram:SubjectCode>AAI</ram:SubjectCode>
+    </ram:IncludedNote>
   </rsm:ExchangedDocument>
   <rsm:SupplyChainTradeTransaction>
     <ram:IncludedSupplyChainTradeLineItem>
@@ -109,6 +113,7 @@
       </ram:SpecifiedLineTradeSettlement>
     </ram:IncludedSupplyChainTradeLineItem>
     <ram:ApplicableHeaderTradeAgreement>
+      <ram:BuyerReferenceID schemeID="ADE">BUYER-REF-4711</ram:BuyerReferenceID>
       <ram:SellerTradeParty>
         <ram:GlobalID schemeID="0088">4035811234567</ram:GlobalID>
         <ram:Name>Seller Ltd</ram:Name>
@@ -174,6 +179,10 @@
         <ram:TypeCode>916</ram:TypeCode>
         <ram:Name>Supporting document</ram:Name>
       </ram:AdditionalReferencedDocument>
+      <ram:SpecifiedProcuringProject>
+        <ram:ID>PROJECT-7</ram:ID>
+        <ram:Name>Project reference</ram:Name>
+      </ram:SpecifiedProcuringProject>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
       <ram:ShipToTradeParty>
@@ -278,6 +287,9 @@
       </ram:SpecifiedTradeAllowanceCharge>
       <ram:SpecifiedTradePaymentTerms>
         <ram:Description>Net 30 days</ram:Description>
+        <ram:DueDateDateTime>
+          <udt:DateTimeString format="102">20260214</udt:DateTimeString>
+        </ram:DueDateDateTime>
       </ram:SpecifiedTradePaymentTerms>
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
         <ram:LineTotalAmount>100</ram:LineTotalAmount>

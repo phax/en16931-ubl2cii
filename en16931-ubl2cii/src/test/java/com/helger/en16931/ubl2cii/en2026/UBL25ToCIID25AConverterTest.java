@@ -17,7 +17,9 @@
  */
 package com.helger.en16931.ubl2cii.en2026;
 
+import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertNoXPath;
 import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPath;
+import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPathCount;
 import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.convertAndValidate;
 
 import java.io.File;
@@ -101,6 +103,91 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e,
                  "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:SpecifiedTradeProduct/ram:Name",
                  "Test item");
+  }
+
+  /**
+   * The six paths that really changed between the 2017 and the 2026 binding, on the invoice side.
+   * Everything else that differs textually between the two mapping documents is base path notation.
+   */
+  @Test
+  public void testHeaderInvoice2026PathChanges ()
+  {
+    final Element e = convertAndValidate ("d25a-header-invoice-ubl.xml", true);
+
+    // BG-1 - since UBL 2.5 the note is cac:Annotation with a real subject code element, so the
+    // "#code#" prefix of the 2017 binding is gone. Two notes, only the first has BT-21.
+    assertXPathCount (e, "rsm:ExchangedDocument/ram:IncludedNote", 2);
+    // BT-21 Invoice note subject code
+    assertXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[1]/ram:SubjectCode", "AAI");
+    // BT-22 Invoice note
+    assertXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[1]/ram:Content", "Payment within 30 days");
+    assertXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[2]/ram:Content", "Second note without a subject code");
+    assertNoXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[2]/ram:SubjectCode");
+
+    // BT-10 Buyer reference - ram:BuyerReferenceID since CII D25A, not ram:BuyerReference
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReferenceID",
+                 "BUYER-REF-4711");
+    // BT-10-1 Buyer reference Scheme identifier
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReferenceID/@schemeID",
+                 "ADE");
+    assertNoXPath (e, "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReference");
+
+    // BT-31 Seller VAT identifier, BT-31-1 scheme "VA" from UBL BT-31-2 "VAT"
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration/ram:ID[@schemeID='VA']",
+                 "ATU12345678");
+    // BT-32 Seller tax registration identifier, BT-32-1 scheme "FC" from UBL BT-32-2 "LOC".
+    // In the 2017 binding BT-32 was "anything except VAT" and had no fixed CII scheme identifier.
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration/ram:ID[@schemeID='FC']",
+                 "FC-987654");
+    assertNoXPath (e,
+                   "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration/ram:ID[@schemeID='LOC']");
+
+    // BT-127 Invoice line note - unchanged, it must NOT follow BG-1 into cac:Annotation because it
+    // has no subject code counterpart
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:IncludedNote/ram:Content",
+                 "Line level note");
+    assertNoXPath (e,
+                   "rsm:SupplyChainTradeTransaction/ram:IncludedSupplyChainTradeLineItem/ram:AssociatedDocumentLineDocument/ram:IncludedNote/ram:SubjectCode");
+  }
+
+  /**
+   * The two path changes that only affect the credit note: BT-9 and BT-11 have native UBL elements
+   * since UBL 2.2, so the 2017 workarounds are gone.
+   */
+  @Test
+  public void testHeaderCreditNote2026PathChanges ()
+  {
+    final Element e = convertAndValidate ("d25a-header-creditnote-ubl.xml", false);
+
+    // BT-9 Payment due date - from /CreditNote/cbc:DueDate, not cac:PaymentMeans/cbc:PaymentDueDate
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString",
+                 "20260214");
+    // BT-9-1 Payment due date code
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString/@format",
+                 "102");
+
+    // BT-11 Project reference - from /CreditNote/cac:ProjectReference, not from
+    // cac:AdditionalDocumentReference
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:ID",
+                 "PROJECT-7");
+    // BT-11-1 Project name is mandatory in CII as soon as the container is used
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SpecifiedProcuringProject/ram:Name",
+                 "Project reference");
+
+    // BG-1 and BT-10/BT-10-1 behave exactly as on the invoice
+    assertXPath (e, "rsm:ExchangedDocument/ram:IncludedNote[1]/ram:SubjectCode", "AAI");
+    assertXPath (e,
+                 "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReferenceID/@schemeID",
+                 "ADE");
   }
 
   @Test
