@@ -61,7 +61,10 @@ import picocli.CommandLine.Parameters;
  *
  * @author Philip Helger
  */
-@Command (description = "UBL to CII Converter for EN 16931 invoices", name = "UBLtoCIIConverter", mixinStandardHelpOptions = true, separator = " ")
+@Command (description = "UBL to CII Converter for EN 16931 invoices",
+          name = "UBLtoCIIConverter",
+          mixinStandardHelpOptions = true,
+          separator = " ")
 public class UBLToCIIConverter implements Callable <Integer>
 {
   private static final Logger LOGGER = LoggerFactory.getLogger (UBLToCIIConverter.class);
@@ -73,17 +76,28 @@ public class UBLToCIIConverter implements Callable <Integer>
                          "of each source file.")
   private String m_sENVersion;
 
-  @Option (names = { "-t",
-                     "--target" }, paramLabel = "directory", defaultValue = ".", description = "The target directory for result output (default: '${DEFAULT-VALUE}')")
+  @Option (names = { "-t", "--target" },
+           paramLabel = "directory",
+           defaultValue = ".",
+           description = "The target directory for result output (default: '${DEFAULT-VALUE}')")
   private String m_sOutputDir;
 
-  @Option (names = "--output-suffix", paramLabel = "filename part", defaultValue = "-cii", description = "The suffix added to the output filename (default: '${DEFAULT-VALUE}')")
+  @Option (names = "--output-suffix",
+           paramLabel = "filename part",
+           defaultValue = "-cii",
+           description = "The suffix added to the output filename (default: '${DEFAULT-VALUE}')")
   private String m_sOutputFileSuffix;
 
-  @Option (names = "--verbose", paramLabel = "boolean", defaultValue = "false", description = "Enable debug logging (default: '${DEFAULT-VALUE}')")
+  @Option (names = "--verbose",
+           paramLabel = "boolean",
+           defaultValue = "false",
+           description = "Enable debug logging (default: '${DEFAULT-VALUE}')")
   private boolean m_bVerbose;
 
-  @Option (names = "--disable-wildcard-expansion", paramLabel = "boolean", defaultValue = "false", description = "Disable wildcard expansion of filenames")
+  @Option (names = "--disable-wildcard-expansion",
+           paramLabel = "boolean",
+           defaultValue = "false",
+           description = "Disable wildcard expansion of filenames")
   private boolean m_bDisableWildcardExpansion;
 
   @Parameters (arity = "1..*", paramLabel = "source files", description = "One or more UBL file(s)")
@@ -98,10 +112,10 @@ public class UBLToCIIConverter implements Callable <Integer>
   @NonNull
   private String _normalizeOutputDirectory (@NonNull final String sDirectory)
   {
-    _verboseLog ( () -> "CLI option UBL output directory '" + sDirectory + "'");
+    _verboseLog (() -> "CLI option UBL output directory '" + sDirectory + "'");
     final String ret = Paths.get (sDirectory).toAbsolutePath ().normalize ().toString ();
     if (!sDirectory.equals (ret))
-      _verboseLog ( () -> "Normalized UBL output directory '" + ret + "'");
+      _verboseLog (() -> "Normalized UBL output directory '" + ret + "'");
     return ret;
   }
 
@@ -125,13 +139,13 @@ public class UBLToCIIConverter implements Callable <Integer>
       {
         // Make search pattern absolute
         final String sRealName = new File (sFilename).getAbsolutePath ();
-        _verboseLog ( () -> "Trying to resolve wildcards for '" + sRealName + "'");
+        _verboseLog (() -> "Trying to resolve wildcards for '" + sRealName + "'");
         final PathMatcher matcher = FileSystems.getDefault ().getPathMatcher ("glob:" + sRealName);
         for (final File f : new FileSystemRecursiveIterator (aRootDir))
         {
           if (matcher.matches (f.toPath ()))
           {
-            _verboseLog ( () -> "  Found wildcard match '" + f + "'");
+            _verboseLog (() -> "  Found wildcard match '" + f + "'");
             ret.add (f);
           }
         }
@@ -149,13 +163,13 @@ public class UBLToCIIConverter implements Callable <Integer>
     if (m_bDisableWildcardExpansion)
     {
       aFiles = new CommonsArrayList <> (aFilenames, File::new);
-      _verboseLog ( () -> "Using the input files '" + aFiles + "'");
+      _verboseLog (() -> "Using the input files '" + aFiles + "'");
     }
     else
     {
-      _verboseLog ( () -> "Normalizing the input files '" + aFilenames + "'");
+      _verboseLog (() -> "Normalizing the input files '" + aFilenames + "'");
       aFiles = _resolveWildcards (aFilenames);
-      _verboseLog ( () -> "Resolved wildcards of input files to '" + aFiles + "'");
+      _verboseLog (() -> "Resolved wildcards of input files to '" + aFiles + "'");
     }
 
     final ICommonsList <File> ret = new CommonsArrayList <> ();
@@ -164,7 +178,7 @@ public class UBLToCIIConverter implements Callable <Integer>
     {
       if (aFile.isDirectory ())
       {
-        _verboseLog ( () -> "Input '" + aFile.toString () + "' is a Directory");
+        _verboseLog (() -> "Input '" + aFile.toString () + "' is a Directory");
         // collecting readable and normalized absolute path files
         for (final File aChildFile : new FileSystemIterator (aFile))
         {
@@ -172,7 +186,7 @@ public class UBLToCIIConverter implements Callable <Integer>
           if (Files.isReadable (p) && !Files.isDirectory (p))
           {
             ret.add (_normalizeFile (p));
-            _verboseLog ( () -> "Added file '" + ret.getLastOrNull ().toString () + "'");
+            _verboseLog (() -> "Added file '" + ret.getLastOrNull ().toString () + "'");
           }
         }
       }
@@ -180,14 +194,14 @@ public class UBLToCIIConverter implements Callable <Integer>
         // Does not need to be file - only needs to be readable
         if (aFile.canRead ())
         {
-          _verboseLog ( () -> "Input '" + aFile.toString () + "' is a readable File");
+          _verboseLog (() -> "Input '" + aFile.toString () + "' is a readable File");
           ret.add (_normalizeFile (aFile.toPath ()));
         }
         else
           LOGGER.warn ("Ignoring non-existing file " + aFile.getAbsolutePath ());
     }
 
-    _verboseLog ( () -> "Converting the following CII files: " + ret.getAllMapped (File::getAbsolutePath));
+    _verboseLog (() -> "Converting the following CII files: " + ret.getAllMapped (File::getAbsolutePath));
     return ret;
   }
 
@@ -210,7 +224,7 @@ public class UBLToCIIConverter implements Callable <Integer>
       throw new IllegalArgumentException ("The value '" +
                                           m_sENVersion +
                                           "' of --en-version is unknown. Use '2017' or '2026'.");
-    _verboseLog ( () -> "Forcing the EN 16931 edition " + ret.getID ());
+    _verboseLog (() -> "Forcing the EN 16931 edition " + ret.getID ());
     return ret;
   }
 

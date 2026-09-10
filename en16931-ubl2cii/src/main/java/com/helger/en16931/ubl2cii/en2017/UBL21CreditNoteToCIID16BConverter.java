@@ -463,14 +463,16 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     // Check both parties since it may be on either one
     {
       boolean bFound = false;
-      for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PartyType [] {
-          aUBLDoc.getPayeeParty (),
-          aUBLDoc.getAccountingSupplierParty () != null ? aUBLDoc.getAccountingSupplierParty ().getParty () : null })
+      for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_21.PartyType [] { aUBLDoc.getPayeeParty (),
+                                                                                                                          aUBLDoc.getAccountingSupplierParty () != null ? aUBLDoc.getAccountingSupplierParty ()
+                                                                                                                                                                                 .getParty ()
+                                                                                                                                                                        : null })
       {
         if (bFound || aUBLParty == null)
           continue;
         for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
-          if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+          if (aUBLPartyID.getID () != null &&
+              EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
           {
             if (ifNotEmpty (aUBLPartyID.getID ().getValue (), ret::setCreditorReferenceID))
               bFound = true;

@@ -120,7 +120,7 @@ public final class UBLToCIIDispatcherTest
   {
     final ErrorList aErrorList = new ErrorList ();
     assertNull (UBLToCIIDispatcher.detectEdition (_invoiceWithBT24 ("urn:ferd:CrossIndustryDocument:invoice:1p0:comfort"),
-                                                 aErrorList));
+                                                  aErrorList));
     assertTrue (aErrorList.containsAtLeastOneError ());
   }
 
@@ -139,7 +139,8 @@ public final class UBLToCIIDispatcherTest
                 aD16B instanceof un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType);
 
     aErrorList.clear ();
-    final Document aUBL25Invoice = DOMReader.readXMLDOM (new File (BASE_DIR_UBL25_INVOICE + "d25a-full-invoice-ubl.xml"));
+    final Document aUBL25Invoice = DOMReader.readXMLDOM (new File (BASE_DIR_UBL25_INVOICE +
+                                                                   "d25a-full-invoice-ubl.xml"));
     assertNotNull (aUBL25Invoice);
     final Serializable aD25A = UBLToCIIDispatcher.convertUBLtoCII (aUBL25Invoice, null, aErrorList);
     assertTrue (aErrorList.toString (), aErrorList.containsNoError ());
@@ -148,7 +149,8 @@ public final class UBLToCIIDispatcherTest
                 aD25A instanceof un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType);
 
     aErrorList.clear ();
-    final Document aUBL25CreditNote = DOMReader.readXMLDOM (new File (BASE_DIR_UBL25_CREDIT_NOTE + "d25a-full-creditnote-ubl.xml"));
+    final Document aUBL25CreditNote = DOMReader.readXMLDOM (new File (BASE_DIR_UBL25_CREDIT_NOTE +
+                                                                      "d25a-full-creditnote-ubl.xml"));
     assertNotNull (aUBL25CreditNote);
     final Serializable aD25ACN = UBLToCIIDispatcher.convertUBLtoCII (aUBL25CreditNote, null, aErrorList);
     assertTrue (aErrorList.toString (), aErrorList.containsNoError ());

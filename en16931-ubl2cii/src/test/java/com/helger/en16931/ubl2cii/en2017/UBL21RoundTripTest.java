@@ -46,10 +46,10 @@ import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryIn
 /**
  * Round-trip test for the EN 16931:2017 binding in the direction this library converts: UBL 2.1
  * &rarr; CII D16B (via this library) &rarr; UBL 2.1 (via <code>en16931-cii2ubl</code>).<br>
- * {@link CIIRoundTripTest} starts at CII and therefore cannot see a business term that <em>this</em>
- * library drops, because the value is already gone from the UBL input it receives. This test closes
- * that gap, and it does so against a corpus of real Peppol documents that was not produced by either
- * library.
+ * {@link CIIRoundTripTest} starts at CII and therefore cannot see a business term that
+ * <em>this</em> library drops, because the value is already gone from the UBL input it receives.
+ * This test closes that gap, and it does so against a corpus of real Peppol documents that was not
+ * produced by either library.
  *
  * @author Philip Helger
  * @since 3.0.0
@@ -68,7 +68,8 @@ public final class UBL21RoundTripTest
     EXPECTED_LOSSES = new CommonsLinkedHashSet <> ();
     // cbc:NetworkID of the payment card is mandatory in UBL but it is not an EN 16931 business
     // term and CII has no counterpart, so it cannot survive. en16931-cii2ubl writes the constant
-    // "mapped-from-cii" instead - see AbstractCIIToUBLConverterBase.DEFAULT_CARD_ACCOUNT_NETWORK_ID.
+    // "mapped-from-cii" instead - see
+    // AbstractCIIToUBLConverterBase.DEFAULT_CARD_ACCOUNT_NETWORK_ID.
     EXPECTED_LOSSES.add ("/Invoice/PaymentMeans/CardAccount/NetworkID");
     EXPECTED_LOSSES.add ("/CreditNote/PaymentMeans/CardAccount/NetworkID");
   }
@@ -128,8 +129,8 @@ public final class UBL21RoundTripTest
 
     // Step 4: compare the leaf values
     final ICommonsList <String> aLosses = MockRoundTrip.getUnexpectedLosses (aOrigDoc,
-                                                                            aRoundTripDoc,
-                                                                            UBL21RoundTripTest::_isExpectedLoss);
+                                                                             aRoundTripDoc,
+                                                                             UBL21RoundTripTest::_isExpectedLoss);
     if (aLosses.isEmpty ())
       LOGGER.info ("Round trip of " +
                    aFile.getName () +

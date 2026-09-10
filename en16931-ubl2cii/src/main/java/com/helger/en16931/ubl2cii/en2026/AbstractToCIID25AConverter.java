@@ -300,7 +300,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
       // BT-90 shares this UBL element and is told apart by its scheme identifier only. It has a
       // dedicated CII element of its own, so it must not become a party identifier here - its
       // scheme identifier is not an ISO 6523 ICD code and would violate BR-CL-10.
-      if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+      if (aUBLPartyID.getID () != null &&
+          EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
         continue;
 
       final IDType aCIIID = convertID (aUBLPartyID.getID ());

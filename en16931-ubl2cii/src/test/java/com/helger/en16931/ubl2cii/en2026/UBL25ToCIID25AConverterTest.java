@@ -160,7 +160,8 @@ public final class UBL25ToCIID25AConverterTest
     // --- BG-4 SELLER, BG-5 SELLER POSTAL ADDRESS -----------------------------------------------
     // BT-27 name, BT-28 trading name, BT-29/BT-29-1 identifier, BT-30/BT-30-1 legal registration
     assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:Name", "Seller Ltd");
-    assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:TradingBusinessName",
+    assertXPath (e,
+                 sAgr + "/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:TradingBusinessName",
                  "Seller Trading Name");
     assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:GlobalID", "4035811234567");
     assertXPath (e, sAgr + "/ram:SellerTradeParty/ram:GlobalID/@schemeID", "0088");
@@ -192,10 +193,8 @@ public final class UBL25ToCIID25AConverterTest
     // --- BG-11 / BG-12 SELLER TAX REPRESENTATIVE PARTY AND ADDRESS -----------------------------
     // BT-62 name, BT-63 VAT identifier, BT-64 address line 1, BT-66 city, BT-67 post code, BT-69
     assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:Name", "Tax Rep GmbH");
-    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedTaxRegistration/ram:ID",
-                 "ATU11111111");
-    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:LineOne",
-                 "Rep Street 3");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:SpecifiedTaxRegistration/ram:ID", "ATU11111111");
+    assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:LineOne", "Rep Street 3");
     assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CityName", "Vienna");
     assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:PostcodeCode", "1020");
     assertXPath (e, sAgr + "/ram:SellerTaxRepresentativeTradeParty/ram:PostalTradeAddress/ram:CountryID", "AT");
@@ -214,7 +213,8 @@ public final class UBL25ToCIID25AConverterTest
     // BG-24 supporting document with BT-122, BT-122-1, BT-123 and BT-124
     assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:IssuerAssignedID", "DOC-916");
     assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:Name", "Supporting document");
-    assertXPath (e, sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:URIID",
+    assertXPath (e,
+                 sAgr + "/ram:AdditionalReferencedDocument[ram:TypeCode='916']/ram:URIID",
                  "https://example.org/doc");
     // BT-15 receiving advice, BT-16 despatch advice
     assertXPath (e, sDel + "/ram:ReceivingAdviceReferencedDocument/ram:IssuerAssignedID", "RECEIPT-4");
@@ -233,8 +233,7 @@ public final class UBL25ToCIID25AConverterTest
     // BT-70 party name, BT-71/BT-71-1 location identifier, BT-72 actual delivery date
     assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:Name", "Delivery Site");
     assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:GlobalID", "4035811111111");
-    assertXPath (e, sDel + "/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString",
-                 "20260112");
+    assertXPath (e, sDel + "/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString", "20260112");
     // BT-75 address line 1, BT-77 city, BT-78 post code, BT-80 country code
     assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:LineOne", "Delivery Road 7");
     assertXPath (e, sDel + "/ram:ShipToTradeParty/ram:PostalTradeAddress/ram:CityName", "Linz");
@@ -256,16 +255,15 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e, sSet + "/ram:PaymentReference", "REMIT-1");
     // BT-84 account identifier, BT-85 account name, BT-86 provider identifier
     assertXPath (e,
-                 sSet +
-                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:IBANID",
+                 sSet + "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:IBANID",
                  "AT611904300234573201");
     assertXPath (e,
                  sSet +
-                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:AccountName",
+                    "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:AccountName",
                  "Seller Account");
     assertXPath (e,
                  sSet +
-                        "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeeSpecifiedCreditorFinancialInstitution/ram:BICID",
+                    "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeeSpecifiedCreditorFinancialInstitution/ram:BICID",
                  "GIBAATWWXXX");
 
     // --- BG-20 / BG-21 document level allowances and charges -----------------------------------
@@ -319,7 +317,7 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e, sLine + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode", "C62");
     assertXPath (e,
                  sLine +
-                        "/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount",
+                    "/ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount",
                  "100");
     assertXPath (e,
                  sLine + "/ram:SpecifiedLineTradeSettlement/ram:ReceivableSpecifiedTradeAccountingAccount/ram:ID",
@@ -335,10 +333,12 @@ public final class UBL25ToCIID25AConverterTest
     // --- BG-26 INVOICE LINE PERIOD -------------------------------------------------------------
     // BT-134 start date, BT-135 end date
     assertXPath (e,
-                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString",
+                 sLine +
+                    "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:StartDateTime/udt:DateTimeString",
                  "20260101");
     assertXPath (e,
-                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:EndDateTime/udt:DateTimeString",
+                 sLine +
+                    "/ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod/ram:EndDateTime/udt:DateTimeString",
                  "20260131");
 
     // --- BG-27 / BG-28 line allowances and charges ---------------------------------------------
@@ -360,12 +360,10 @@ public final class UBL25ToCIID25AConverterTest
     final String sPrice = sLine + "/ram:SpecifiedLineTradeAgreement";
     // BT-146 net price, BT-147/BT-147-1 discount, BT-148 gross price, BT-149/BT-150 base quantity
     assertXPath (e, sPrice + "/ram:NetPriceProductTradePrice/ram:ChargeAmount", "25");
-    assertXPath (e,
-                 sPrice + "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ActualAmount",
-                 "5");
+    assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ActualAmount", "5");
     assertXPath (e,
                  sPrice +
-                         "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ChargeIndicator/udt:Indicator",
+                    "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ChargeIndicator/udt:Indicator",
                  "false");
     assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:ChargeAmount", "30");
     assertXPath (e, sPrice + "/ram:GrossPriceProductTradePrice/ram:BasisQuantity", "1");
@@ -375,9 +373,7 @@ public final class UBL25ToCIID25AConverterTest
     // BT-151 category code, BT-151-1 tax code, BT-152 rate
     assertXPath (e, sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode", "S");
     assertXPath (e, sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:TypeCode", "VAT");
-    assertXPath (e,
-                 sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent",
-                 "20");
+    assertXPath (e, sLine + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent", "20");
 
     // --- BG-31 ITEM INFORMATION ----------------------------------------------------------------
     final String sItem = sLine + "/ram:SpecifiedTradeProduct";
@@ -549,7 +545,9 @@ public final class UBL25ToCIID25AConverterTest
     assertXPathCount (e, sPT + "/ram:DueDateDateTime", 1);
 
     // BG-35: BT-170 Discount end date and BT-170-1 its format code
-    assertXPath (e, sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:BasisDateTime/udt:DateTimeString", "20260125");
+    assertXPath (e,
+                 sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:BasisDateTime/udt:DateTimeString",
+                 "20260125");
     assertXPath (e,
                  sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:BasisDateTime/udt:DateTimeString/@format",
                  "102");
@@ -559,7 +557,9 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e, sPT + "[2]/ram:ApplicableTradePaymentDiscountTerms/ram:ActualDiscountAmount", "2.64");
 
     // BG-36: BT-181 Penalty start date and BT-181-1 its format code
-    assertXPath (e, sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisDateTime/udt:DateTimeString", "20260215");
+    assertXPath (e,
+                 sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisDateTime/udt:DateTimeString",
+                 "20260215");
     assertXPath (e,
                  sPT + "[3]/ram:ApplicableTradePaymentPenaltyTerms/ram:BasisDateTime/udt:DateTimeString/@format",
                  "102");
@@ -683,9 +683,7 @@ public final class UBL25ToCIID25AConverterTest
     assertXPath (e, sSet + "/ram:InvoiceReferencedDocument/ram:LineID", "PREV-LINE-7");
     // BT-218 Line-level preceding invoice issue date and BT-218-1 its format code. The source
     // mapped this to cbc:IssueTime, which cannot hold a date - see finding 7 of the mapping table.
-    assertXPath (e,
-                 sSet + "/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString",
-                 "20251210");
+    assertXPath (e, sSet + "/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString", "20251210");
     assertXPath (e,
                  sSet + "/ram:InvoiceReferencedDocument/ram:FormattedIssueDateTime/qdt:DateTimeString/@format",
                  "102");
@@ -711,11 +709,11 @@ public final class UBL25ToCIID25AConverterTest
     // BT-187 Invoice line actual delivery date and BT-187-1 its format code
     assertXPath (e,
                  sLine +
-                        "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString",
+                    "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString",
                  "20260113");
     assertXPath (e,
                  sLine +
-                        "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString/@format",
+                    "/ram:SpecifiedLineTradeDelivery/ram:ActualDeliverySupplyChainEvent/ram:OccurrenceDateTime/udt:DateTimeString/@format",
                  "102");
 
     // BG-38 INVOICE LINE DELIVER TO ADDRESS - BT-203 to BT-209

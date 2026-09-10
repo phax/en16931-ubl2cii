@@ -51,9 +51,9 @@ import com.helger.xml.XMLHelper;
  * automatically.
  * <ul>
  * <li>The <b>document type</b> - Invoice or Credit Note - comes from the document element.</li>
- * <li>The <b>edition</b> comes from BT-24 (Specification identifier), see
- * {@link EEN16931Edition}. It cannot be taken from the XML namespaces, because UBL 2.1 and UBL 2.5
- * declare identical ones. An explicit edition can be passed in, which skips the detection.</li>
+ * <li>The <b>edition</b> comes from BT-24 (Specification identifier), see {@link EEN16931Edition}.
+ * It cannot be taken from the XML namespaces, because UBL 2.1 and UBL 2.5 declare identical ones.
+ * An explicit edition can be passed in, which skips the detection.</li>
  * </ul>
  * The result is either a CII D16B or a CII D25A <code>CrossIndustryInvoiceType</code>. Those are
  * unrelated Java classes with the same name, so the common return type is {@link Serializable}. Use
@@ -128,8 +128,7 @@ public final class UBLToCIIDispatcher
     if (eSyntaxKind != EEN16931SyntaxKind.UBL_INVOICE && eSyntaxKind != EEN16931SyntaxKind.UBL_CREDIT_NOTE)
     {
       final Element aDocElement = aUBLNode instanceof final Document aDoc ? aDoc.getDocumentElement ()
-                                                                          : aUBLNode instanceof final Element aElem
-                                                                                                                    ? aElem
+                                                                          : aUBLNode instanceof final Element aElem ? aElem
                                                                                                                     : null;
       _error (aErrorList,
               "The XML document type " +
@@ -163,7 +162,7 @@ public final class UBLToCIIDispatcher
         final var aUBLCreditNote = UBL21Marshaller.creditNote ().setCollectErrors (aErrorList).read (aUBLNode);
         return aUBLCreditNote == null ? null
                                       : UBL21CreditNoteToCIID16BConverter.convertToCrossIndustryInvoice (aUBLCreditNote,
-                                                                                                        aErrorList);
+                                                                                                         aErrorList);
       }
       case EN2026:
       {

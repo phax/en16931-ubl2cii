@@ -44,7 +44,8 @@ public final class UBLCIIConversionHelperTest
       try (InputStream aIS = FileHelper.getInputStream (aFile))
       {
         final ErrorList aErrorList = new ErrorList ();
-        final CrossIndustryInvoiceType aCII = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (aIS, aErrorList);
+        final CrossIndustryInvoiceType aCII = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (aIS,
+                                                                                                        aErrorList);
         assertNotNull (aCII);
       }
 
@@ -52,7 +53,8 @@ public final class UBLCIIConversionHelperTest
       try (InputStream aIS = FileHelper.getInputStream (aFile))
       {
         final ErrorList aErrorList = new ErrorList ();
-        final CrossIndustryInvoiceType aCII = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (aIS, aErrorList);
+        final CrossIndustryInvoiceType aCII = UBLToCIIConversionHelper.convertUBL21AutoDetectToCIID16B (aIS,
+                                                                                                        aErrorList);
         assertNotNull (aCII);
       }
   }

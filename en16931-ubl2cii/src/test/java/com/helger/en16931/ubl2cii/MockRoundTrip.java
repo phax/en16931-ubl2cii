@@ -72,7 +72,9 @@ public final class MockRoundTrip
                                  @NonNull final String sPath,
                                  @NonNull final String sValue)
   {
-    aTarget.merge (sPath + "=" + _normalizeValue (sValue), Integer.valueOf (1), (a, b) -> Integer.valueOf (a.intValue () + b.intValue ()));
+    aTarget.merge (sPath + "=" + _normalizeValue (sValue),
+                   Integer.valueOf (1),
+                   (a, b) -> Integer.valueOf (a.intValue () + b.intValue ()));
   }
 
   private static void _collectLeavesRecursive (@NonNull final Element aElement,

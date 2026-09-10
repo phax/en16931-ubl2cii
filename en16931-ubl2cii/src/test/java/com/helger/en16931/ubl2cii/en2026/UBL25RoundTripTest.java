@@ -73,7 +73,8 @@ public final class UBL25RoundTripTest
     EXPECTED_LOSSES = new CommonsLinkedHashSet <> ();
     // cbc:NetworkID of the payment card is mandatory in UBL but it is not an EN 16931 business
     // term and CII has no counterpart, so it cannot survive. en16931-cii2ubl writes the constant
-    // "mapped-from-cii" instead - see AbstractCIIToUBLConverterBase.DEFAULT_CARD_ACCOUNT_NETWORK_ID.
+    // "mapped-from-cii" instead - see
+    // AbstractCIIToUBLConverterBase.DEFAULT_CARD_ACCOUNT_NETWORK_ID.
     EXPECTED_LOSSES.add ("/Invoice/PaymentMeans/CardAccount/NetworkID");
     EXPECTED_LOSSES.add ("/CreditNote/PaymentMeans/CardAccount/NetworkID");
   }
@@ -124,13 +125,15 @@ public final class UBL25RoundTripTest
 
     // Step 4: compare the leaf values
     final ICommonsList <String> aLosses = MockRoundTrip.getUnexpectedLosses (aOrigDoc,
-                                                                            aRoundTripDoc,
-                                                                            UBL25RoundTripTest::_isExpectedLoss);
+                                                                             aRoundTripDoc,
+                                                                             UBL25RoundTripTest::_isExpectedLoss);
     if (aLosses.isNotEmpty ())
     {
       // Keep the round trip result for manual inspection
       final File aOut = new File (BASE_DEST_DIR + FilenameHelper.getBaseName (aFile.getName ()) + "-roundtrip.xml");
-      XMLWriter.writeToStream (aRoundTripDoc, FileHelper.getOutputStream (aOut), XMLWriterSettings.DEFAULT_XML_SETTINGS);
+      XMLWriter.writeToStream (aRoundTripDoc,
+                               FileHelper.getOutputStream (aOut),
+                               XMLWriterSettings.DEFAULT_XML_SETTINGS);
       LOGGER.warn ("Round trip of " + aFile.getName () + " lost " + aLosses.size () + " leaf values");
     }
     else

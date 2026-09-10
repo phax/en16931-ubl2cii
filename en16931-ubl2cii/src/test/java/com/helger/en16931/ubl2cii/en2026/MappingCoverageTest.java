@@ -63,23 +63,27 @@ public final class MappingCoverageTest
   /**
    * Business terms that exist only in UBL and have no CII counterpart at all - the mapping table
    * shows "&mdash;" in the CII column. There is nothing to write to the CII side for them.<br>
-   * Note that this is the mirror image of the exclusion list in cii2ubl, which skips the 16
-   * <em>CII only</em> rows. Those 16 are all relevant here, because this converter has to
-   * <em>produce</em> them - they are the UNTDID 2379 <code>@format</code> codes, BT-11-1 (Project
-   * name) and BT-17-1 (Tender or lot reference type code).
+   * Note that this is the mirror image of the exclusion list in cii2ubl, which skips the 16 <em>CII
+   * only</em> rows. Those 16 are all relevant here, because this converter has to <em>produce</em>
+   * them - they are the UNTDID 2379 <code>@format</code> codes, BT-11-1 (Project name) and BT-17-1
+   * (Tender or lot reference type code).
    */
   private static final Set <String> UBL_ONLY = new CommonsTreeSet <> (new CommonsArrayList <> (
                                                                                                // The
                                                                                                // fixed
                                                                                                // cac:TaxScheme/cbc:ID
-                                                                                               // values; CII uses
+                                                                                               // values;
+                                                                                               // CII
+                                                                                               // uses
                                                                                                // ram:ID/@schemeID
                                                                                                // instead
                                                                                                "BT-31-2",
                                                                                                "BT-32-2",
                                                                                                "BT-48-2",
                                                                                                "BT-63-2",
-                                                                                               // UBL only bookkeeping
+                                                                                               // UBL
+                                                                                               // only
+                                                                                               // bookkeeping
                                                                                                "BT-116-1",
                                                                                                "BT-122-1-1",
                                                                                                "BT-148-1",
@@ -93,8 +97,7 @@ public final class MappingCoverageTest
     // Only real mapping rows have a cardinality column like "1..1" or "0..n"
     final ICommonsOrderedSet <String> ret = new CommonsLinkedHashSet <> ();
     final Matcher aMatcher = Pattern.compile ("^\\|\\s*(B[TG]-[0-9a-z\\-]+)\\s*\\|[^|]*\\|\\s*[0-9]\\.\\.[0-9n]\\s*\\|",
-                                              Pattern.MULTILINE)
-                                    .matcher (sMapping);
+                                              Pattern.MULTILINE).matcher (sMapping);
     while (aMatcher.find ())
       ret.add (aMatcher.group (1));
     return ret;

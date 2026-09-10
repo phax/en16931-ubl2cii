@@ -195,13 +195,15 @@ public final class UBLToCIIConversionHelper
   }
 
   public static un.unece.uncefact.data.standard.cii.d25a.@Nullable CrossIndustryInvoiceType convertUBL25InvoiceToCIID25A (@NonNull @WillNotClose final InputStream aIS,
-                                                                 @NonNull final ErrorList aErrorList)
+                                                                                                                          @NonNull final ErrorList aErrorList)
   {
     ValueEnforcer.notNull (aIS, "InputStream");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
     // Read UBL 2.5
-    final oasis.names.specification.ubl.schema.xsd.invoice_25.InvoiceType aUBLInvoice = UBL25Marshaller.invoice ().setCollectErrors (aErrorList).read (aIS);
+    final oasis.names.specification.ubl.schema.xsd.invoice_25.InvoiceType aUBLInvoice = UBL25Marshaller.invoice ()
+                                                                                                       .setCollectErrors (aErrorList)
+                                                                                                       .read (aIS);
     if (aUBLInvoice == null)
       return null;
 
@@ -218,7 +220,8 @@ public final class UBLToCIIConversionHelper
     ValueEnforcer.notNull (aOS, "OutputStream");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
-    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25InvoiceToCIID25A (aIS, aErrorList);
+    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25InvoiceToCIID25A (aIS,
+                                                                                                                                  aErrorList);
     if (aCrossIndustryInvoice == null)
       return ESuccess.FAILURE;
 
@@ -229,13 +232,15 @@ public final class UBLToCIIConversionHelper
   }
 
   public static un.unece.uncefact.data.standard.cii.d25a.@Nullable CrossIndustryInvoiceType convertUBL25CreditNoteToCIID25A (@NonNull @WillNotClose final InputStream aIS,
-                                                                    @NonNull final ErrorList aErrorList)
+                                                                                                                             @NonNull final ErrorList aErrorList)
   {
     ValueEnforcer.notNull (aIS, "InputStream");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
     // Read UBL 2.5
-    final oasis.names.specification.ubl.schema.xsd.creditnote_25.CreditNoteType aUBLCreditNote = UBL25Marshaller.creditNote ().setCollectErrors (aErrorList).read (aIS);
+    final oasis.names.specification.ubl.schema.xsd.creditnote_25.CreditNoteType aUBLCreditNote = UBL25Marshaller.creditNote ()
+                                                                                                                .setCollectErrors (aErrorList)
+                                                                                                                .read (aIS);
     if (aUBLCreditNote == null)
       return null;
 
@@ -252,7 +257,8 @@ public final class UBLToCIIConversionHelper
     ValueEnforcer.notNull (aOS, "OutputStream");
     ValueEnforcer.notNull (aErrorList, "ErrorList");
 
-    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25CreditNoteToCIID25A (aIS, aErrorList);
+    final un.unece.uncefact.data.standard.cii.d25a.CrossIndustryInvoiceType aCrossIndustryInvoice = convertUBL25CreditNoteToCIID25A (aIS,
+                                                                                                                                     aErrorList);
     if (aCrossIndustryInvoice == null)
       return ESuccess.FAILURE;
 

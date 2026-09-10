@@ -172,8 +172,8 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
                                            aUBLOrderLineRef.getLineIDValue ());
 
       // BT-200 + BT-201
-      aSellerOrderRDT = createLineReferencedDocument (aUBLOrderRef == null ? null : aUBLOrderRef
-                                                                                                .getSalesOrderIDValue (),
+      aSellerOrderRDT = createLineReferencedDocument (aUBLOrderRef == null ? null
+                                                                           : aUBLOrderRef.getSalesOrderIDValue (),
                                                       aUBLOrderLineRef.getSalesOrderLineIDValue ());
     }
 
@@ -597,15 +597,15 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     {
       boolean bFound = false;
       for (final var aUBLParty : new oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_25.PartyType [] { aUBLDoc.getPayeeParty (),
-                                                                                                                          aUBLDoc.getAccountingSupplierParty () !=
-                                                                                                                                                    null ? aUBLDoc.getAccountingSupplierParty ()
-                                                                                                                                                                  .getParty ()
-                                                                                                                                                         : null })
+                                                                                                                          aUBLDoc.getAccountingSupplierParty () != null ? aUBLDoc.getAccountingSupplierParty ()
+                                                                                                                                                                                 .getParty ()
+                                                                                                                                                                        : null })
       {
         if (bFound || aUBLParty == null)
           continue;
         for (final var aUBLPartyID : aUBLParty.getPartyIdentification ())
-          if (aUBLPartyID.getID () != null && EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
+          if (aUBLPartyID.getID () != null &&
+              EN16931CodeLists.CREDITOR_REFERENCE_SCHEME_ID.equals (aUBLPartyID.getID ().getSchemeID ()))
           {
             if (ifNotEmpty (aUBLPartyID.getID ().getValue (), ret::setCreditorReferenceID))
               bFound = true;

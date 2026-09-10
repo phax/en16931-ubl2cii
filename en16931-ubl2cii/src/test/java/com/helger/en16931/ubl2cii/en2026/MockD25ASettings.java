@@ -169,7 +169,7 @@ public final class MockD25ASettings
     // Step 3: write - validates against the CII D25A XSD
     final File aDestFile = new File (BASE_DEST_DIR, FilenameHelper.getBaseName (sFilename) + "-cii.xml");
     final ESuccess eSuccess = new CIID25ACrossIndustryInvoiceTypeMarshaller ().setFormattedOutput (true)
-                                                                             .write (aCII, aDestFile);
+                                                                              .write (aCII, aDestFile);
     assertTrue ("The created CII D25A document of '" + sFilename + "' is not XSD valid", eSuccess.isSuccess ());
 
     final Document aDoc = new CIID25ACrossIndustryInvoiceTypeMarshaller ().getAsDocument (aCII);

@@ -180,7 +180,7 @@ public final class CIID25ARoundTripTest
   {
     final CIID25ACrossIndustryInvoiceTypeMarshaller aCIIMarshaller = new CIID25ACrossIndustryInvoiceTypeMarshaller ();
     final CrossIndustryInvoiceType aOrigCII = aCIIMarshaller.read (new File (MockD25ASettings.BASE_TEST_DIR_CII_D25A +
-                                                                            "d25a-new-lineref-invoice.xml"));
+                                                                             "d25a-new-lineref-invoice.xml"));
     assertNotNull (aOrigCII);
 
     // BT-189 stays, BT-190 goes - the UBL element around it remains mandatory
@@ -196,8 +196,7 @@ public final class CIID25ARoundTripTest
     assertNotNull (aUBL);
 
     // en16931-cii2ubl writes the placeholder into the mandatory element
-    final Document aUBLDoc = com.helger.ubl25.UBL25Marshaller.invoice ()
-                                                             .getAsDocument ((InvoiceType) aUBL);
+    final Document aUBLDoc = com.helger.ubl25.UBL25Marshaller.invoice ().getAsDocument ((InvoiceType) aUBL);
     assertNotNull (aUBLDoc);
     assertTrue ("en16931-cii2ubl no longer writes the agreed placeholder",
                 MockRoundTrip.getAllLeaves (aUBLDoc)
@@ -218,16 +217,17 @@ public final class CIID25ARoundTripTest
   }
 
   /**
-   * BT-14 without BT-13: <code>cbc:ID</code> is mandatory in the UBL <code>cac:OrderReference</code>
-   * that BT-14 needs, so en16931-cii2ubl writes the agreed placeholder there. This library has to
-   * recognise it, or the round trip invents a purchase order reference the original never had.
+   * BT-14 without BT-13: <code>cbc:ID</code> is mandatory in the UBL
+   * <code>cac:OrderReference</code> that BT-14 needs, so en16931-cii2ubl writes the agreed
+   * placeholder there. This library has to recognise it, or the round trip invents a purchase order
+   * reference the original never had.
    */
   @Test
   public void testOrderReferencePlaceholderIsNotInvented ()
   {
     final CIID25ACrossIndustryInvoiceTypeMarshaller aCIIMarshaller = new CIID25ACrossIndustryInvoiceTypeMarshaller ();
     final CrossIndustryInvoiceType aOrigCII = aCIIMarshaller.read (new File (MockD25ASettings.BASE_TEST_DIR_CII_D25A +
-                                                                            "d25a-full-invoice.xml"));
+                                                                             "d25a-full-invoice.xml"));
     assertNotNull (aOrigCII);
 
     // BT-14 stays, BT-13 goes - the UBL element around it remains mandatory
@@ -244,8 +244,7 @@ public final class CIID25ARoundTripTest
     assertNotNull (aUBLDoc);
     assertTrue ("en16931-cii2ubl no longer writes the agreed placeholder",
                 MockRoundTrip.getAllLeaves (aUBLDoc)
-                             .containsKey ("/Invoice/OrderReference/ID=" +
-                                           EN16931CodeLists.MISSING_VALUE_PLACEHOLDER));
+                             .containsKey ("/Invoice/OrderReference/ID=" + EN16931CodeLists.MISSING_VALUE_PLACEHOLDER));
 
     aErrorList.clear ();
     final Serializable aRoundTripCII = UBLToCIIDispatcher.convertUBLtoCII (aUBLDoc, null, aErrorList);
