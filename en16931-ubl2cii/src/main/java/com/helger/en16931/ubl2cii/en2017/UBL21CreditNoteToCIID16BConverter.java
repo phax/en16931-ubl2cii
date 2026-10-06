@@ -198,8 +198,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         aGrossPrice = new TradePriceType ();
 
         // BT-148 Item gross price
-        if (aUBLPriceAC.getBaseAmount () != null)
-          aGrossPrice.addChargeAmount (convertAmount (aUBLPriceAC.getBaseAmount ()));
+        ifNotNull (convertGrossPriceAmount (aUBLPriceAC.getBaseAmount (),
+                                            aUBLPrice.getPriceAmount (),
+                                            aUBLPriceAC.getAmount ()),
+                   aGrossPrice::addChargeAmount);
 
         // BT-147 Item price discount
         if (aUBLPriceAC.getAmount () != null)

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.Test;
@@ -43,6 +44,8 @@ import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainTradeLineItemType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePriceType;
+import un.unece.uncefact.data.standard.unqualifieddatatype._100.AmountType;
 
 /**
  * Valid UBL 2.1 documents that are outside of the regular test corpus, because they contain
@@ -118,6 +121,11 @@ public final class UBL21EdgeCaseTest
     return aCII.getSupplyChainTradeTransaction ().getIncludedSupplyChainTradeLineItemAtIndex (nIndex);
   }
 
+  private static void _assertAmount (@NonNull final String sExpected, @NonNull final AmountType aAmount)
+  {
+    assertEquals (0, new BigDecimal (sExpected).compareTo (aAmount.getValue ()));
+  }
+
   private static void _assertEmptyCommodityClassificationSkipped (@NonNull final CrossIndustryInvoiceType aCII)
   {
     // BT-158 of line 1 is kept, the empty classification of line 2 has nothing to map
@@ -125,10 +133,29 @@ public final class UBL21EdgeCaseTest
     assertEquals (0, _line (aCII, 1).getSpecifiedTradeProduct ().getDesignatedProductClassificationCount ());
   }
 
+  private static void _assertGrossPriceDerived (@NonNull final SupplyChainTradeLineItemType aLine)
+  {
+    // BT-148 = BT-146 + BT-147
+    final TradePriceType aGrossPrice = aLine.getSpecifiedLineTradeAgreement ().getGrossPriceProductTradePrice ();
+    _assertAmount ("450", aGrossPrice.getChargeAmountAtIndex (0));
+    // BT-147
+    _assertAmount ("50", aGrossPrice.getAppliedTradeAllowanceChargeAtIndex (0).getActualAmountAtIndex (0));
+    // BT-146
+    _assertAmount ("400",
+                   aLine.getSpecifiedLineTradeAgreement ().getNetPriceProductTradePrice ().getChargeAmountAtIndex (0));
+  }
+
   @Test
   public void testEmptyCommodityClassification ()
   {
     _assertEmptyCommodityClassificationSkipped (_convertInvoice ("edge-empty-commodity-classification-invoice.xml"));
     _assertEmptyCommodityClassificationSkipped (_convertCreditNote ("edge-empty-commodity-classification-creditnote.xml"));
+  }
+
+  @Test
+  public void testPriceDiscountWithoutGrossPrice ()
+  {
+    _assertGrossPriceDerived (_line (_convertInvoice ("edge-price-discount-without-gross-price-invoice.xml"), 0));
+    _assertGrossPriceDerived (_line (_convertCreditNote ("edge-price-discount-without-gross-price-creditnote.xml"), 0));
   }
 }

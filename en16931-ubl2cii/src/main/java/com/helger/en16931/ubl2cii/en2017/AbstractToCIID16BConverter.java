@@ -171,6 +171,39 @@ public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterB
     return convertAmount (aUBLAmount, false);
   }
 
+  /**
+   * BT-148 Item gross price. UBL makes <code>cbc:BaseAmount</code> in the price allowance optional,
+   * but the CII gross price needs a <code>ram:ChargeAmount</code> - a gross price without one is
+   * invalid against the XSD. So if the base amount is missing, the gross price is derived as BT-146
+   * Item net price plus BT-147 Item price discount, which is how EN 16931 defines the net price.
+   *
+   * @param aUBLBaseAmount
+   *        <code>cac:Price/cac:AllowanceCharge/cbc:BaseAmount</code>. May be <code>null</code>.
+   * @param aUBLNetPriceAmount
+   *        <code>cac:Price/cbc:PriceAmount</code>. May be <code>null</code>.
+   * @param aUBLDiscountAmount
+   *        <code>cac:Price/cac:AllowanceCharge/cbc:Amount</code>. May be <code>null</code>.
+   * @return <code>null</code> if no gross price can be determined.
+   */
+  @Nullable
+  protected static AmountType convertGrossPriceAmount (final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLBaseAmount,
+                                                       final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLNetPriceAmount,
+                                                       final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLDiscountAmount)
+  {
+    if (aUBLBaseAmount != null)
+      return convertAmount (aUBLBaseAmount);
+
+    if (aUBLNetPriceAmount == null ||
+        aUBLNetPriceAmount.getValue () == null ||
+        aUBLDiscountAmount == null ||
+        aUBLDiscountAmount.getValue () == null)
+      return null;
+
+    final AmountType ret = new AmountType ();
+    ret.setValue (BigHelper.getWithoutTrailingZeroes (aUBLNetPriceAmount.getValue ().add (aUBLDiscountAmount.getValue ())));
+    return ret;
+  }
+
   // BG-1: BT-21 Invoice note subject code + BT-22 Invoice note
   // The cii2ubl converter encodes the subject code as a "#code#" prefix in the
   // UBL Note value. This method parses it back out.

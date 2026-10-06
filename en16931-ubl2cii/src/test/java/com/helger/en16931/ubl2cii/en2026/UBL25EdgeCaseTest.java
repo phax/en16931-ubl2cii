@@ -17,6 +17,7 @@
  */
 package com.helger.en16931.ubl2cii.en2026;
 
+import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPath;
 import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPathCount;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -69,5 +70,17 @@ public final class UBL25EdgeCaseTest
 
     // Only the regular classification is BT-158, the empty one has nothing to map
     assertXPathCount (e, LINE + "/ram:SpecifiedTradeProduct/ram:DesignatedProductClassification", 1);
+  }
+
+  @Test
+  public void testPriceDiscountWithoutGrossPrice ()
+  {
+    final Element e = _convertInvoice ("d25a-edge-price-discount-invoice-ubl.xml");
+
+    // BT-148 = BT-146 + BT-147
+    final String sAgr = LINE + "/ram:SpecifiedLineTradeAgreement";
+    assertXPath (e, sAgr + "/ram:GrossPriceProductTradePrice/ram:ChargeAmount", "30");
+    assertXPath (e, sAgr + "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ActualAmount", "5");
+    assertXPath (e, sAgr + "/ram:NetPriceProductTradePrice/ram:ChargeAmount", "25");
   }
 }
