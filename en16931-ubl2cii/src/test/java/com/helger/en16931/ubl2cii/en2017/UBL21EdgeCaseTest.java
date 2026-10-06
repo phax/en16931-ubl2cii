@@ -19,6 +19,7 @@ package com.helger.en16931.ubl2cii.en2017;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -43,6 +44,7 @@ import com.helger.ubl21.UBL21Marshaller;
 import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 import oasis.names.specification.ubl.schema.xsd.invoice_21.InvoiceType;
 import un.unece.uncefact.data.standard.crossindustryinvoice._100.CrossIndustryInvoiceType;
+import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.HeaderTradeSettlementType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.SupplyChainTradeLineItemType;
 import un.unece.uncefact.data.standard.reusableaggregatebusinessinformationentity._100.TradePriceType;
 import un.unece.uncefact.data.standard.unqualifieddatatype._100.AmountType;
@@ -121,6 +123,12 @@ public final class UBL21EdgeCaseTest
     return aCII.getSupplyChainTradeTransaction ().getIncludedSupplyChainTradeLineItemAtIndex (nIndex);
   }
 
+  @NonNull
+  private static HeaderTradeSettlementType _settlement (@NonNull final CrossIndustryInvoiceType aCII)
+  {
+    return aCII.getSupplyChainTradeTransaction ().getApplicableHeaderTradeSettlement ();
+  }
+
   private static void _assertAmount (@NonNull final String sExpected, @NonNull final AmountType aAmount)
   {
     assertEquals (0, new BigDecimal (sExpected).compareTo (aAmount.getValue ()));
@@ -157,5 +165,35 @@ public final class UBL21EdgeCaseTest
   {
     _assertGrossPriceDerived (_line (_convertInvoice ("edge-price-discount-without-gross-price-invoice.xml"), 0));
     _assertGrossPriceDerived (_line (_convertCreditNote ("edge-price-discount-without-gross-price-creditnote.xml"), 0));
+  }
+
+  @Test
+  public void testTaxCurrencySameAsDocumentCurrency ()
+  {
+    final CrossIndustryInvoiceType aCII = _convertInvoice ("edge-tax-currency-same-as-document-currency-invoice.xml");
+
+    // BT-6 equal to BT-5 is left out, BT-110 is still there
+    assertEquals ("EUR", _settlement (aCII).getInvoiceCurrencyCodeValue ());
+    assertNull (_settlement (aCII).getTaxCurrencyCode ());
+    final var aTaxTotals = _settlement (aCII).getSpecifiedTradeSettlementHeaderMonetarySummation ()
+                                            .getTaxTotalAmount ();
+    assertEquals (1, aTaxTotals.size ());
+    _assertAmount ("331.25", aTaxTotals.get (0));
+  }
+
+  @Test
+  public void testZeroVatInAccountingCurrency ()
+  {
+    final CrossIndustryInvoiceType aCII = _convertInvoice ("edge-zero-vat-in-accounting-currency-invoice.xml");
+
+    // BT-6 and the BT-111 of 0 that BR-53 requires with it
+    assertEquals ("EUR", _settlement (aCII).getTaxCurrencyCodeValue ());
+    final var aBT111 = _settlement (aCII).getSpecifiedTradeSettlementHeaderMonetarySummation ()
+                                         .getTaxTotalAmount ()
+                                         .stream ()
+                                         .filter (x -> "EUR".equals (x.getCurrencyID ()))
+                                         .toList ();
+    assertEquals (1, aBT111.size ());
+    _assertAmount ("0", aBT111.get (0));
   }
 }

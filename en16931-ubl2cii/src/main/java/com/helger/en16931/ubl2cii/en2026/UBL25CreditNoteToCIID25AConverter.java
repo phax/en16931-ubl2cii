@@ -661,7 +661,8 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
-                                                                                                                   aUBLTaxTotalAmounts));
+                                                                                                                   aUBLTaxTotalAmounts,
+                                                                                                                   ret.getTaxCurrencyCodeValue ()));
 
     // BT-19
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {

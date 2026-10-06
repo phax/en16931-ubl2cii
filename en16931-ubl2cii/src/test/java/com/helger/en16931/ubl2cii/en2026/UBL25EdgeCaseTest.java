@@ -83,4 +83,17 @@ public final class UBL25EdgeCaseTest
     assertXPath (e, sAgr + "/ram:GrossPriceProductTradePrice/ram:AppliedTradeAllowanceCharge/ram:ActualAmount", "5");
     assertXPath (e, sAgr + "/ram:NetPriceProductTradePrice/ram:ChargeAmount", "25");
   }
+
+  @Test
+  public void testZeroVatInAccountingCurrency ()
+  {
+    final Element e = _convertInvoice ("d25a-edge-zero-bt111-invoice-ubl.xml");
+    final String sSet = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
+
+    // BT-6 and the BT-111 of 0 that BR-53 requires with it
+    assertXPath (e, sSet + "/ram:TaxCurrencyCode", "GBP");
+    assertXPath (e,
+                 sSet + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount[@currencyID='GBP']",
+                 "0");
+  }
 }

@@ -327,7 +327,12 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     ifNotEmpty (aUBLDoc.getDocumentCurrencyCodeValue (), ret::setInvoiceCurrencyCode);
 
     // Tax currency code BT-6
-    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
+    // The EN 16931 CII Schematron rejects a BT-6 equal to BT-5 (BR-53), UBL accepts it. As it carries
+    // no information in that case, it is left out
+    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), x -> {
+      if (!x.equals (aUBLDoc.getDocumentCurrencyCodeValue ()))
+        ret.setTaxCurrencyCode (x);
+    });
 
     // BG-10 PAYEE
     ifNotNull (convertParty (aUBLDoc.getPayeeParty ()), ret::setPayeeTradeParty);
@@ -511,7 +516,8 @@ public final class UBL21InvoiceToCIID16BConverter extends AbstractToCIID16BConve
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
-                                                                                                                   aUBLTaxTotalAmounts));
+                                                                                                                   aUBLTaxTotalAmounts,
+                                                                                                                   ret.getTaxCurrencyCodeValue ()));
 
     // BT-19 Buyer accounting reference
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {

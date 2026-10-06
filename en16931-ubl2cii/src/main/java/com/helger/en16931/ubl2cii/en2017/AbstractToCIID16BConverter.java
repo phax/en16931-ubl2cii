@@ -603,7 +603,8 @@ public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterB
   // BG-22 DOCUMENT TOTALS
   @NonNull
   protected static TradeSettlementHeaderMonetarySummationType createSpecifiedTradeSettlementHeaderMonetarySummation (@Nullable final MonetaryTotalType aUBLMonetaryTotal,
-                                                                                                                     @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts)
+                                                                                                                     @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts,
+                                                                                                                     @Nullable final String sTaxCurrencyCode)
   {
     final TradeSettlementHeaderMonetarySummationType ret = new TradeSettlementHeaderMonetarySummationType ();
     if (aUBLMonetaryTotal != null)
@@ -622,9 +623,11 @@ public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterB
     // Skip zero values — cii2ubl creates a synthetic TaxTotal with value 0 when
     // CII has no TaxTotalAmount (because UBL mandates TaxTotal). Emitting it
     // back would produce an element that wasn't in the original CII.
+    // A zero BT-111 is kept though, because BR-53 requires it as soon as BT-6 is present.
     for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
-      if (aUBLTaxAmount.getValue () != null && aUBLTaxAmount.getValue ().signum () != 0)
+      final boolean bIsBT111 = sTaxCurrencyCode != null && sTaxCurrencyCode.equals (aUBLTaxAmount.getCurrencyID ());
+      if (aUBLTaxAmount.getValue () != null && (aUBLTaxAmount.getValue ().signum () != 0 || bIsBT111))
       {
         // Currency ID is required here
         ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);
