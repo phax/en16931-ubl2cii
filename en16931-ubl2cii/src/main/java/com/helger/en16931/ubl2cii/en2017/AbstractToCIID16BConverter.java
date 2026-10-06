@@ -26,6 +26,7 @@ import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
 import com.helger.collection.commons.ICommonsList;
 import com.helger.datetime.xml.XMLOffsetDate;
+import com.helger.en16931.basics.codelist.EEN16931TaxSchemeCode;
 import com.helger.en16931.basics.codelist.EN16931CodeLists;
 import com.helger.en16931.ubl2cii.AbstractToCIIConverterBase;
 
@@ -355,9 +356,12 @@ public abstract class AbstractToCIID16BConverter extends AbstractToCIIConverterB
         final IDType aID = convertID (aUBLPartyTaxScheme.getCompanyID ());
         if (aUBLPartyTaxScheme.getTaxScheme () != null)
         {
-          // MUST use "VA" scheme
-          ifNotEmpty (EN16931CodeLists.mapTaxSchemeCodeUBLToCII (aUBLPartyTaxScheme.getTaxScheme ().getIDValue ()),
-                      aID::setSchemeID);
+          // "VAT" identifies BT-31/BT-48/BT-63 and any other value BT-32, as the 2017 UBL binding
+          // only fixed BT-32-2 to "LOC" with EN 16931:2026. CII knows only "VA" and "FC" for them
+          ifNotEmpty (aUBLPartyTaxScheme.getTaxScheme ().getIDValue (), x -> {
+            final boolean bIsVAT = EEN16931TaxSchemeCode.VAT.getUBLCode ().equalsIgnoreCase (x.trim ());
+            aID.setSchemeID ((bIsVAT ? EEN16931TaxSchemeCode.VAT : EEN16931TaxSchemeCode.LOC).getCIICode ());
+          });
         }
         aTaxReg.setID (aID);
         aTPT.addSpecifiedTaxRegistration (aTaxReg);

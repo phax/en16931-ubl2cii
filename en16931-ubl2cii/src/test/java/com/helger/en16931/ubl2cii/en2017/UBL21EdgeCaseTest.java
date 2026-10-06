@@ -196,4 +196,19 @@ public final class UBL21EdgeCaseTest
     assertEquals (1, aBT111.size ());
     _assertAmount ("0", aBT111.get (0));
   }
+
+  @Test
+  public void testSellerTaxRegistrationWithOtherTaxScheme ()
+  {
+    final CrossIndustryInvoiceType aCII = _convertInvoice ("edge-seller-tax-registration-invoice.xml");
+
+    // BT-32
+    final var aTaxRegs = aCII.getSupplyChainTradeTransaction ()
+                             .getApplicableHeaderTradeAgreement ()
+                             .getSellerTradeParty ()
+                             .getSpecifiedTaxRegistration ();
+    assertEquals (1, aTaxRegs.size ());
+    assertEquals ("GB1232434", aTaxRegs.get (0).getIDValue ());
+    assertEquals ("FC", aTaxRegs.get (0).getID ().getSchemeID ());
+  }
 }
