@@ -137,13 +137,19 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     // BT-158/BT-158-1/BT-158-2 Item classification identifier
     for (final CommodityClassificationType aUBLCC : aUBLLine.getItem ().getCommodityClassification ())
     {
+      // Only cbc:ItemClassificationCode carries BT-158. A classification that uses one of the other
+      // codes, e.g. cbc:CommodityCode, has nothing to map
+      final var aUBLItemClassCode = aUBLCC.getItemClassificationCode ();
+      if (aUBLItemClassCode == null)
+        continue;
+
       final ProductClassificationType aPCT = new ProductClassificationType ();
       final CodeType aCT = new CodeType ();
       // BT-158-1 listID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListID (), aCT::setListID);
+      ifNotEmpty (aUBLItemClassCode.getListID (), aCT::setListID);
       // BT-158-2 listVersionID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListVersionID (), aCT::setListVersionID);
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getValue (), aCT::setValue);
+      ifNotEmpty (aUBLItemClassCode.getListVersionID (), aCT::setListVersionID);
+      ifNotEmpty (aUBLItemClassCode.getValue (), aCT::setValue);
       aPCT.setClassCode (aCT);
       aTPT.addDesignatedProductClassification (aPCT);
     }
