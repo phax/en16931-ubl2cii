@@ -138,13 +138,19 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     // BT-158/BT-158-1/BT-158-2
     for (final CommodityClassificationType aUBLCC : aUBLLine.getItem ().getCommodityClassification ())
     {
+      // Only cbc:ItemClassificationCode carries BT-158. A classification that uses one of the other
+      // codes, e.g. cbc:CommodityCode, has nothing to map
+      final var aUBLItemClassCode = aUBLCC.getItemClassificationCode ();
+      if (aUBLItemClassCode == null)
+        continue;
+
       final ProductClassificationType aPCT = new ProductClassificationType ();
       final CodeType aCT = new CodeType ();
       // BT-158-1 listID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListID (), aCT::setListID);
+      ifNotEmpty (aUBLItemClassCode.getListID (), aCT::setListID);
       // BT-158-2 listVersionID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListVersionID (), aCT::setListVersionID);
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getValue (), aCT::setValue);
+      ifNotEmpty (aUBLItemClassCode.getListVersionID (), aCT::setListVersionID);
+      ifNotEmpty (aUBLItemClassCode.getValue (), aCT::setValue);
       aPCT.setClassCode (aCT);
       aTPT.addDesignatedProductClassification (aPCT);
     }
@@ -192,8 +198,10 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
         aGrossPrice = new TradePriceType ();
 
         // BT-148 Item gross price
-        if (aUBLPriceAC.getBaseAmount () != null)
-          aGrossPrice.addChargeAmount (convertAmount (aUBLPriceAC.getBaseAmount ()));
+        ifNotNull (convertGrossPriceAmount (aUBLPriceAC.getBaseAmount (),
+                                            aUBLPrice.getPriceAmount (),
+                                            aUBLPriceAC.getAmount ()),
+                   aGrossPrice::addChargeAmount);
 
         // BT-147 Item price discount
         if (aUBLPriceAC.getAmount () != null)
@@ -316,7 +324,12 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     ifNotEmpty (aUBLDoc.getDocumentCurrencyCodeValue (), ret::setInvoiceCurrencyCode);
 
     // Tax currency code BT-6
-    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
+    // The EN 16931 CII Schematron rejects a BT-6 equal to BT-5 (BR-53), UBL accepts it. As it carries
+    // no information in that case, it is left out
+    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), x -> {
+      if (!x.equals (aUBLDoc.getDocumentCurrencyCodeValue ()))
+        ret.setTaxCurrencyCode (x);
+    });
 
     // BG-10 PAYEE
     ifNotNull (convertParty (aUBLDoc.getPayeeParty ()), ret::setPayeeTradeParty);
@@ -501,7 +514,8 @@ public final class UBL21CreditNoteToCIID16BConverter extends AbstractToCIID16BCo
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
-                                                                                                                   aUBLTaxTotalAmounts));
+                                                                                                                   aUBLTaxTotalAmounts,
+                                                                                                                   ret.getTaxCurrencyCodeValue ()));
 
     // BT-19
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {

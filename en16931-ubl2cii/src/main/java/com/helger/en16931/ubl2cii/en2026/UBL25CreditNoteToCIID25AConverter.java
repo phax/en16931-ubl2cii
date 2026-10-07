@@ -137,13 +137,19 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     // BT-158/BT-158-1/BT-158-2
     for (final CommodityClassificationType aUBLCC : aUBLLine.getItem ().getCommodityClassification ())
     {
+      // Only cbc:ItemClassificationCode carries BT-158. A classification that uses one of the other
+      // codes, e.g. cbc:CommodityCode, has nothing to map
+      final var aUBLItemClassCode = aUBLCC.getItemClassificationCode ();
+      if (aUBLItemClassCode == null)
+        continue;
+
       final ProductClassificationType aPCT = new ProductClassificationType ();
       final CodeType aCT = new CodeType ();
       // BT-158-1 listID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListID (), aCT::setListID);
+      ifNotEmpty (aUBLItemClassCode.getListID (), aCT::setListID);
       // BT-158-2 listVersionID
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getListVersionID (), aCT::setListVersionID);
-      ifNotEmpty (aUBLCC.getItemClassificationCode ().getValue (), aCT::setValue);
+      ifNotEmpty (aUBLItemClassCode.getListVersionID (), aCT::setListVersionID);
+      ifNotEmpty (aUBLItemClassCode.getValue (), aCT::setValue);
       aPCT.setClassCode (aCT);
       aTPT.addDesignatedProductClassification (aPCT);
     }
@@ -198,8 +204,10 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
         aGrossPrice = new TradePriceType ();
 
         // BT-148 Item gross price
-        if (aUBLPriceAC.getBaseAmount () != null)
-          aGrossPrice.addChargeAmount (convertAmount (aUBLPriceAC.getBaseAmount ()));
+        ifNotNull (convertGrossPriceAmount (aUBLPriceAC.getBaseAmount (),
+                                            aUBLPrice.getPriceAmount (),
+                                            aUBLPriceAC.getAmount ()),
+                   aGrossPrice::addChargeAmount);
 
         // BT-147 Item price discount, with BT-147-1 the indicator that identifies it as one -
         // in the EN core only a discount is allowed here, never a charge
@@ -653,7 +661,8 @@ public final class UBL25CreditNoteToCIID25AConverter extends AbstractToCIID25ACo
     final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts = new CommonsArrayList <> (aUBLDoc.getTaxTotal (),
                                                                                       TaxTotalType::getTaxAmount);
     ret.setSpecifiedTradeSettlementHeaderMonetarySummation (createSpecifiedTradeSettlementHeaderMonetarySummation (aUBLDoc.getLegalMonetaryTotal (),
-                                                                                                                   aUBLTaxTotalAmounts));
+                                                                                                                   aUBLTaxTotalAmounts,
+                                                                                                                   ret.getTaxCurrencyCodeValue ()));
 
     // BT-19
     ifNotEmpty (aUBLDoc.getAccountingCostValue (), x -> {

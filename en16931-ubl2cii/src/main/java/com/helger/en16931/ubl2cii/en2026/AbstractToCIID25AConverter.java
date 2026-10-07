@@ -222,6 +222,39 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     return convertAmount (aUBLAmount, false);
   }
 
+  /**
+   * BT-148 Item gross price. UBL makes <code>cbc:BaseAmount</code> in the price allowance optional,
+   * but the CII gross price needs a <code>ram:ChargeAmount</code> - a gross price without one is
+   * invalid against the XSD. So if the base amount is missing, the gross price is derived as BT-146
+   * Item net price plus BT-147 Item price discount, which is how EN 16931 defines the net price.
+   *
+   * @param aUBLBaseAmount
+   *        <code>cac:Price/cac:AllowanceCharge/cbc:BaseAmount</code>. May be <code>null</code>.
+   * @param aUBLNetPriceAmount
+   *        <code>cac:Price/cbc:PriceAmount</code>. May be <code>null</code>.
+   * @param aUBLDiscountAmount
+   *        <code>cac:Price/cac:AllowanceCharge/cbc:Amount</code>. May be <code>null</code>.
+   * @return <code>null</code> if no gross price can be determined.
+   */
+  @Nullable
+  protected static AmountType convertGrossPriceAmount (final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLBaseAmount,
+                                                       final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLNetPriceAmount,
+                                                       final com.helger.xsds.ccts.cct.schemamodule.@Nullable AmountType aUBLDiscountAmount)
+  {
+    if (aUBLBaseAmount != null)
+      return convertAmount (aUBLBaseAmount);
+
+    if (aUBLNetPriceAmount == null ||
+        aUBLNetPriceAmount.getValue () == null ||
+        aUBLDiscountAmount == null ||
+        aUBLDiscountAmount.getValue () == null)
+      return null;
+
+    final AmountType ret = new AmountType ();
+    ret.setValue (BigHelper.getWithoutTrailingZeroes (aUBLNetPriceAmount.getValue ().add (aUBLDiscountAmount.getValue ())));
+    return ret;
+  }
+
   // BG-1: BT-21 Invoice note subject code + BT-22 Invoice note
   // Since UBL 2.5 the subject code has an element of its own, so the "#code#" prefix hack of the
   // EN 16931:2017 binding is gone.
@@ -796,7 +829,8 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
   // BG-22 DOCUMENT TOTALS
   @NonNull
   protected static TradeSettlementHeaderMonetarySummationType createSpecifiedTradeSettlementHeaderMonetarySummation (@Nullable final MonetaryTotalType aUBLMonetaryTotal,
-                                                                                                                     @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts)
+                                                                                                                     @Nullable final ICommonsList <TaxAmountType> aUBLTaxTotalAmounts,
+                                                                                                                     @Nullable final String sTaxCurrencyCode)
   {
     final TradeSettlementHeaderMonetarySummationType ret = new TradeSettlementHeaderMonetarySummationType ();
     if (aUBLMonetaryTotal != null)
@@ -816,9 +850,11 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     // Skip zero values — cii2ubl creates a synthetic TaxTotal with value 0 when
     // CII has no TaxTotalAmount (because UBL mandates TaxTotal). Emitting it
     // back would produce an element that wasn't in the original CII.
+    // A zero BT-111 is kept though, because BR-53 requires it as soon as BT-6 is present.
     for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
-      if (aUBLTaxAmount.getValue () != null && aUBLTaxAmount.getValue ().signum () != 0)
+      final boolean bIsBT111 = sTaxCurrencyCode != null && sTaxCurrencyCode.equals (aUBLTaxAmount.getCurrencyID ());
+      if (aUBLTaxAmount.getValue () != null && (aUBLTaxAmount.getValue ().signum () != 0 || bIsBT111))
       {
         // Currency ID is required here
         ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);
