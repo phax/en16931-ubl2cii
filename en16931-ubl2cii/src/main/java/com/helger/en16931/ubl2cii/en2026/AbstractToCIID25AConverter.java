@@ -25,7 +25,9 @@ import org.jspecify.annotations.Nullable;
 
 import com.helger.base.numeric.BigHelper;
 import com.helger.base.string.StringHelper;
+import com.helger.collection.commons.CommonsHashSet;
 import com.helger.collection.commons.ICommonsList;
+import com.helger.collection.commons.ICommonsSet;
 import com.helger.datetime.xml.XMLOffsetDate;
 import com.helger.datetime.xml.XMLOffsetTime;
 import com.helger.en16931.basics.codelist.EN16931CodeLists;
@@ -851,10 +853,15 @@ public abstract class AbstractToCIID25AConverter extends AbstractToCIIConverterB
     // CII has no TaxTotalAmount (because UBL mandates TaxTotal). Emitting it
     // back would produce an element that wasn't in the original CII.
     // A zero BT-111 is kept though, because BR-53 requires it as soon as BT-6 is present.
+    // UBL accepts a second cac:TaxTotal in an already used currency - e.g. if BT-6 equals BT-5 - but
+    // CII allows only one ram:TaxTotalAmount per currency (BR-CO-15), so only the first one is used
+    final ICommonsSet <String> aUsedCurrencies = new CommonsHashSet <> ();
     for (final TaxAmountType aUBLTaxAmount : aUBLTaxTotalAmounts)
     {
       final boolean bIsBT111 = sTaxCurrencyCode != null && sTaxCurrencyCode.equals (aUBLTaxAmount.getCurrencyID ());
-      if (aUBLTaxAmount.getValue () != null && (aUBLTaxAmount.getValue ().signum () != 0 || bIsBT111))
+      if (aUBLTaxAmount.getValue () != null &&
+          (aUBLTaxAmount.getValue ().signum () != 0 || bIsBT111) &&
+          aUsedCurrencies.add (aUBLTaxAmount.getCurrencyID ()))
       {
         // Currency ID is required here
         ifNotNull (convertAmount (aUBLTaxAmount, true), ret::addTaxTotalAmount);

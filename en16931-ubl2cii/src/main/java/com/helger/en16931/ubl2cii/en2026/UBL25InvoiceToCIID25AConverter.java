@@ -411,7 +411,12 @@ public final class UBL25InvoiceToCIID25AConverter extends AbstractToCIID25AConve
     ifNotEmpty (aUBLDoc.getDocumentCurrencyCodeValue (), ret::setInvoiceCurrencyCode);
 
     // Tax currency code BT-6
-    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), ret::setTaxCurrencyCode);
+    // The EN 16931:2017 CII Schematron rejects a BT-6 equal to BT-5 (BR-53), UBL accepts it. There
+    // is no 2026 Schematron yet, but as it carries no information in that case, it is left out
+    ifNotEmpty (aUBLDoc.getTaxCurrencyCodeValue (), x -> {
+      if (!x.equals (aUBLDoc.getDocumentCurrencyCodeValue ()))
+        ret.setTaxCurrencyCode (x);
+    });
 
     // BT-167 VAT accounting currency exchange rate, BT-167-1 target and BT-167-2 source currency
     if (aUBLDoc.getTaxExchangeRate () != null)

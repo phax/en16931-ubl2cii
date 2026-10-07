@@ -72,6 +72,16 @@ The EN 16931 edition is taken from BT-24 of each source file. Use `--en-version 
 
 # News and noteworthy
 
+v3.0.1 - work in progress
+* Fixed a `NullPointerException` for a `cac:CommodityClassification` without `cbc:ItemClassificationCode` (BT-158) - such entries are skipped now. Affects both editions
+* Fixed an XSD invalid `ram:GrossPriceProductTradePrice` for a price discount without gross price - BT-148 is derived as BT-146 + BT-147 if `cbc:BaseAmount` is missing. Affects both editions
+* A BT-111 of 0 is kept now, because BR-53 requires it as soon as BT-6 is present. Affects both editions
+* BT-6 is left out if it equals BT-5, because the EN 16931 CII Schematron rejects that under BR-53 while the UBL one accepts it. Affects both editions
+* Only the first UBL `cbc:TaxAmount` per currency becomes a `ram:TaxTotalAmount`, as CII allows one per currency (BR-CO-15)
+* Fixed BT-32 (Seller tax registration identifier) for EN 16931:2017 - every `cac:TaxScheme/cbc:ID` other than `VAT` now becomes CII `@schemeID="FC"`, as the 2017 UBL binding prescribes. Uses the new `EEN16931TaxSchemeCode.getFromUBLCodeEN2017OrNull`
+* Requires [en16931-basics](https://github.com/phax/en16931-basics) 1.0.2
+* Thanks to [@janwytze](https://github.com/janwytze) for the fixes in [#3](https://github.com/phax/en16931-ubl2cii/pull/3)
+
 v3.0.0 - 2026-09-07
 * Added support for **EN 16931:2026** - UBL 2.5 to CII D25A - covering all 284 rows of the syntax mapping
 * The converters moved into edition specific sub-packages `com.helger.en16931.ubl2cii.en2017` and `.en2026` - this is a breaking change for existing imports

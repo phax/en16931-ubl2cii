@@ -17,6 +17,7 @@
  */
 package com.helger.en16931.ubl2cii.en2026;
 
+import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertNoXPath;
 import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPath;
 import static com.helger.en16931.ubl2cii.en2026.MockD25ASettings.assertXPathCount;
 import static org.junit.Assert.assertNotNull;
@@ -95,5 +96,18 @@ public final class UBL25EdgeCaseTest
     assertXPath (e,
                  sSet + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount[@currencyID='GBP']",
                  "0");
+  }
+
+  @Test
+  public void testTaxCurrencySameAsDocumentCurrency ()
+  {
+    final Element e = _convertInvoice ("d25a-edge-tax-currency-same-as-document-currency-invoice-ubl.xml");
+    final String sSet = "rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
+
+    // BT-6 equal to BT-5 is left out, BT-110 is still there
+    assertXPath (e, sSet + "/ram:InvoiceCurrencyCode", "EUR");
+    assertNoXPath (e, sSet + "/ram:TaxCurrencyCode");
+    assertXPathCount (e, sSet + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount", 1);
+    assertXPath (e, sSet + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount", "19");
   }
 }
