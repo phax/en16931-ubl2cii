@@ -33,9 +33,9 @@ import com.helger.phive.xml.source.IValidationSourceXML;
 
 public final class MockSettings
 {
-  public static final DVRCoordinate VID_CII_2017 = EN16931Validation.VID_CII_1316.getWithVersionLatestRelease ();
-  public static final DVRCoordinate VID_UBL_INV_2017 = EN16931Validation.VID_UBL_INVOICE_1316.getWithVersionLatestRelease ();
-  public static final DVRCoordinate VID_UBL_CN_2017 = EN16931Validation.VID_UBL_CREDIT_NOTE_1316.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_CII_2017 = EN16931Validation.VID_CII_1317.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_UBL_INV_2017 = EN16931Validation.VID_UBL_INVOICE_1317.getWithVersionLatestRelease ();
+  public static final DVRCoordinate VID_UBL_CN_2017 = EN16931Validation.VID_UBL_CREDIT_NOTE_1317.getWithVersionLatestRelease ();
 
   public static final ValidationExecutorSetRegistry <IValidationSourceXML> VES_REGISTRY = new ValidationExecutorSetRegistry <> ();
   static
