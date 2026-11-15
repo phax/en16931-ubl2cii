@@ -72,6 +72,10 @@ The EN 16931 edition is taken from BT-24 of each source file. Use `--en-version 
 
 # News and noteworthy
 
+v3.0.2 - work in progress
+* Importing the BOMs `ph-commons-bom`, `ph-ubl-bom` and `ph-cii-bom` instead of the respective parent POMs
+* Updated to ph-commons 12.7.1, ph-ubl 10.3.0 and ph-cii 4.1.4
+
 v3.0.1 - 2026-10-07
 * Fixed a `NullPointerException` for a `cac:CommodityClassification` without `cbc:ItemClassificationCode` (BT-158) - such entries are skipped now.
   Affects both editions
